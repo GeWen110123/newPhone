@@ -385,7 +385,7 @@ public class DouyinVideoService {
                 Thread.sleep(1500);
 
 
-                return fetcher.addressVideosAndComments(workesCount, devId, accountName, tags);
+                return fetcher.addressZHongHeComments(workesCount, devId, accountName, tags);
 
             }else if (tags.contains("附近")) {
 

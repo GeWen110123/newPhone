@@ -18,6 +18,7 @@ public interface IAddressVideoService
      * @return 地址视频总
      */
     public AddressVideo selectAddressVideoByUid(String uid);
+    public AddressVideo selectAddressVideo(String uid,String address);
 
     /**
      * 查询地址视频总列表

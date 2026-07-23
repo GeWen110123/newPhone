@@ -91,7 +91,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectAddressVideoVo"/>
         where uid = #{uid}
     </select>
-        
+
+    <select id="selectAddressVideo" parameterType="String" resultMap="AddressVideoResult">
+        <include refid="selectAddressVideoVo"/>
+        where uid = #{uid} and  address = #{address}
+    </select>
+
     <insert id="insertAddressVideo" parameterType="AddressVideo">
         insert into address_video
         <trim prefix="(" suffix=")" suffixOverrides=",">

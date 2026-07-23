@@ -30,6 +30,10 @@ public class AddressVideoServiceImpl implements IAddressVideoService {
     public AddressVideo selectAddressVideoByUid(String uid) {
         return addressVideoMapper.selectAddressVideoByUid(uid);
     }
+    @Override
+    public AddressVideo selectAddressVideo(String uid,String address) {
+        return addressVideoMapper.selectAddressVideo(uid,address);
+    }
 
     /**
      * 查询地址视频总列表
