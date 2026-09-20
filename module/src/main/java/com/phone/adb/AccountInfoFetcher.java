@@ -144,12 +144,14 @@ public class AccountInfoFetcher {
         // ⭐ 先解析最关键字段：昵称 + 抖音号
         String nickname = getNickname(pageSource);
         String douyinId = getDouyinId(pageSource, nickname);
-//        String inputDouyinId = normalizeDouyinIdForCompare(accountName);
-//        String fetchedDouyinId = normalizeDouyinIdForCompare(douyinId);
-//        if (!inputDouyinId.isEmpty() && !fetchedDouyinId.isEmpty() && !inputDouyinId.equals(fetchedDouyinId)) {
-//            logger.severe("获取人员与输入抖音号不一致，输入抖音号: " + accountName + "，页面抖音号: " + douyinId);
-//            return info;
-//        }
+        if ("1".equals(type) && "1".equals(status)) {
+            String inputDouyinId = normalizeDouyinIdForCompare(accountName);
+            String fetchedDouyinId = normalizeDouyinIdForCompare(douyinId);
+            if (!inputDouyinId.isEmpty() && !fetchedDouyinId.isEmpty() && !inputDouyinId.equals(fetchedDouyinId)) {
+                logger.severe("获取人员与输入抖音号不一致，输入抖音号: " + accountName + "，页面抖音号: " + douyinId);
+                return info;
+            }
+        }
 
         info.put("nickname", nickname);
         info.put("id", douyinId);

@@ -22,7 +22,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91603825-72bf-4802-ae2d-763b1daebf3e" name="Default Changelist" comment="修改0423" />
+    <list default="true" id="91603825-72bf-4802-ae2d-763b1daebf3e" name="Default Changelist" comment="123">
+      <change beforePath="$PROJECT_DIR$/module/src/main/java/com/phone/adb/AccountInfoFetcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/module/src/main/java/com/phone/adb/AccountInfoFetcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/src/main/java/com/phone/adb/AccountInfoFetcherVoid.java" beforeDir="false" afterPath="$PROJECT_DIR$/module/src/main/java/com/phone/adb/AccountInfoFetcherVoid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/src/main/java/com/phone/adb/DouyinAddressCrawler.java" beforeDir="false" afterPath="$PROJECT_DIR$/module/src/main/java/com/phone/adb/DouyinAddressCrawler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/src/main/java/com/phone/module/controller/VideoTagsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/module/src/main/java/com/phone/module/controller/VideoTagsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/src/main/java/com/phone/module/mapper/AddressVideoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/module/src/main/java/com/phone/module/mapper/AddressVideoMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/src/main/java/com/phone/module/service/DouyinVideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/module/src/main/java/com/phone/module/service/DouyinVideoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ruoyi.ipr" beforeDir="false" afterPath="$PROJECT_DIR$/ruoyi.ipr" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ruoyi.iws" beforeDir="false" afterPath="$PROJECT_DIR$/ruoyi.iws" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -206,7 +215,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Web-Security-Audit-Toolkits/app-agents-farm-java.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/GeWen110123/phone.git&quot;,
     &quot;accountId&quot;: &quot;17d15333-c56f-45ef-a405-bbc67b7bbfa2&quot;
   }
 }</component>
@@ -297,10 +306,12 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Application.AppiumRestartUtil.executor&quot;: &quot;Run&quot;,
     &quot;Maven.phone [clean].executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.RuoYiApplication .executor&quot;: &quot;Debug&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
@@ -310,10 +321,10 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.testRunning&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.importing&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -401,7 +412,7 @@
       </method>
     </configuration>
     <configuration name="RuoYiApplication " type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true">
-      <option name="ALTERNATIVE_JRE_PATH" value="17" />
+      <option name="ALTERNATIVE_JRE_PATH" value="C:/Program Files/Java/jdk-17" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <module name="admin" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.phone.RuoYiApplication" />
@@ -415,10 +426,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <list>
-      <item itemvalue="Application.AppiumRestartUtil" />
-      <item itemvalue="Spring Boot.RuoYiApplication " />
-    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Spring Boot.RuoYiApplication " />
@@ -856,7 +863,7 @@
       <option name="project" value="LOCAL" />
       <updated>1770603640671</updated>
     </task>
-    <option name="localTasksCounter" value="104" />
+    <option name="localTasksCounter" value="107" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -886,9 +893,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="新增评论用户信息表存储 获取用户头像及人员信息放置在评论信息中并展示" />
-    <MESSAGE value="添加点赞数 以及数据倒叙排序" />
-    <MESSAGE value="添加判断 找寻地址增加到匹配100次  如果还没匹配的结束任务" />
     <MESSAGE value="分表处理存储  添加" />
     <MESSAGE value="分表处理存储  添加   主页信息获取  只获取一遍page内容" />
     <MESSAGE value=" 添加判断  如果数据不满足条件修改数据值为3   兜底执行  当没有数据时修改3 为0" />
@@ -911,7 +915,10 @@
     <MESSAGE value="修改文件地址" />
     <MESSAGE value="修改" />
     <MESSAGE value="修改0423" />
-    <option name="LAST_COMMIT_MESSAGE" value="修改0423" />
+    <MESSAGE value="add 方法修改" />
+    <MESSAGE value="111" />
+    <MESSAGE value="123" />
+    <option name="LAST_COMMIT_MESSAGE" value="123" />
   </component>
   <component name="VssConfiguration">
     <CheckoutOptions>
@@ -966,6 +973,18 @@
     <webview flattenPackages="false" showMembers="false" autoscrollToSource="false" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/module/src/main/java/com/phone/adb/DouyinAddressCrawler.java</url>
+          <line>98</line>
+          <properties>
+            <option name="lambda-ordinal" value="-1" />
+          </properties>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="SpringBootApplicationConfigurationType">
         <watch expression="request" />

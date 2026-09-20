@@ -404,7 +404,7 @@ public class DouyinAddressCrawler {
      */
     private boolean clickFirstAddress() {
         try {
-
+            System.out.println(driver.getPageSource());
             List<MobileElement> playViews = driver.findElements(
                     By.xpath("//android.view.View[@resource-id='com.ss.android.ugc.aweme:id/p=1']")
             );

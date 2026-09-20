@@ -64,7 +64,9 @@ public class VideoTagsController extends BaseController {
 
             tags.setAccount(account);
 
-            if (!tags.getTags().contains("地址")) {
+            if (!tags.getTags().contains("地址")
+                    && !tags.getTags().contains("附近")
+                    && !tags.getTags().contains("综合视频")) {
                 Video video= new Video();
                 video.setDouyinId(tags.getDouyinId());
                 tags.setCounts(accountContentService.selectAccountContentCountSum(tags.getDouyinId()));

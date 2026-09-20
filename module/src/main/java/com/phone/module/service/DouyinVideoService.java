@@ -61,8 +61,8 @@ public class DouyinVideoService {
      * 异步入口
      */
     @Async
-    public void asyncCrawlTask(String devId, String accountName, VideoTags tags,String lockKey,Boolean locked) {
-        crawlWithRedisTemplateLock(devId, accountName, tags,lockKey,locked);
+    public void asyncCrawlTask(String devId, String accountName, VideoTags tags, String lockKey, Boolean locked) {
+        crawlWithRedisTemplateLock(devId, accountName, tags, lockKey, locked);
 
         Account account = new Account();
         account.setDouyinId(accountName);
@@ -70,7 +70,7 @@ public class DouyinVideoService {
 
         RunLog runLog = new RunLog();
 
-        if (accountList.size()>0){
+        if (accountList.size() > 0) {
             account = accountService.selectAccountList(account).get(0);
             int count = getRealWorksCount(account.getJsonString());
 
@@ -78,56 +78,56 @@ public class DouyinVideoService {
             runLog.setDevId(devId);
             runLog.setDouyinId(tags.getDouyinId());
 
-            if (tags.getTags().contains("前六条")){
+            if (tags.getTags().contains("前六条")) {
 
                 runLog.setType("人员");
                 Video v = new Video();
                 v.setDouyinId(accountName);
-                List<Video>videoList =videoService.selectVideoList(v);
-                if (videoList.size()>=count||videoList.size()>=6){
+                List<Video> videoList = videoService.selectVideoList(v);
+                if (videoList.size() >= count || videoList.size() >= 6) {
                     tags.setStatus("2");
-                    runLog.setRuningDetail("完成对"+tags.getDouyinId()+"前六条数据获取");
-                }else {
+                    runLog.setRuningDetail("完成对" + tags.getDouyinId() + "前六条数据获取");
+                } else {
                     tags.setStatus("3");
-                    runLog.setRuningDetail(tags.getDouyinId()+"数据获取结束，存在异常，等待再次处理");
+                    runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
                 }
 
 
-            }else if (tags.getTags().contains("地址")) {
+            } else if (tags.getTags().contains("地址")) {
                 runLog.setType("地址");
                 AddressVideo v = new AddressVideo();
                 v.setAddress(accountName);
-                if (addressVideoService.selectAddressVideoList(v).size()>=count){
-                    runLog.setRuningDetail("完成对地址"+tags.getDouyinId()+"数据获取");
+                if (addressVideoService.selectAddressVideoList(v).size() >= count) {
+                    runLog.setRuningDetail("完成对地址" + tags.getDouyinId() + "数据获取");
                     tags.setStatus("2");
-                }else {
+                } else {
 //                   如果地址存在问题 进行修改为未执行状态  继续执行
                     tags.setStatus("0");
-                    runLog.setRuningDetail(tags.getDouyinId()+"数据获取结束，存在异常，等待再次处理");
+                    runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
                 }
             } else {
-                count =getUserWorksCount(account.getJsonString());
+                count = getUserWorksCount(account.getJsonString());
                 runLog.setType("人员");
                 Video v = new Video();
                 v.setDouyinId(accountName);
-                if (videoService.selectVideoList(v).size()>=count){
+                if (videoService.selectVideoList(v).size() >= count) {
                     tags.setStatus("2");
-                    runLog.setRuningDetail("完成对"+tags.getDouyinId()+"前六条数据获取");
-                }else {
+                    runLog.setRuningDetail("完成对" + tags.getDouyinId() + "前六条数据获取");
+                } else {
                     tags.setStatus("3");
-                    runLog.setRuningDetail(tags.getDouyinId()+"数据获取结束，存在异常，等待再次处理");
+                    runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
                 }
             }
 
 
-        }else {
+        } else {
             if (tags.getTags().contains("地址")) {
                 tags.setStatus("0");
-            }else {
+            } else {
                 tags.setStatus("3");
             }
             runLog.setType("异常");
-            runLog.setRuningDetail(tags.getDouyinId()+"数据获取结束，存在异常，等待再次处理");
+            runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
             runLogService.insertRunLog(runLog);
 
         }
@@ -141,7 +141,8 @@ public class DouyinVideoService {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> map = mapper.readValue(
                     jsonString,
-                    new TypeReference<Map<String, Object>>() {}
+                    new TypeReference<Map<String, Object>>() {
+                    }
             );
 
             // ① 先拿 works_count
@@ -157,7 +158,7 @@ public class DouyinVideoService {
 
             if (worksText.contains("打卡")) {
                 worksCount = worksCount / 10;
-            }else {
+            } else {
                 worksCount = worksCount / 5;
             }
 
@@ -168,12 +169,14 @@ public class DouyinVideoService {
             return 0;
         }
     }
+
     public static int getUserWorksCount(String jsonString) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> map = mapper.readValue(
                     jsonString,
-                    new TypeReference<Map<String, Object>>() {}
+                    new TypeReference<Map<String, Object>>() {
+                    }
             );
 
             // ① 先拿 works_count
@@ -200,10 +203,10 @@ public class DouyinVideoService {
                                             String lockKey,
                                             boolean locked) {
         try {
-            if (tags.getTags().contains("附近")){
-                crawlSingleAccount(devId, accountName, tags.getTags(),tags.getAddress());
-            }else {
-                crawlSingleAccount(devId, accountName, tags.getTags(),"");
+            if (tags.getTags().contains("附近")) {
+                crawlSingleAccount(devId, accountName, tags.getTags(), tags.getAddress());
+            } else {
+                crawlSingleAccount(devId, accountName, tags.getTags(), "");
 
             }
             // 执行抓取
@@ -326,7 +329,7 @@ public class DouyinVideoService {
                 } else {
                     // 基础信息查询
                     Map<String, Object> result = crawler.fetchAccountInfo();
-                    douyinTaskService.storeAccountAsync(devId, accountName, result,tags);
+                    douyinTaskService.storeAccountAsync(devId, accountName, result, tags);
                     workesCount = StringUtils.isNotBlank((String) result.get("works_count"))
                             ? (String) result.get("works_count")
                             : "15";
@@ -387,9 +390,9 @@ public class DouyinVideoService {
 
                 return fetcher.addressZHongHeComments(workesCount, devId, accountName, tags);
 
-            }else if (tags.contains("附近")) {
+            } else if (tags.contains("附近")) {
 
-                if (StringUtils.isNotEmpty(address)){
+                if (StringUtils.isNotEmpty(address)) {
                     if (!startPlaceMockLocation(driver, devId, address)) {
                         logger.warning("全国模拟定位启动失败，address=" + address);
                         return null;
@@ -409,20 +412,23 @@ public class DouyinVideoService {
                 );
                 driver.startRecordingScreen();
 
-                Thread.sleep(1500);
+                Thread.sleep(1000);
                 if (!swipeLeftToNearbyVideoFeed(driver)) {
                     logger.warning("swipe left to nearby video feed failed");
                     return null;
                 }
-                Thread.sleep(1500);
+                Thread.sleep(1000);
 
+                Dimension size = driver.manage().window().getSize();
+                tapPoint(driver, size.getWidth() / 2, size.getHeight() / 2);
+                Thread.sleep(1000);
                 return fetcher.addressVideosAndComments(String.valueOf(Integer.MAX_VALUE), devId, accountName, tags);
 
             } else {
                 DouyinCrawler crawler = new DouyinCrawler(driver,
                         accountContentService,
                         addressAccountContentService,
-                        accountService,douyinTaskService);
+                        accountService, douyinTaskService);
                 if (!crawler.startDouyin()) return null;
                 if (!crawler.searchAndEnterAccount(accountName)) return null;
 
@@ -438,7 +444,7 @@ public class DouyinVideoService {
                 // 基础信息查询
                 if (tags.contains("基本信息")) {
                     Map<String, Object> result = crawler.fetchAccountInfo("1", "1", devId, accountName);
-                    douyinTaskService.storeAccountAsync(devId, accountName, result,tags);
+                    douyinTaskService.storeAccountAsync(devId, accountName, result, tags);
                 }
 
                 return fetcher.recordAllVideosAndComments(devId, accountName, tags);
@@ -452,6 +458,7 @@ public class DouyinVideoService {
             closeDriverQuietly(driver);
         }
     }
+
     /**
      * 如果存在“地点内容数量”，则点击进入地点内容页
      */
@@ -827,8 +834,8 @@ public class DouyinVideoService {
         try {
             Dimension size = driver.manage().window().getSize();
             int y = size.getHeight() / 2;
-            int startX = (int) (size.getWidth() * 0.82);
-            int endX = (int) (size.getWidth() * 0.18);
+            int startX = (int) (size.getWidth() * 0.18);
+            int endX = (int) (size.getWidth() * 0.82);
 
             new TouchAction<>(driver)
                     .press(PointOption.point(startX, y))

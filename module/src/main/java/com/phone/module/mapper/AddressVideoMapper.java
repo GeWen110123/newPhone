@@ -2,6 +2,7 @@ package com.phone.module.mapper;
 
 import java.util.List;
 import com.phone.module.domain.AddressVideo;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 地址视频总Mapper接口
@@ -18,7 +19,7 @@ public interface AddressVideoMapper
      * @return 地址视频总
      */
     public AddressVideo selectAddressVideoByUid(String uid);
-    public AddressVideo selectAddressVideo(String uid,String address);
+    public AddressVideo selectAddressVideo(@Param("uid") String uid, @Param("address") String address);
 
     /**
      * 查询地址视频总列表

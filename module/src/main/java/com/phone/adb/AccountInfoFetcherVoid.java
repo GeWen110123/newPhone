@@ -1139,6 +1139,68 @@ public class AccountInfoFetcherVoid {
         addressVideoService.insertAddressVideo(video);
     }
 
+    private void saveAddressVideoCopy(AddressVideo source, long videoIndex, String devId, String address) {
+        AddressVideo video = new AddressVideo();
+        video.setUid(source.getUid());
+        video.setVideoIndex(videoIndex);
+        video.setDevId(devId);
+        video.setAddress(address);
+        video.setDouyinId(source.getDouyinId());
+        video.setCreateTime(new Date());
+        video.setContent(source.getContent());
+        video.setVideoPath(source.getVideoPath());
+        video.setImagePath(source.getImagePath());
+        video.setJsonPath(source.getJsonPath());
+        video.setJsonString(source.getJsonString());
+        video.setFollowCount(source.getFollowCount());
+        video.setFansCount(source.getFansCount());
+        video.setLikesCount(source.getLikesCount());
+        video.setIpAddress(source.getIpAddress());
+        addressVideoService.insertAddressVideo(video);
+    }
+
+    private Map<String, Object> buildVideoMapFromAddressVideo(AddressVideo source, int index) {
+        Map<String, Object> video = new LinkedHashMap<>();
+        video.put("video_index", index + 1);
+        video.put("uid", source.getUid());
+        video.put("timestamp", LocalDateTime.now().toString());
+        video.put("video_path", source.getVideoPath());
+        video.put("screenshot_path", source.getImagePath());
+        video.put("json_path", source.getJsonPath());
+
+        try {
+            if (StringUtils.isNotEmpty(source.getJsonString())) {
+                JSONObject json = JSON.parseObject(source.getJsonString());
+                video.put("likes_count", json.get("likes"));
+                video.put("comments_count", json.get("comments"));
+                video.put("share_count", json.get("shares"));
+                video.put("collect_count", json.get("collects"));
+                video.put("author", json.get("author"));
+                video.put("rawTime", json.get("rawTime"));
+                video.put("descCon", json.get("descCon"));
+            }
+        } catch (Exception ignored) {
+        }
+
+        List<Map<String, Object>> comments = new ArrayList<>();
+        try {
+            if (StringUtils.isNotEmpty(source.getContent())) {
+                Object parsed = JSON.parse(source.getContent());
+                if (parsed instanceof List) {
+                    for (Object item : (List<?>) parsed) {
+                        if (item instanceof Map) {
+                            comments.add((Map<String, Object>) item);
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        video.put("comments", comments);
+        video.put("totalComments", video.get("comments_count") == null ? comments.size() : video.get("comments_count"));
+        return video;
+    }
+
     private long parseLong(Object value) {
         if (value == null) return 0L;
 
@@ -1172,7 +1234,6 @@ public class AccountInfoFetcherVoid {
             return 0L;
         }
     }
-
 
 
     private String toWebPath(String fullPath) {
@@ -1219,7 +1280,7 @@ public class AccountInfoFetcherVoid {
         List<Map<String, Object>> allVideoData = new ArrayList<>();
         Set<String> processed = new HashSet<>();
         String safeTags = tags == null ? "" : tags;
-        boolean comprehensiveVideo = safeTags.contains("综合视频");
+//        boolean comprehensiveVideo = safeTags.contains("综合视频");
 
         int index = 0;
         int maxVideos = parseMaxVideos(count);
@@ -1301,10 +1362,10 @@ public class AccountInfoFetcherVoid {
                     continue;
                 }
 // 数据库去重
-                boolean existsInDb = comprehensiveVideo
-                        ? videoService.selectVideoByUId(uid) != null
-                        : addressVideoService.selectAddressVideoByUid(uid) != null;
-                if (existsInDb) {
+//                boolean existsInDb = comprehensiveVideo
+//                        ? videoService.selectVideoByUId(uid) != null
+//                        : addressVideoService.selectAddressVideoByUid(uid) != null;
+                if (videoService.selectVideoByUId(uid) != null) {
                     logger.info("视频已存在数据库，跳过");
                     processed.add(uid); // 可选：避免后面再次查询 DB
                     if (!swipeToNextVideo()) break;
@@ -1345,8 +1406,8 @@ public class AccountInfoFetcherVoid {
                                     "F:/douyin_output"
                                     , accountContentService,
                                     addressAccountContentService,
-                                    accountService,douyinTaskService);
-                    Map<String, Object> result = fetcher1.getAccountBasicInfo("2","0",deviceId,douyinId);
+                                    accountService, douyinTaskService);
+                    Map<String, Object> result = fetcher1.getAccountBasicInfo("2", "0", deviceId, douyinId);
                     douyinId = (String) result.get("id");
                     douyinTaskService.storeAccountAsync(deviceId, douyinId, result, safeTags);
                     driver.navigate().back();
@@ -1385,8 +1446,7 @@ public class AccountInfoFetcherVoid {
                     logger.info("🎬 解析到视频时长: " + duration + " 秒");
 
 //                // ◆ 录制视频
-                    String videoPath = recordVideoToFile(index, duration, deviceId,
-                            comprehensiveVideo ? address : douyinId);
+                    String videoPath = recordVideoToFile(index, duration, deviceId, douyinId);
                     video.put("video_path", videoPath);
                 } else {
                     video.put("video_path", "");
@@ -1409,7 +1469,7 @@ public class AccountInfoFetcherVoid {
                                 addressAccountContentService,
                                 accountService);
 // 抓取当前视频的全部评论（包含 totalComments + comments + json_path）
-                        Map<String, Object> commentResult = fetcher.fetchAllComments(comprehensiveVideo ? "1" : "2", address, uid, deviceId, index, videosDir, (String) video.get("comments_count"));
+                        Map<String, Object> commentResult = fetcher.fetchAllComments("2", address, uid, deviceId, index, videosDir, (String) video.get("comments_count"));
 // 取出评论数组
                         List<Map<String, Object>> comments = (List<Map<String, Object>>) commentResult.get("comments");
 // 写入视频数据
@@ -1429,11 +1489,7 @@ public class AccountInfoFetcherVoid {
                 }
                 allVideoData.add(video);
 
-                if (comprehensiveVideo) {
-                    saveSingleVideo(video, deviceId, address);
-                } else {
-                    saveSingleVideoByAddress(video, deviceId, douyinId, address);
-                }
+                saveSingleVideoByAddress(video, deviceId, douyinId, address);
 
 
                 logger.info("第 " + (index + 1) + " 个视频处理完成");
@@ -1550,12 +1606,21 @@ public class AccountInfoFetcherVoid {
                     continue;
                 }
 // 数据库去重
-                boolean existsInDb = comprehensiveVideo
-                        ? videoService.selectVideoByUId(uid) != null
-                        : addressVideoService.selectAddressVideo(uid,address) != null;
-                if (existsInDb) {
+                if (addressVideoService.selectAddressVideo(uid, address) != null) {
                     logger.info("视频已存在数据库，跳过");
                     processed.add(uid); // 可选：避免后面再次查询 DB
+                    if (!swipeToNextVideo()) break;
+                    index++;
+                    continue;
+                }
+
+                AddressVideo existingAddressVideo = addressVideoService.selectAddressVideoByUid(uid);
+                if (existingAddressVideo != null) {
+                    Map<String, Object> video = buildVideoMapFromAddressVideo(existingAddressVideo, index);
+                    allVideoData.add(video);
+                    saveAddressVideoCopy(existingAddressVideo, index + 1L, deviceId, address);
+                    logger.info("视频已存在其他地址，复用已有数据保存到当前地址");
+                    processed.add(uid);
                     if (!swipeToNextVideo()) break;
                     index++;
                     continue;
@@ -1594,8 +1659,8 @@ public class AccountInfoFetcherVoid {
                                     "F:/douyin_output"
                                     , accountContentService,
                                     addressAccountContentService,
-                                    accountService,douyinTaskService);
-                    Map<String, Object> result = fetcher1.getAccountBasicInfo("2","0",deviceId,douyinId);
+                                    accountService, douyinTaskService);
+                    Map<String, Object> result = fetcher1.getAccountBasicInfo("2", "0", deviceId, douyinId);
                     douyinId = (String) result.get("id");
                     douyinTaskService.storeAccountAsync(deviceId, douyinId, result, safeTags);
                     driver.navigate().back();
@@ -1678,11 +1743,7 @@ public class AccountInfoFetcherVoid {
                 }
                 allVideoData.add(video);
 
-                if (comprehensiveVideo) {
-                    saveSingleVideo(video, deviceId, address);
-                } else {
-                    saveSingleVideoByAddress(video, deviceId, douyinId, address);
-                }
+                saveSingleVideoByAddress(video, deviceId, douyinId, address);
 
 
                 logger.info("第 " + (index + 1) + " 个视频处理完成");
