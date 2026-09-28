@@ -404,43 +404,62 @@ public class DouyinAddressCrawler {
      */
     private boolean clickFirstAddress() {
         try {
-            System.out.println(driver.getPageSource());
-            List<MobileElement> playViews = driver.findElements(
-                    By.xpath("//android.view.View[@resource-id='com.ss.android.ugc.aweme:id/p=1']")
-            );
+            // 旧版搜索结果使用 p=1，新版抖音改成了 dp7/rej/cover。
+            // 按“可点击的视频容器”优先，避免把 Tab、文本或小程序卡片当成视频。
+            String[] videoXpaths = {
+                    "//android.view.View[@resource-id='com.ss.android.ugc.aweme:id/p=1']",
+                    "//android.view.View[@resource-id='com.ss.android.ugc.aweme:id/rej' and @clickable='true']",
+                    "//android.widget.LinearLayout[@resource-id='com.ss.android.ugc.aweme:id/dp7' and @clickable='true']",
+                    "//*[@resource-id='com.ss.android.ugc.aweme:id/rej' and @clickable='true']",
+                    "//*[@resource-id='com.ss.android.ugc.aweme:id/dp7' and @clickable='true']",
+                    "//android.widget.ImageView[@resource-id='com.ss.android.ugc.aweme:id/cover']"
+            };
 
-            if (playViews == null || playViews.isEmpty()) {
-                logger.warning("当前页面未找到 p=1 播放层");
-                return false;
-            }
-
-            for (int i = 0; i < playViews.size(); i++) {
-
+            List<MobileElement> candidates = new ArrayList<>();
+            Set<String> seen = new HashSet<>();
+            for (String xpath : videoXpaths) {
                 try {
-                    MobileElement play = playViews.get(i);
-                    logger.info("尝试点击第 " + (i + 1) + " 个卡片");
-                    play.click();
-                    sleep(2500);
-
-                    // 判断是否为视频
-                    if (isVideoPage()) {
-                        logger.info("确认是视频，已进入");
-                        return true;
+                    for (MobileElement element : driver.findElements(By.xpath(xpath))) {
+                        if (element == null || !isVisibleVideoCandidate(element)) {
+                            continue;
+                        }
+                        String key = elementKey(element);
+                        if (seen.add(key)) {
+                            candidates.add(element);
+                        }
                     }
-
-                    // 不是视频，返回
-                    logger.info("不是视频，返回继续查找");
-                    driver.navigate().back();
-                    sleep(1500);
-
-                } catch (Exception inner) {
-                    logger.warning("当前卡片判断异常，跳过: " + inner.getMessage());
-                    driver.navigate().back();
-                    sleep(1500);
+                } catch (Exception e) {
+                    logger.fine("查找视频候选失败: " + xpath + ", " + e.getMessage());
                 }
             }
 
-            logger.warning("未找到符合条件的视频");
+            if (candidates.isEmpty()) {
+                logger.warning("当前页面未找到可点击的视频卡片（已兼容 p=1、rej、dp7、cover）");
+                return false;
+            }
+
+            logger.info("找到 " + candidates.size() + " 个视频候选卡片");
+            for (int i = 0; i < candidates.size(); i++) {
+                MobileElement candidate = candidates.get(i);
+                try {
+                    logger.info("尝试点击第 " + (i + 1) + " 个视频卡片: " + elementKey(candidate));
+                    candidate.click();
+
+                    // 新版详情页进入速度不稳定，轮询而不是固定等待一次。
+                    if (waitForVideoPage(5000)) {
+                        logger.info("确认已进入视频详情页");
+                        return true;
+                    }
+
+                    logger.info("当前卡片未进入视频详情页，返回搜索结果继续尝试");
+                    backToSearchResults();
+                } catch (Exception inner) {
+                    logger.warning("当前视频卡片点击异常，跳过: " + inner.getMessage());
+                    backToSearchResults();
+                }
+            }
+
+            logger.warning("未找到可进入详情页的视频卡片");
             return false;
 
         } catch (Exception e) {
@@ -454,9 +473,31 @@ public class DouyinAddressCrawler {
      */
     private boolean isVideoPage() {
         try {
+            // 这是新版详情页最稳定的标识。搜索页也可能存在“喜欢”文本，
+            // 所以不能再只凭点赞按钮位置判定。
+            String activity = driver.currentActivity();
+            if (activity != null && activity.contains("DetailActivity")) {
+                return true;
+            }
+
+            if (!driver.findElements(By.xpath(
+                    "//*[@resource-id='com.ss.android.ugc.aweme:id/root_layout']"
+            )).isEmpty()) {
+                return true;
+            }
+
+            if (!driver.findElements(By.xpath(
+                    "//*[@resource-id='com.ss.android.ugc.aweme:id/guy']"
+            )).isEmpty()
+                    && driver.findElements(By.xpath(
+                    "//*[@resource-id='com.ss.android.ugc.aweme:id/et_search_kw']"
+            )).isEmpty()) {
+                return true;
+            }
+
             Dimension size = driver.manage().window().getSize();
-            int screenHeight = size.getHeight();
-            int screenWidth = size.getWidth();
+            int currentScreenHeight = size.getHeight();
+            int currentScreenWidth = size.getWidth();
 
             // 1️⃣ 查找所有“点赞按钮”（不限定 id）
             List<MobileElement> likeButtons = driver.findElements(
@@ -473,8 +514,8 @@ public class DouyinAddressCrawler {
 
                 Point p = btn.getLocation();
 
-                boolean isRightSide = p.getX() > screenWidth * 0.6;
-                boolean notBottomBar = p.getY() < screenHeight * 0.75;
+                boolean isRightSide = p.getX() > currentScreenWidth * 0.6;
+                boolean notBottomBar = p.getY() < currentScreenHeight * 0.75;
 
                 // ✅ 视频页点赞按钮特征
                 if (isRightSide && notBottomBar) {
@@ -486,6 +527,75 @@ public class DouyinAddressCrawler {
 
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    /**
+     * 过滤掉不可见、越界以及顶部 Tab 区域的元素。
+     * dp7/rej 在不同版本中可能是整个卡片，也可能是卡片内部的点击区域。
+     */
+    private boolean isVisibleVideoCandidate(MobileElement element) {
+        try {
+            if (!element.isDisplayed()) {
+                return false;
+            }
+
+            Point location = element.getLocation();
+            Dimension size = element.getSize();
+            int x = location.getX();
+            int y = location.getY();
+            int width = size.getWidth();
+            int height = size.getHeight();
+
+            if (width <= 0 || height <= 0) {
+                return false;
+            }
+
+            Dimension window = driver.manage().window().getSize();
+            boolean insideScreen = x < window.getWidth()
+                    && y < window.getHeight()
+                    && x + width > 0
+                    && y + height > 0;
+            if (!insideScreen) {
+                return false;
+            }
+
+            // 搜索结果顶部通常是“综合/用户/视频”等 Tab，避免误点。
+            return y > window.getHeight() * 0.16;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String elementKey(MobileElement element) {
+        try {
+            Point p = element.getLocation();
+            Dimension s = element.getSize();
+            return p.getX() + ":" + p.getY() + ":" + s.getWidth() + ":" + s.getHeight();
+        } catch (Exception e) {
+            return String.valueOf(System.identityHashCode(element));
+        }
+    }
+
+    private boolean waitForVideoPage(long timeoutMs) {
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        while (System.currentTimeMillis() < deadline) {
+            if (isVideoPage()) {
+                return true;
+            }
+            sleep(300);
+        }
+        return isVideoPage();
+    }
+
+    private void backToSearchResults() {
+        try {
+            if (isVideoPage()) {
+                driver.navigate().back();
+                sleep(1200);
+            }
+        } catch (Exception e) {
+            logger.fine("返回搜索结果失败: " + e.getMessage());
         }
     }
 

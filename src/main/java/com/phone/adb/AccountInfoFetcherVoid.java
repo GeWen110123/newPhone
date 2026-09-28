@@ -231,19 +231,46 @@ public class AccountInfoFetcherVoid {
 
 
     private boolean enterAuthorProfile() {
-        try {
-            By authorBtn = By.xpath(
-                    "//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title' and starts-with(@text,'@')]"
-            );
+        String[] authorXpaths = {
+                // 新版详情页：作者名仍在 title，但必须限定 @ 开头。
+                "//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title' and starts-with(@text,'@')]",
+                // 搜索/地址视频流新版：作者名使用混淆 resource-id -+
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/-+' and string-length(@text)>0]",
+                "//*[contains(@resource-id,'nickname') and string-length(@text)>0]",
+                // 作者名文本没暴露时，点击可点击头像也能进入主页。
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/user_avatar' and @clickable='true']",
+                "//*[contains(@content-desc,'@') and @clickable='true']"
+        };
 
-            MobileElement el = driver.findElement(authorBtn);
-            tapCenter(el);
-            return true;
+        long deadline = System.currentTimeMillis() + 8000;
+        while (System.currentTimeMillis() < deadline) {
+            for (String xpath : authorXpaths) {
+                for (MobileElement element : findAll(xpath)) {
+                    try {
+                        if (!element.isDisplayed()) {
+                            continue;
+                        }
+                        String text = normalize(safeText(element));
+                        logger.info("尝试进入作者主页，定位方式: " + xpath + ", 文本: " + text);
+                        tapCenter(element);
+                        Thread.sleep(500);
+                        return true;
+                    } catch (Exception ignored) {
+                        // 当前节点可能在抖音重绘时失效，继续尝试下一种定位。
+                    }
+                }
+            }
 
-        } catch (Exception e) {
-            logger.warning("enterAuthorProfile failed: " + e.getMessage());
-            return false;
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
+
+        logger.warning("enterAuthorProfile failed: 未找到作者名称/头像定位节点");
+        return false;
     }
 
     private boolean waitUntilProfilePage() {
@@ -308,42 +335,132 @@ public class AccountInfoFetcherVoid {
     }
 
     private boolean goVideoList() {
-
-        try {
-            // 只找视频封面 UIImage
-            List<MobileElement> covers = driver.findElements(
-                    By.xpath("//com.lynx.tasm.ui.image.UIImage[@clickable='true']")
-            );
-
-            for (MobileElement el : covers) {
-                Rectangle r = el.getRect();
-                int centerY = r.getY() + r.getHeight() / 2;
-
-                // 视频封面只会出现在这个 Y 区间（经验值，极稳）
-                if (centerY > 1000 && centerY < 1700) {
-                    int centerX = r.getX() + r.getWidth() / 2;
-
-                    new TouchAction<>(driver)
-                            .tap(PointOption.point(centerX, centerY))
-                            .waitAction(WaitOptions.waitOptions(Duration.ofMillis(200)))
-                            .perform();
-
-                    Thread.sleep(600);
-                    return true;
-                }
-            }
-
-        } catch (Exception e) {
-            logger.warning("goVideoList failed: " + e.getMessage());
+        // 新版地点内容页可能已经直接打开第一条内容，页面计数器显示为“1/125”。
+        // 此时不应再寻找旧版视频卡片，也不能返回上一页。
+        if (isOnVideoDetailPage()) {
+            logger.info("当前已在地点内容详情页，跳过再次点击视频卡片");
+            return true;
         }
 
+        String[] videoXpaths = {
+                // 新版地点内容页是 RecyclerView 双列卡片，卡片本身 clickable=false，
+                // 但标题/作者 ViewGroup 的 content-desc 可作为点击入口。
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/gxr']//*[@content-desc]",
+                // 兼容部分版本不暴露 RecyclerView resource-id 的情况。
+                "//*[@content-desc]",
+                // 旧版地址/搜索结果。
+                "//android.view.View[@resource-id='com.ss.android.ugc.aweme:id/rej' and @clickable='true']",
+                "//android.widget.LinearLayout[@resource-id='com.ss.android.ugc.aweme:id/dp7' and @clickable='true']",
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/rej' and @clickable='true']",
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/dp7' and @clickable='true']",
+                "//com.lynx.tasm.ui.image.UIImage[@clickable='true']",
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/cover']"
+        };
+
+        Set<String> seen = new HashSet<>();
+        List<MobileElement> candidates = new ArrayList<>();
+        for (String xpath : videoXpaths) {
+            for (MobileElement element : findAll(xpath)) {
+                try {
+                    Rectangle rect = element.getRect();
+                    int centerY = rect.getY() + rect.getHeight() / 2;
+                    String contentDescription = safeContentDescription(element);
+                    if (!element.isDisplayed()
+                            || rect.getWidth() <= 0
+                            || rect.getHeight() <= 0
+                            || rect.getY() < 320
+                            || rect.getY() + rect.getHeight() > driver.manage().window().getSize().getHeight() - 80
+                            || contentDescription.length() < 10) {
+                        continue;
+                    }
+
+                    String key = rect.getX() + ":" + rect.getY() + ":"
+                            + rect.getWidth() + ":" + rect.getHeight();
+                    if (seen.add(key)) {
+                        candidates.add(element);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        logger.info("地址视频页找到 " + candidates.size() + " 个视频候选");
+        // 以“第一行最左侧”为第一条，而不是简单按 y 排序。
+        // 双列卡片的标题 y 坐标可能相差几十像素。
+        candidates.sort((left, right) -> {
+            try {
+                Rectangle l = left.getRect();
+                Rectangle r = right.getRect();
+                return Integer.compare(l.getY(), r.getY());
+            } catch (Exception e) {
+                return 0;
+            }
+        });
+
+        List<MobileElement> firstRow = new ArrayList<>();
+        int firstY = Integer.MAX_VALUE;
+        for (MobileElement candidate : candidates) {
+            try {
+                int y = candidate.getRect().getY();
+                if (firstY == Integer.MAX_VALUE) firstY = y;
+                if (y <= firstY + 180) firstRow.add(candidate);
+            } catch (Exception ignored) {
+            }
+        }
+        firstRow.sort((left, right) -> {
+            try {
+                return Integer.compare(left.getRect().getX(), right.getRect().getX());
+            } catch (Exception e) {
+                return 0;
+            }
+        });
+
+        for (MobileElement element : firstRow.isEmpty() ? candidates : firstRow) {
+            try {
+                Rectangle rect = element.getRect();
+                logger.info("尝试点击第一条地点内容: " + rect + ", " + safeContentDescription(element));
+                tapCenter(element);
+
+                long deadline = System.currentTimeMillis() + 5000;
+                while (System.currentTimeMillis() < deadline) {
+                    if (isOnVideoDetailPage()) {
+                        return true;
+                    }
+                    Thread.sleep(300);
+                }
+
+                if (isOnVideoDetailPage()) {
+                    return true;
+                }
+                driver.navigate().back();
+                Thread.sleep(800);
+            } catch (Exception e) {
+                logger.fine("地址视频候选点击失败: " + e.getMessage());
+            }
+        }
+
+        logger.warning("地址视频页未找到可进入详情页的视频卡片");
         return false;
     }
 
     private boolean isOnVideoDetailPage() {
+        // 新版详情页仍然保留顶部搜索入口 et_search_kw，不能把它作为单独的否定条件。
+        // root_layout/guy 是详情页自身的稳定标识，优先级最高。
+        if (exists("//*[@resource-id='com.ss.android.ugc.aweme:id/root_layout']")
+                || exists("//*[@resource-id='com.ss.android.ugc.aweme:id/guy']")
+                // 新版地点内容详情页使用 3ac/3ap 显示当前内容序号，例如 1/125。
+                || (exists("//*[@resource-id='com.ss.android.ugc.aweme:id/3ac']")
+                && exists("//*[@resource-id='com.ss.android.ugc.aweme:id/3ap']")
+                && !exists("//*[@resource-id='com.ss.android.ugc.aweme:id/gxr']"))) {
+            return true;
+        }
+
+        if (exists("//*[@resource-id='com.ss.android.ugc.aweme:id/et_search_kw']")) {
+            return false;
+        }
+
         String[] xps = {
                 "//*[@resource-id='com.ss.android.ugc.aweme:id/desc']",
-                "//*[@resource-id='com.ss.android.ugc.aweme:id/title']",
                 "//*[contains(@content-desc,'喜欢')]",
                 "//*[contains(@content-desc,'评论')]"
         };
@@ -368,12 +485,9 @@ public class AccountInfoFetcherVoid {
         MobileElement descEl = null;
         MobileElement timeEl = null;
 
-        try {
-            authorEl = driver.findElement(
-                    By.id("com.ss.android.ugc.aweme:id/title")
-            );
-        } catch (Exception ignored) {
-        }
+        // 抖音升级后 title 不再只承载作者，也可能承载“相关搜索”等标题。
+        // 必须优先取文本以 @ 开头的作者节点。
+        authorEl = firstAuthorElement();
 
         try {
             descEl = driver.findElement(
@@ -432,6 +546,26 @@ public class AccountInfoFetcherVoid {
         return map;
     }
 
+    private MobileElement firstAuthorElement() {
+        String[] authorXpaths = {
+                "//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title' and starts-with(@text,'@')]",
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/-+' and string-length(@text)>0]",
+                "//*[contains(@resource-id,'nickname') and string-length(@text)>0]",
+                "//*[@resource-id='com.ss.android.ugc.aweme:id/user_avatar' and @clickable='true']"
+        };
+
+        for (String xpath : authorXpaths) {
+            List<MobileElement> elements = findAll(xpath);
+            for (MobileElement element : elements) {
+                String text = normalize(safeText(element));
+                if (xpath.contains("user_avatar") || !text.isEmpty()) {
+                    return element;
+                }
+            }
+        }
+        return null;
+    }
+
     private String normalize(String s) {
         if (s == null) return "";
         return s
@@ -440,12 +574,26 @@ public class AccountInfoFetcherVoid {
                 .trim();
     }
 
+    private String safeContentDescription(MobileElement element) {
+        try {
+            String value = element.getAttribute("content-desc");
+            if (value == null || value.trim().isEmpty()) {
+                value = element.getAttribute("contentDescription");
+            }
+            return normalize(value);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
 
     private String getVideoDescription() {
         String[] xps = {
                 "//*[contains(@resource-id,'desc')]",
                 "//*[contains(@text,'#')]",
-                "//*[contains(@resource-id,'title')]"
+                "//*[contains(@resource-id,'title')]",
+                // 新版详情页正文可能是无 resource-id 的 ViewGroup content-desc。
+                "//*[string-length(normalize-space(@content-desc)) > 20]"
         };
         for (String xp : xps) {
             List<MobileElement> eles = findAll(xp);
@@ -477,13 +625,37 @@ public class AccountInfoFetcherVoid {
             List<MobileElement> eles = findAll(xp);
             for (MobileElement e : eles) {
                 String text = safeText(e);
+                // 抖音新版统计按钮通常没有 text，数字放在 content-desc：
+                // 例如“评论15，按钮”。
+                if (text == null || text.trim().isEmpty()) {
+                    text = safeContentDescription(e);
+                }
                 if (text != null && text.matches(".*\\d.*")) {
                     logger.fine("stat xpath: " + xp);
-                    return cleanNumberString(text);
+                    String value = extractStatNumber(text);
+                    if (!"0".equals(value) || text.contains("0")) {
+                        logger.info("读取到" + statType + "数量: " + value + "，原始值: " + text);
+                        return value;
+                    }
                 }
             }
         }
         return "0";
+    }
+
+    private String extractStatNumber(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return "0";
+        }
+
+        String value = raw.replaceAll("\\s+", "");
+        Matcher compact = Pattern.compile("(\\d+(?:\\.\\d+)?(?:万|亿|[kK]))").matcher(value);
+        if (compact.find()) {
+            return cleanNumberString(compact.group(1));
+        }
+
+        Matcher number = Pattern.compile("(\\d+(?:\\.\\d+)?)").matcher(value);
+        return number.find() ? cleanNumberString(number.group(1)) : "0";
     }
 
     //    收藏
@@ -1444,9 +1616,11 @@ public class AccountInfoFetcherVoid {
                 video.put("screenshot_path", screenshotPath);
 
                 if (safeTags.contains("评论")) {
+                    String commentsCount = (String) video.get("comments_count");
+                    logger.info("评论采集开关已开启，当前视频评论数: " + commentsCount);
 
-                    if (StringUtils.isNotEmpty((String) video.get("comments_count"))
-                            && !video.get("comments_count").equals("0")) {
+                    if (StringUtils.isNotEmpty(commentsCount)
+                            && !"0".equals(commentsCount)) {
                         // 指定保存评论的目录
                         String videosDir = DouyinPathUtils.resolve("videosDir");
 
@@ -1465,6 +1639,13 @@ public class AccountInfoFetcherVoid {
                         video.put("totalComments", commentResult.get("totalComments")); // ✔ 正确：真实总评论数
 
                         Thread.sleep(1000); // 等待0.5秒确保下一个视频加载完成
+                    } else {
+                        // 评论数为 0 或页面暂时未读到评论数时，仍补齐字段，
+                        // 避免后续保存逻辑误以为评论处理没有执行。
+                        video.put("comments", new ArrayList<Map<String, Object>>());
+                        video.put("json_path", "");
+                        video.put("totalComments", "0");
+                        logger.info("当前视频无可抓取评论，跳过评论详情页");
                     }
 
                 } else {

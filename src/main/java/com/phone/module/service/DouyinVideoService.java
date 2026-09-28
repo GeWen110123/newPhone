@@ -341,10 +341,11 @@ public class DouyinVideoService {
                     logger.info("已进入地点内容列表页");
                     Thread.sleep(800); // 页面稳定
                 } else {
-                    // 退出到初始页面
-                    driver.navigate().back();
-                    driver.navigate().back();
-                    Thread.sleep(1000);
+                    // 未找到“地点内容数量”时不能连续返回：
+                    // 当前仍可能在地点页/地点视频列表，后面的 addressVideosAndComments
+                    // 会继续通过新版 rej/dp7/cover 定位进入第一条视频。
+                    logger.warning("未找到地点内容数量，保留当前页面并使用视频卡片兜底定位");
+                    Thread.sleep(800);
                 }
 
                 return fetcher.addressVideosAndComments(workesCount, devId, accountName, tags);

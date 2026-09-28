@@ -431,7 +431,7 @@ public class AccountInfoFetcher {
         try {
 
             // ⭐ 等待关注按钮出现
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, 10);
 
             List<WebElement> elements = wait.until(driver ->
                     driver.findElements(By.xpath("//*[contains(@text,'关注')]"))
@@ -478,7 +478,7 @@ public class AccountInfoFetcher {
     public boolean clickFansButtonAndCheck() {
         try {
 
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, 10);
 
             // ⭐ 等待“粉丝”元素出现
             wait.until(ExpectedConditions.presenceOfElementLocated(

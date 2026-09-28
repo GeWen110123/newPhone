@@ -49,17 +49,29 @@ public class VideoCommentsFetcher {
         Map<String, Object> userInfo = new HashMap<>();
 
         try {
+            // ✅ 新版适配：头像节点 resource-id 已改为 avatar（class 为自定义"按钮"），
+            //    用 resource-id + content-desc 双条件定位，比只匹配 content-desc 更稳
             MobileElement avatar = commentNode.findElement(
-                    By.xpath(".//*[contains(@content-desc,'头像')]")
+                    By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/avatar' and contains(@content-desc,'头像')]")
             );
 
             if (avatar != null && avatar.isDisplayed()) {
                 avatar.click();
-                Thread.sleep(1200);
+                Thread.sleep(1500); // ✅ 适当加长等待，避免主页未加载完就抓取
+            }
+
+            // ✅ 评论者昵称：从评论节点实时读取（新版仍是 title），
+            //    替代外层传入的视频作者 accountName，避免抓错主页对象
+            String commenterName = "";
+            try {
+                commenterName = commentNode.findElement(
+                        By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title']")
+                ).getText().trim();
+            } catch (Exception ignored) {
             }
 
             // ⭐⭐⭐ 直接调用你已有的主页抓取方法
-            userInfo = crawler.fetchAccountInfo("2", "2", "", accountName);
+            userInfo = crawler.fetchAccountInfo("2", "2", "", commenterName.isEmpty() ? accountName : commenterName);
 
             String uid = String.valueOf(userInfo.getOrDefault("id", ""));
             String douyinId = (String) userInfo.get("id");
@@ -107,7 +119,7 @@ public class VideoCommentsFetcher {
             text = text.replace("+", "");
         }
 
-        // 常规数字
+        // 常规数字（"评论 11" → 11）
         return Integer.parseInt(text.replaceAll("\\D+", ""));
     }
 
@@ -120,8 +132,10 @@ public class VideoCommentsFetcher {
 
         try {
             //          打开评论区
+            // ✅ 新增兜底 XPath：content-desc 含"评论"的入口（排除"放大评论区"）
             String[] commentsBtnXpaths = {"//*[contains(@resource-id, 'comment') or contains(@text, '评论')][1]",
-                    "//*[@content-desc='评论']"};
+                    "//*[@content-desc='评论']",
+                    "//*[contains(@content-desc,'评论') and not(contains(@content-desc,'放大'))]"};
             boolean opened = false;
             for (String xpath : commentsBtnXpaths) {
                 List<MobileElement> btns = driver.findElements(By.xpath(xpath));
@@ -145,8 +159,10 @@ public class VideoCommentsFetcher {
                 System.out.println("视频总评论数: " + totalComments);
             } catch (Exception e) {
                 try {
+                    // ✅ 新版适配：评论总数节点由 title 改为 e4l（文本如"评论 11"）。
+                    //    注意：新版 title 已被评论者昵称占用，不能再用来取总数
                     MobileElement totalCommentsEl = driver.findElement(By.xpath(
-                            "//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title']"
+                            "//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/e4l']"
                     ));
                     String totalText = totalCommentsEl.getText().trim();
 
@@ -169,11 +185,19 @@ public class VideoCommentsFetcher {
                 Set<String> seenRepliesThisScroll = new HashSet<>();
 
                 // --------------------------
-                // 1. 抓取主评论（FrameLayout/e1-）
+                // 1. 抓取主评论（FrameLayout/flq）
                 // --------------------------
+                // ✅ 新版适配：主评论容器由 e1-xxx 改为 flq（RecyclerView rkp 的直接子级）
                 List<MobileElement> commentElements = driver.findElements(By.xpath(
-                        "//android.widget.FrameLayout[starts-with(@resource-id,'com.ss.android.ugc.aweme:id/e1-')]"
+                        "//androidx.recyclerview.widget.RecyclerView[@resource-id='com.ss.android.ugc.aweme:id/rkp']"
+                                + "/android.widget.FrameLayout[@resource-id='com.ss.android.ugc.aweme:id/flq']"
                 ));
+                // ✅ 兜底：部分机型层级有差异导致直接子级匹配为空时，退回全量 flq
+                if (commentElements.isEmpty()) {
+                    commentElements = driver.findElements(By.xpath(
+                            "//android.widget.FrameLayout[@resource-id='com.ss.android.ugc.aweme:id/flq']"
+                    ));
+                }
 
                 for (MobileElement el : commentElements) {
                     String nickname = "", text = "", time = "";
@@ -187,7 +211,8 @@ public class VideoCommentsFetcher {
                     } catch (Exception ignored) {
                     }
                     try {
-                        time = el.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/egj']")).getText().trim();
+                        // ✅ 新版适配：时间 id 由 egj 改为 e4t
+                        time = el.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
                     } catch (Exception ignored) {
                     }
 
@@ -258,7 +283,7 @@ public class VideoCommentsFetcher {
                 }
 
                 // ----------------------------------------
-                // 2. 展开回复 & 抓取子回复（ViewGroup/e1）
+                // 2. 展开回复 & 抓取子回复
                 // ----------------------------------------
                 boolean hasExpand = true;
                 Set<String> clickedExpandNodes = new HashSet<>();
@@ -267,9 +292,10 @@ public class VideoCommentsFetcher {
                     hasExpand = false;
 
                     try {
+                        // ✅ 新版适配：展开按钮 id 3f7 已失效，改为纯文本/desc 匹配（"展开回复"等）
                         String[] EXPAND_REPLY_XPATHS = {
-                                "//android.widget.TextView[contains(@text,'展开') and @resource-id='com.ss.android.ugc.aweme:id/3f7']",
-                                "//android.widget.TextView[contains(@content-desc,'展开') and @resource-id='com.ss.android.ugc.aweme:id/3f7']"
+                                "//android.widget.TextView[contains(@text,'展开')]",
+                                "//android.widget.TextView[contains(@content-desc,'展开')]"
                         };
 
 
@@ -367,15 +393,22 @@ public class VideoCommentsFetcher {
                         }
 
                         // ================================
-                        // 抓取全部子回复（ViewGroup/e1）
+                        // 抓取全部子回复（新版与主评论共用 flq 容器）
                         // ================================
-                        List<MobileElement> replyElements = driver.findElements(
-                                By.xpath("//android.view.ViewGroup[starts-with(@resource-id,'com.ss.android.ugc.aweme:id/e1')]")
-                        );
-                        for (MobileElement replyEl : replyElements) {
+                        // ✅ 新版适配：子回复容器 e1 已失效，新版回复与主评论共用 flq 容器；
+                        //    取全部 flq 后按 bounds 减去已抓取的主评论，剩余即为展开后的子回复
+                        List<MobileElement> replyElements = driver.findElements(By.xpath(
+                                "//android.widget.FrameLayout[@resource-id='com.ss.android.ugc.aweme:id/flq']"
+                        ));
 
-                            // 过滤掉主评论（FrameLayout 的才是主评论）
-                            if (replyEl.getTagName().equals("android.widget.FrameLayout")) continue;
+                        // 过滤掉本轮已抓取的主评论（按 bounds 去重），避免重复抓取
+                        Set<String> mainCommentBounds = new HashSet<>();
+                        for (MobileElement ce : commentElements) {
+                            mainCommentBounds.add(ce.getAttribute("bounds"));
+                        }
+                        replyElements.removeIf(re -> mainCommentBounds.contains(re.getAttribute("bounds")));
+
+                        for (MobileElement replyEl : replyElements) {
 
                             String rNickname = "", rText = "", rTime = "", rReplyTo = "";
 
@@ -389,13 +422,15 @@ public class VideoCommentsFetcher {
                             } catch (Exception ignored) {
                             }
 
+                            // ✅ 新版页面暂未发现 02w 节点，找不到时保持空字符串，不影响其他字段
                             try {
                                 rReplyTo = replyEl.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/02w']")).getText().trim();
                             } catch (Exception ignored) {
                             }
 
                             try {
-                                rTime = replyEl.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/egj']")).getText().trim();
+                                // ✅ 新版适配：时间 id 由 egj 改为 e4t
+                                rTime = replyEl.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
                             } catch (Exception ignored) {
                             }
 
@@ -469,7 +504,7 @@ public class VideoCommentsFetcher {
                 }
 
                 // ---------------------------------------------------
-                // 3. 判断是否到底（替换掉你的 noNewCount 逻辑）
+                // 3. 判断是否到底（"暂时没有更多了" 仍可匹配）
                 // ---------------------------------------------------
                 try {
                     List<MobileElement> endTips = driver.findElements(
@@ -557,4 +592,3 @@ public class VideoCommentsFetcher {
 
 
 }
-

@@ -3,7 +3,7 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.phone.module.mapper.AddressVideoMapper">
-    
+
     <resultMap type="AddressVideo" id="AddressVideoResult">
         <result property="uid"    column="uid"    />
         <result property="videoIndex"    column="video_index"    />
@@ -29,7 +29,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectAddressVideoList" parameterType="AddressVideo" resultMap="AddressVideoResult">
         <include refid="selectAddressVideoVo"/>
-        <where>  
+        <where>
             <if test="videoIndex != null "> and video_index = #{videoIndex}</if>
             <if test="devId != null  and devId != ''"> and dev_id = #{devId}</if>
             <if test="douyinId != null  and douyinId != ''"> and douyin_id = #{douyinId}</if>
@@ -42,7 +42,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="ipAddress != null  and ipAddress != ''"> and ip_address like concat('%', #{ipAddress}, '%')</if>
         </where>
 
-        GROUP BY  douyin_id
+<!--        GROUP BY  douyin_id-->
         <!-- 排序 -->
         <choose>
             <when test="sortField != null and sortField != ''">
@@ -60,11 +60,54 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 </choose>
             </when>
             <otherwise>
-                ORDER BY create_time ASC   <!-- 默认排序 -->
+                ORDER BY create_time desc   <!-- 默认排序 -->
             </otherwise>
         </choose>
 
     </select>
+
+<!--    <select id="selectAddressVideoList" parameterType="AddressVideo" resultMap="AddressVideoResult">
+    SELECT uid, video_index, dev_id, douyin_id, create_time, content, video_path, image_path,
+           json_string, json_path, address, follow_count, fans_count, likes_count, ip_address
+    FROM (
+        SELECT a.*,
+               ROW_NUMBER() OVER (PARTITION BY douyin_id ORDER BY create_time DESC) AS rn
+        FROM address_video a
+        <where>
+            <if test="videoIndex != null"> and a.video_index = #{videoIndex}</if>
+            <if test="devId != null and devId != ''"> and a.dev_id = #{devId}</if>
+            <if test="douyinId != null and douyinId != ''"> and a.douyin_id = #{douyinId}</if>
+            <if test="content != null and content != ''"> and a.content = #{content}</if>
+            <if test="videoPath != null and videoPath != ''"> and a.video_path = #{videoPath}</if>
+            <if test="imagePath != null and imagePath != ''"> and a.image_path = #{imagePath}</if>
+            <if test="jsonString != null and jsonString != ''"> and a.json_string = #{jsonString}</if>
+            <if test="jsonPath != null and jsonPath != ''"> and a.json_path = #{jsonPath}</if>
+            <if test="address != null and address != ''"> and a.address = #{address}</if>
+            <if test="ipAddress != null and ipAddress != ''"> and a.ip_address like concat('%', #{ipAddress}, '%')</if>
+        </where>
+    ) t
+    WHERE t.rn = 1
+    <choose>
+        <when test="sortField != null and sortField != ''">
+            ORDER BY
+            <choose>
+                <when test="sortField == 'fansCount'"> t.fans_count </when>
+                <when test="sortField == 'followCount'"> t.follow_count </when>
+                <when test="sortField == 'likesCount'"> t.likes_count </when>
+                <otherwise> t.create_time </otherwise>
+            </choose>
+            <choose>
+                <when test="sortOrder == 'desc'"> DESC </when>
+                <otherwise> ASC </otherwise>
+            </choose>
+        </when>
+        <otherwise>
+            ORDER BY t.create_time DESC
+        </otherwise>
+    </choose>
+</select>
+
+-->
 
     <select id="selectAddressVideoList200" parameterType="AddressVideo" resultMap="AddressVideoResult">
         <include refid="selectAddressVideoVo"/>
@@ -161,7 +204,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteAddressVideoByUids" parameterType="String">
-        delete from address_video where uid in 
+        delete from address_video where uid in
         <foreach item="uid" collection="array" open="(" separator="," close=")">
             #{uid}
         </foreach>

@@ -95,7 +95,7 @@ public class ScheduledTask {
     /**
      * 视频执行表
      */
-    @Scheduled(cron = "0 */3 * * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
     private void douyinTasks() throws JsonProcessingException {
         VideoTags videoTags = new VideoTags();
         videoTags.setStatus("0");
