@@ -1,17 +1,12 @@
 package com.phone.adb;
 
 import io.appium.java_client.MobileElement;
-import io.appium.java_client.android.Activity;
 import io.appium.java_client.android.AndroidDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
-import org.openqa.selenium.remote.DesiredCapabilities;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.Duration;
 import java.util.*;
 import java.util.logging.Logger;
@@ -36,15 +31,16 @@ public class DouyinAddressCrawler {
     public boolean startDouyin() {
         try {
             logger.info("启动抖音应用...");
-            Activity activity = new Activity("com.ss.android.ugc.aweme",
-                    "com.ss.android.ugc.aweme.main.MainActivity");
-            driver.startActivity(activity);
-            Thread.sleep(5000);
+            if (!"com.ss.android.ugc.aweme".equals(driver.getCurrentPackage())) {
+                driver.activateApp("com.ss.android.ugc.aweme");
+                Thread.sleep(5000);
+            }
 
             boolean success = "com.ss.android.ugc.aweme".equals(driver.getCurrentPackage());
             logger.info(success ? "抖音启动成功" : "抖音启动失败");
             return success;
         } catch (Exception e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             logger.severe("启动抖音失败: " + e.getMessage());
             return false;
         }
@@ -679,15 +675,7 @@ public class DouyinAddressCrawler {
         AndroidDriver<MobileElement> driver = null;
 
         try {
-            DesiredCapabilities capabilities = new DesiredCapabilities();
-            capabilities.setCapability("platformName", "Android");
-            capabilities.setCapability("deviceName", "Android Device");
-            capabilities.setCapability("udid", devId);
-            capabilities.setCapability("appPackage", "com.ss.android.ugc.aweme");
-            capabilities.setCapability("appActivity", ".main.MainActivity");
-            capabilities.setCapability("noReset", true);
-
-            driver = new AndroidDriver<>(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+            driver = AndroidCollector.current().connect(devId);
 
             DouyinAddressCrawler crawler = new DouyinAddressCrawler(driver);
 
@@ -697,8 +685,9 @@ public class DouyinAddressCrawler {
             info = crawler.fetchAccountInfo();
             return info;
 
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        } catch (java.io.IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            logger.log(java.util.logging.Level.WARNING, "无法连接采集设备 " + devId, e);
             return info;
         } finally {
             if (driver != null) driver.quit();

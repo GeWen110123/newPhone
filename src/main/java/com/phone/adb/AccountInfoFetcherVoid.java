@@ -51,7 +51,6 @@ public class AccountInfoFetcherVoid {
     private final String videoOutputFolder = DouyinPathUtils.resolve("video");
     private final String screenshotFolder = DouyinPathUtils.resolve("images");
 
-    private static final String ADB = "C:\\Android\\sdk\\platform-tools\\adb.exe";
 
     private final IAddressVideoService addressVideoService;
     private final IVideoService videoService;
@@ -779,7 +778,7 @@ public class AccountInfoFetcherVoid {
             if (readable != null) return readable;
             adbTap(deviceId, 540, 1200);
             // Only this worker calls the driver. A timed-out helper thread must not keep using it.
-            swipe = new ProcessBuilder(ADB, "-s", deviceId, "shell", "input", "swipe",
+            swipe = AndroidCollector.current().adb("-s", deviceId, "shell", "input", "swipe",
                     "300", "2088", "900", "2088", "3000")
                     .redirectOutput(ProcessBuilder.Redirect.DISCARD)
                     .redirectError(ProcessBuilder.Redirect.DISCARD).start();
@@ -808,7 +807,7 @@ public class AccountInfoFetcherVoid {
     }
 
     private void adbTap(String deviceId, int x, int y) throws Exception {
-        Process process = new ProcessBuilder(ADB, "-s", deviceId, "shell", "input", "tap",
+        Process process = AndroidCollector.current().adb("-s", deviceId, "shell", "input", "tap",
                 String.valueOf(x), String.valueOf(y))
                 .redirectOutput(ProcessBuilder.Redirect.DISCARD)
                 .redirectError(ProcessBuilder.Redirect.DISCARD).start();
@@ -884,7 +883,7 @@ public class AccountInfoFetcherVoid {
             List<String> segmentFiles = new ArrayList<>();
 
             AndroidDriver<?> androidDriver = (AndroidDriver<?>) driver;
-            AdbVideoRecorder recorder = new AdbVideoRecorder(ADB);
+            AdbVideoRecorder recorder = new AdbVideoRecorder(AndroidCollector.current().adbPrefix(), 15, 45);
 
             for (int part = 1; part <= totalSegments; part++) {
 

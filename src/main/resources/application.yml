@@ -10,9 +10,9 @@ spring:
     hikari:
       maximum-pool-size: 10
   redis:
-    host: "localhost"
-    port: 6379
-    password: "Danteng2020!@#"
+    host: "${REDIS_HOST:localhost}"
+    port: ${REDIS_PORT:6379}
+    password: "${REDIS_PASSWORD:Danteng2020!@#}"
     database: ${REDIS_DATABASE:0}
     timeout: 5s
   jackson:
@@ -31,7 +31,7 @@ phone:
   version: 1.0.0
   copyrightYear: 2026
   demoEnabled: false
-  profile: "F:/douyin_output"
+  profile: "${DOUYIN_OUTPUT:F:/douyin_output}"
   addressEnabled: false
   captchaType: math
   register-enabled: false
@@ -40,7 +40,7 @@ phone:
   cors-origins: ${CORS_ORIGINS:http://localhost:5555}
 token:
   header: Authorization
-  secret: "replace-with-a-long-random-secret"
+  secret: "${TOKEN_SECRET:replace-with-a-long-random-secret}"
   expireTime: 30
 mybatis:
   type-aliases-package: com.phone.module.domain,com.phone.common.core.domain.entity,com.phone.system.domain

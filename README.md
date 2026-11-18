@@ -4,7 +4,7 @@
 
 ## 技术栈
 
-- Spring Boot 2.7.18
+- JDK 21 + Spring Boot 2.7.18
 - Maven 单模块构建
 - MySQL + MyBatis + PageHelper
 - Redis：登录会话、采集设备分布式锁、缓存
@@ -29,10 +29,16 @@ DOUYIN_OUTPUT=D:/douyin_output
 
 ## 构建与启动
 
+将 `JAVA_HOME` 指向 JDK 21，并将其 `bin` 目录加入 `PATH`。IntelliJ IDEA 的项目 SDK、语言级别和 Maven Runner JRE 均使用 JDK 21。
+
 ```bash
-mvn package
+java -version
+mvn -v
+mvn clean package
 java -jar target/phone.jar --server.port=8099 --phone.maintenance-enabled=false
 ```
+
+也可在 Windows 运行 `ry.bat`，在 Linux/macOS 运行 `sh ry.sh`。两者读取 `JAVA_HOME`，支持附加 Spring Boot 参数，并以前台方式运行。按 `Ctrl+C` 停止服务。
 
 统计、执行列表、登录和其他业务接口由同一个 Spring Boot 服务提供，统一使用8099，不需要常驻8100服务。前端开发代理仅配置 `API_TARGET=http://127.0.0.1:8099`。
 
@@ -43,6 +49,8 @@ DOUYIN_SCHEDULER_ENABLED=false
 ```
 
 正常主服务应保留业务需要的调度配置；启动维护程序默认关闭，不能为重启服务随意启用。采集实现集中在 `com.phone.adb` 与 `com.phone.module.service`，原有接口路径和 Mapper 命名保持不变。Windows上不要覆盖正在运行的jar或IDE使用的classes，先独立构建、测试，再停止旧实例并切换，避免文件锁和版本混用。
+
+Windows 上接入独立 Android 模拟器及复现模拟评论测试，见 [模拟器采集接入](docs/douyin-emulator.md)。
 
 ## 本次剥离
 

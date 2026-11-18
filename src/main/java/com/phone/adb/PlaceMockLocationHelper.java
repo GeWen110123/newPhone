@@ -18,7 +18,6 @@ public class PlaceMockLocationHelper {
     public static final String MAIN_ACTIVITY = "com.ikun.placemock.MainActivity";
     public static final String APK_PATH = "D:\\IdeaProjects\\phone0521\\admin\\src\\main\\resources\\PlaceMockLocation-debug.apk";
 
-    private static final String WINDOWS_ADB_PATH = "C:\\Android\\sdk\\platform-tools\\adb.exe";
 
     private PlaceMockLocationHelper() {
     }
@@ -48,7 +47,7 @@ public class PlaceMockLocationHelper {
         }
 
         logger.info("设备 " + devId + " 未安装全国模拟定位，开始安装: " + APK_PATH);
-        CommandResult result = runCommand(120, adb(), "-s", devId, "install", "-r", "-g", APK_PATH);
+        CommandResult result = runCommand(120, "-s", devId, "install", "-r", "-g", APK_PATH);
         if (result.success() && isInstalled(devId)) {
             logger.info("设备 " + devId + " 全国模拟定位安装成功");
             return true;
@@ -63,11 +62,11 @@ public class PlaceMockLocationHelper {
             return false;
         }
 
-        runCommand(20, adb(), "-s", devId, "shell", "settings", "put", "global", "development_settings_enabled", "1");
-        runCommand(20, adb(), "-s", devId, "shell", "settings", "put", "secure", "mock_location", "1");
-        runCommand(20, adb(), "-s", devId, "shell", "appops", "set", PACKAGE_NAME, "android:mock_location", "allow");
-        CommandResult putResult = runCommand(20, adb(), "-s", devId, "shell", "settings", "put", "secure", "mock_location_app", PACKAGE_NAME);
-        CommandResult getResult = runCommand(20, adb(), "-s", devId, "shell", "settings", "get", "secure", "mock_location_app");
+        runCommand(20, "-s", devId, "shell", "settings", "put", "global", "development_settings_enabled", "1");
+        runCommand(20, "-s", devId, "shell", "settings", "put", "secure", "mock_location", "1");
+        runCommand(20, "-s", devId, "shell", "appops", "set", PACKAGE_NAME, "android:mock_location", "allow");
+        CommandResult putResult = runCommand(20, "-s", devId, "shell", "settings", "put", "secure", "mock_location_app", PACKAGE_NAME);
+        CommandResult getResult = runCommand(20, "-s", devId, "shell", "settings", "get", "secure", "mock_location_app");
 
         if (getResult.output != null && getResult.output.trim().contains(PACKAGE_NAME)) {
             logger.info("设备 " + devId + " 已选择全国模拟定位为模拟位置信息应用");
@@ -79,12 +78,12 @@ public class PlaceMockLocationHelper {
     }
 
     public static boolean isInstalled(String devId) {
-        CommandResult result = runCommand(20, adb(), "-s", devId, "shell", "pm", "path", PACKAGE_NAME);
+        CommandResult result = runCommand(20, "-s", devId, "shell", "pm", "path", PACKAGE_NAME);
         return result.success() && result.output != null && result.output.contains(PACKAGE_NAME);
     }
 
     public static List<String> listConnectedDevices() {
-        CommandResult result = runCommand(20, adb(), "devices");
+        CommandResult result = runCommand(20, "devices");
         List<String> devices = new ArrayList<>();
         if (!result.success() || result.output == null) {
             logger.warning("读取 adb devices 失败: " + result.output);
@@ -101,15 +100,10 @@ public class PlaceMockLocationHelper {
         return devices;
     }
 
-    private static String adb() {
-        File adb = new File(WINDOWS_ADB_PATH);
-        return adb.exists() ? WINDOWS_ADB_PATH : "adb";
-    }
-
     private static CommandResult runCommand(long timeoutSeconds, String... command) {
         Process process = null;
         try {
-            ProcessBuilder builder = new ProcessBuilder(command);
+            ProcessBuilder builder = AndroidCollector.current().adb(command);
             builder.redirectErrorStream(true);
             process = builder.start();
 

@@ -1,22 +1,18 @@
 package com.phone.module.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.phone.adb.AndroidCollector;
 import com.phone.adb.DouyinCrawler;
 import com.phone.common.utils.StringUtils;
 import com.phone.module.domain.*;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -57,12 +53,6 @@ public class DouyinTaskService {
     @Async
     public void runTask(String devId, String accountName) {
 
-        // 先检查设备是否在线且授权
-        if (!isDeviceOnline(devId)) {
-            logger.warning("设备未在线或未授权: '" + devId + "'");
-            return;
-        }
-
         String lockKey = DeviceLeaseService.key(devId);
         String token = deviceLeases.acquire(lockKey);
         if (token == null) {
@@ -73,15 +63,7 @@ public class DouyinTaskService {
         AndroidDriver<MobileElement> driver = null;
 
         try (AutoCloseable lease = deviceLeases.keepAlive(lockKey, token)) {
-            DesiredCapabilities capabilities = new DesiredCapabilities();
-            capabilities.setCapability("platformName", "Android");
-            capabilities.setCapability("deviceName", "Android Device");
-            capabilities.setCapability("udid", devId);
-            capabilities.setCapability("appPackage", "com.ss.android.ugc.aweme");
-            capabilities.setCapability("appActivity", ".main.MainActivity");
-            capabilities.setCapability("noReset", true);
-
-            driver = new AndroidDriver<>(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+            driver = AndroidCollector.current().connect(devId);
 
             DouyinCrawler crawler = new DouyinCrawler(driver,
                     accountContentService,
@@ -106,27 +88,6 @@ public class DouyinTaskService {
         }
 
 
-    }
-
-    // =====================================================
-    // 检查设备是否在线且授权
-    // =====================================================
-    private boolean isDeviceOnline(String devId) {
-        try {
-            Process p = Runtime.getRuntime().exec("C:\\Android\\sdk\\platform-tools\\adb.exe devices");
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    line = line.trim();
-                    if (line.startsWith(devId) && line.endsWith("device")) {
-                        return true;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.severe("检查设备状态失败: " + e.getMessage());
-        }
-        return false;
     }
 
     private void closeDriverQuietly(AndroidDriver<MobileElement> driver) {

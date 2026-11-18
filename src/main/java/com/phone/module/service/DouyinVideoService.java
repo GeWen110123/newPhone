@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phone.adb.AccountInfoFetcherVoid;
+import com.phone.adb.AndroidCollector;
 import com.phone.adb.CrawlBatch;
 import com.phone.adb.DouyinAddressCrawler;
 import com.phone.adb.DouyinCrawler;
@@ -20,12 +21,10 @@ import io.appium.java_client.touch.offset.PointOption;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Rectangle;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.net.URL;
 import java.time.Duration;
 import java.util.*;
 import java.util.logging.Logger;
@@ -67,6 +66,7 @@ public class DouyinVideoService {
         runLog.setDevId(devId);
         runLog.setDouyinId(accountName);
         runLog.setType("采集");
+        logger.info("开始采集 task=" + tags.getId() + " device=" + devId + " target=" + accountName);
         try (AutoCloseable lease = deviceLeases.keepAlive(lockKey, token)) {
             List<Map<String, Object>> result = crawlSingleAccount(devId, accountName,
                     tags.getTags(), tags.getAddress());
@@ -97,6 +97,7 @@ public class DouyinVideoService {
             tags.setStatus(complete ? "2" : "3");
             runLog.setRuningDetail(accountName + "本轮新增=" + result.size() + "，已保存=" + saved
                     + "，页面目标=" + expected + (complete ? "，采集完成" : "，未确认完整，等待重试"));
+            logger.info("采集结果 task=" + tags.getId() + " device=" + devId + " " + runLog.getRuningDetail());
         } catch (Exception e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             tags.setStatus("3");
@@ -147,62 +148,14 @@ public class DouyinVideoService {
         tags = tags == null ? "" : tags;
 
         try {
-            DesiredCapabilities caps = new DesiredCapabilities();
-
-// 基础设备绑定（只写一次，不重复）
-            caps.setCapability("platformName", "Android");
-            caps.setCapability("deviceName", devId);
-            caps.setCapability("udid", devId);
-
-// 抖音包名与启动页（正确官方）
-            caps.setCapability("appPackage", "com.ss.android.ugc.aweme");
-            caps.setCapability("appActivity", "com.ss.android.ugc.aweme.splash.SplashActivity");
-
-// 核心：不重置、保登录
-            caps.setCapability("noReset", true);
-            caps.setCapability("dontStopAppOnReset", true);
-
-// 驱动引擎（唯一）
-            caps.setCapability("automationName", "UiAutomator2");
-
-// ==================== 【极速核心配置】 ====================
-// 1. 端口正确配置（不搞反！PC端systemPort，设备端固定6790）
-            caps.setCapability("systemPort", 8200);        // PC端口，多开设备要递增：8201/8202...
-            caps.setCapability("uiautomator2ServerPort", 6790); // 设备固定端口
-
-// 2. 协议（Appium2 + 稳定不卡顿）
-            caps.setCapability("automationProtocol", "UiAutomator2");
-
-// 3. 合理超时（不卡死、不等待）
-            caps.setCapability("uiautomator2ServerLaunchTimeout", 30000);
-            caps.setCapability("uiautomator2ServerInstallTimeout", 30000);
-            caps.setCapability("adbExecTimeout", 10000);
-            caps.setCapability("newCommandTimeout", 300);
-
-// 4. 关闭卡顿来源：动画、弹窗、监听
-            caps.setCapability("disableWindowAnimation", true);
-//            caps.setCapability("ignoreUnimportantViews", true);  // 加速页面解析
-            caps.setCapability("waitForIdleTimeout", 500);       // 最重要：减少等待页面静止
-            caps.setCapability("waitForAppLaunch", 5);            // 不傻等
-
-// 5. 关闭键盘、权限弹窗干扰
-            caps.setCapability("unicodeKeyboard", true);
-            caps.setCapability("resetKeyboard", true);
-            caps.setCapability("autoGrantPermissions", true);     // 自动允许权限，不卡顿
-
-//            caps.setCapability("dontStopAppOnReset", true);
-
-//            caps.setCapability("ignoreUnimportantViews", true);
-
-// ========== 驱动创建：增加重试+异常捕获 ==========
-            driver = null;
+            AndroidCollector collector = AndroidCollector.current();
+            if (!collector.isOnline(devId)) throw new IllegalStateException("设备未在线或未授权: " + devId);
             int retryCount = 0;
             while (retryCount < 3) { // 最多重试3次
                 try {
                     if (Thread.currentThread().isInterrupted()) throw new InterruptedException("驱动创建已取消");
                     retryCount++;
-                    driver = new AndroidDriver<>(new URL("http://127.0.0.1:4723/wd/hub"), caps);
-                    logger.info("驱动创建成功！");
+                    driver = collector.connect(devId);
                     break;
                 } catch (Exception e) {
                     if (e instanceof InterruptedException || Thread.currentThread().isInterrupted()) {
@@ -212,12 +165,9 @@ public class DouyinVideoService {
                     if (retryCount >= 3) {
                         throw new RuntimeException("驱动创建失败（已重试3次）", e);
                     }
-                    // 重试前清理残留进程
-                    try {
-                        Runtime.getRuntime().exec(String.format("adb -s %s shell am force-stop io.appium.uiautomator2.server", devId));
-                        Thread.sleep(2000);
-                    } catch (Exception ex) {
-                    }
+                    logger.warning("驱动连接失败，将重试 device=" + devId + " attempt=" + retryCount
+                            + " error=" + e.getClass().getSimpleName());
+                    Thread.sleep(2000);
                 }
             }
 //            // 隐式等待，提升元素查找稳定性
