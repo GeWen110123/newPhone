@@ -67,14 +67,10 @@ public class VideoTagsController extends BaseController {
             if (!tags.getTags().contains("地址")
                     && !tags.getTags().contains("附近")
                     && !tags.getTags().contains("综合视频")) {
-                Video video= new Video();
-                video.setDouyinId(tags.getDouyinId());
                 tags.setCounts(accountContentService.selectAccountContentCountSum(tags.getDouyinId()));
-                tags.setVideoCount(videoService.selectVideoList(video).size());
+                tags.setVideoCount(Math.toIntExact(videoService.countVideos(tags.getDouyinId())));
             }else {
-                AddressVideo video= new AddressVideo();
-                video.setAddress(tags.getDouyinId());
-                tags.setVideoCount(addressVideoService.selectAddressVideoList(video).size());
+                tags.setVideoCount(Math.toIntExact(addressVideoService.countAddressVideos(tags.getDouyinId())));
             }
         }
         return getDataTable(list);

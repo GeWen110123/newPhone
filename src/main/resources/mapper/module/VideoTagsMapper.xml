@@ -35,7 +35,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="remark != null  and remark != ''"> and remark = #{remark}</if>
             <if test="address != null  and address != ''"> and address = #{address}</if>
         </where>
-        ORDER BY update_time DESC
+        ORDER BY update_time DESC, id DESC
     </select>
 
 
@@ -65,6 +65,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="devId != null">dev_id,</if>
             <if test="douyinId != null">douyin_id,</if>
             <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
             <if test="tags != null">tags,</if>
             <if test="status != null">status,</if>
             <if test="taskId != null">task_id,</if>
@@ -77,6 +78,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="devId != null">#{devId},</if>
             <if test="douyinId != null">#{douyinId},</if>
             <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
             <if test="tags != null">#{tags},</if>
             <if test="status != null">#{status},</if>
             <if test="taskId != null">#{taskId},</if>

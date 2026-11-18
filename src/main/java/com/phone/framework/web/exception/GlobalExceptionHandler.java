@@ -81,7 +81,7 @@ public class GlobalExceptionHandler
     public AjaxResult handleException(Exception e)
     {
         log.error(e.getMessage(), e);
-        return AjaxResult.error(e.getMessage());
+        return AjaxResult.error("服务暂时不可用，请稍后重试或联系管理员");
     }
 
     /**

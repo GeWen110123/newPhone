@@ -79,10 +79,8 @@ public class DouyinCrawler {
         if (!inputSearchText(accountName)) return false;
         if (!clickSearchSubmit()) return false;
         if (!selectUserTab()) return false;
-        if (!clickFirstUser()) return false;
-
-//        return verifyProfilePage();
-        return true;
+        if (!clickFirstUser(accountName)) return false;
+        return verifyProfilePage();
     }
 
     // ===========================
@@ -109,6 +107,7 @@ public class DouyinCrawler {
 
     private boolean clickSearchButton() {
         String[] searchButtonXpaths = {
+                "//*[@content-desc='搜索' and @clickable='true']",
                 "//android.widget.Button[@content-desc='搜索' and @clickable='true']",
                 "//android.widget.ImageView[contains(@resource-id, 'search')]"
         };
@@ -129,6 +128,7 @@ public class DouyinCrawler {
             try {
                 List<MobileElement> elements = driver.findElementsByXPath(xp);
                 if (!elements.isEmpty()) {
+                    elements.get(0).clear();
                     elements.get(0).sendKeys(accountName);
                     return true;
                 }
@@ -140,6 +140,8 @@ public class DouyinCrawler {
     }
 
     private boolean clickSearchSubmit() {
+        if (clickIfExists("//*[@text='搜索' and not(@class='android.widget.EditText')]")) return true;
+        if (clickIfExists("//*[@content-desc='搜索' and @clickable='true']")) return true;
         try {
             driver.findElement(By.id("com.ss.android.ugc.aweme:id/3i9")).click();
             return true;
@@ -161,9 +163,8 @@ public class DouyinCrawler {
 
         }
         String[] tabXpaths = {
+                "//*[@text='用户' or @content-desc='用户']",
                 "//*[contains(@resource-id, 'tab_user')]",
-                "//*[contains(@text,'用户')]",
-                "//android.widget.TextView[@clickable='true' and contains(@text,'用户')]"
         };
         for (String xp : tabXpaths) {
             if (clickIfExists(xp)) {
@@ -175,34 +176,73 @@ public class DouyinCrawler {
         return false;
     }
 
-    private boolean clickFirstUser() {
-        clickByCoordinates(250, 520);
-        sleep(3000);
-        return true;
+    private boolean clickFirstUser(String accountName) {
+        // Search ranking and display density change; never assume (250,520) is the target user.
+        for (MobileElement element : driver.findElements(By.xpath(
+                "//*[contains(@text,'抖音号') or contains(@content-desc,'抖音号')]"))) {
+            String text = element.getText();
+            if (text == null || !text.contains("抖音号")) text = element.getAttribute("content-desc");
+            if (matchesSearchAccount(text, accountName)) {
+                element.click();
+                sleep(3000);
+                if (profileHasExpectedId(driver.getPageSource(), accountName)) return true;
+                driver.navigate().back();
+                sleep(1000);
+                break;
+            }
+        }
+        // 40.3 renders names/IDs on canvas: only the avatar and follow button remain in XML.
+        // Open a bounded set of avatar cards, then verify the actual profile ID before storing anything.
+        for (int attempt = 0; attempt < 8 && driver.findElements(By.xpath(SEARCH_RESULT_AVATARS)).isEmpty(); attempt++) {
+            sleep(500);
+        }
+        for (int index = 0; index < 5; index++) {
+            List<MobileElement> avatars = driver.findElements(By.xpath(SEARCH_RESULT_AVATARS));
+            if (index >= avatars.size()) break;
+            org.openqa.selenium.Rectangle bounds = avatars.get(index).getRect();
+            if (!isSearchAvatar(bounds, screenWidth, screenHeight)) continue;
+            clickByCoordinates(bounds.getX() + bounds.getWidth() / 2, bounds.getY() + bounds.getHeight() / 2);
+            for (int wait = 0; wait < 6; wait++) {
+                sleep(500);
+                if (profileHasExpectedId(driver.getPageSource(), accountName)) return true;
+            }
+            String page = driver.getPageSource();
+            if (!page.contains("抖音号") || !page.contains("作品")) {
+                logger.warning("候选卡片未进入可验证主页，停止匹配: " + accountName);
+                return false;
+            }
+            driver.navigate().back();
+            sleep(1000);
+        }
+        logger.warning("搜索结果未识别到目标抖音号: " + accountName);
+        return false;
+    }
+
+    static final String SEARCH_RESULT_AVATARS = "//*[@content-desc='关注按钮']/../*[not(@content-desc='关注按钮')][1]";
+
+    static boolean isSearchAvatar(org.openqa.selenium.Rectangle bounds, int width, int height) {
+        return bounds.getX() >= 0 && bounds.getX() < width / 2 && bounds.getY() > height / 10
+                && bounds.getWidth() >= 40 && bounds.getWidth() <= width / 3
+                && bounds.getHeight() >= 40 && bounds.getHeight() <= height / 5
+                && bounds.getY() + bounds.getHeight() <= height;
+    }
+
+    static boolean profileHasExpectedId(String source, String accountName) {
+        return source != null && source.contains("粉丝") && source.contains("作品")
+                && matchesSearchAccount(source, accountName);
+    }
+
+    static boolean matchesSearchAccount(String label, String accountName) {
+        if (label == null || accountName == null) return false;
+        java.util.regex.Matcher match = java.util.regex.Pattern.compile("抖音号\\s*[:：]?\\s*([A-Za-z0-9_.-]+)").matcher(label);
+        return match.find() && accountName.equalsIgnoreCase(match.group(1));
     }
 
     private boolean verifyProfilePage() {
-        String[] profileXpaths = new String[]{
-                "//*[contains(@resource-id, 'nickname')]",
-                "//android.widget.TextView[contains(@resource-id, 'nickname')]",
-                "//*[contains(@resource-id, 'follow')]",
-                "//*[contains(@resource-id, 'fans')]",
-                "//*[contains(@resource-id, 'like')]",
-                "//android.view.ViewGroup[contains(@resource-id, 'user_profile')]",
-                "//*[contains(@resource-id, 'title')]",
-                "//android.widget.ImageView[contains(@resource-id, 'avatar')]",
-                "//android.view.ViewGroup[contains(@resource-id, 'header')]"
-        };
-        for (String xp : profileXpaths) {
-            try {
-                if (!driver.findElements(By.xpath(xp)).isEmpty()) {
-                    logger.info("成功进入主页, XPath: " + xp);
-                    Map<String, Object> info = fetchAccountInfo("1","1","","");
-                    info.forEach((k, v) -> logger.info(k + " : " + v));
-                    return true;
-                }
-            } catch (Exception ignored) {
-            }
+        for (int attempt = 0; attempt < 4; attempt++) {
+            String source = driver.getPageSource();
+            if (source.contains("抖音号") && source.contains("粉丝") && source.contains("作品")) return true;
+            sleep(1000);
         }
         logger.warning("未能验证进入主页");
         return false;
@@ -224,7 +264,9 @@ public class DouyinCrawler {
     private void sleep(long millis) {
         try {
             Thread.sleep(millis);
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("人员采集已取消", e);
         }
     }
 

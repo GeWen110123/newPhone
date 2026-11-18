@@ -1,0 +1,7 @@
+<configuration>
+    <!-- Tests must not append simulated failures to the running collector's log files. -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder><pattern>%level %logger{36} - %msg%n</pattern></encoder>
+    </appender>
+    <root level="warn"><appender-ref ref="console"/></root>
+</configuration>

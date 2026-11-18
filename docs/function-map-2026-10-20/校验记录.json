@@ -1,0 +1,27 @@
+{
+  "asOf": "2026-10-20",
+  "checks": {
+    "uniqueNodeIds": 453,
+    "mmNodes": 453,
+    "opmlNodes": 453,
+    "backendMappings": 206,
+    "frontendApiDeclarations": 221,
+    "sourceHashesChecked": 130,
+    "offlineViewer": true,
+    "browser": [
+      "桌面1440px导图",
+      "窄屏分支树",
+      "模块展开与节点说明",
+      "关键词搜索",
+      "完整说明",
+      "后端206项索引",
+      "前端221项索引",
+      "SVG导出"
+    ]
+  },
+  "limitations": [
+    "未执行真实业务写入或线上端到端验收",
+    "未在特定XMind版本进行MM导入验收",
+    "直接路径引用表为静态字面量扫描，不是全量运行时请求清单"
+  ]
+}

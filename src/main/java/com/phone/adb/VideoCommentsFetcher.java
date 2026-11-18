@@ -14,13 +14,42 @@ import org.openqa.selenium.By;
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class VideoCommentsFetcher {
+    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(VideoCommentsFetcher.class.getName());
+    static final String COMMENT_ROWS = "//*[@resource-id='com.ss.android.ugc.aweme:id/flq']";
+    // Fallback uses the semantic avatar/content structure, independent of obfuscated row IDs.
+    static final String COMMENT_ROWS_FALLBACK = "//androidx.recyclerview.widget.RecyclerView//*[@resource-id='com.ss.android.ugc.aweme:id/content']/parent::*[.//*[@resource-id='com.ss.android.ugc.aweme:id/avatar' or contains(@content-desc,'头像')]]";
+    static final String COMMENT_PANEL = "//*[@resource-id='com.ss.android.ugc.aweme:id/e4l' and contains(@text,'评论')] | //*[contains(@text,'暂无评论') or contains(@text,'还没有评论')] | " + COMMENT_ROWS;
+
+    private List<MobileElement> commentRows() {
+        List<MobileElement> rows = driver.findElements(By.xpath(COMMENT_ROWS));
+        return rows.isEmpty() ? driver.findElements(By.xpath(COMMENT_ROWS_FALLBACK)) : rows;
+    }
+
+    private boolean onCommentPanel() {
+        return !driver.findElements(By.xpath(COMMENT_PANEL)).isEmpty() || !commentRows().isEmpty();
+    }
+
+    private void ensureActive() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException("采集已取消");
+    }
+
+    private java.util.function.LongSupplier nanoClock = System::nanoTime;
+    private static class YieldComments extends RuntimeException { }
+
+    private void yieldIfWaiting(String device, long started) {
+        if (nanoClock.getAsLong() - started >= java.util.concurrent.TimeUnit.MINUTES.toNanos(3)
+                && douyinTaskService.hasWaitingTasks(device)) throw new YieldComments();
+    }
+
+    static String commentKey(String nickname, String text, String time, String replyTo) {
+        return JSON.toJSONString(Arrays.asList(nickname, text, time, replyTo));
+    }
+
     private AppiumDriver<MobileElement> driver;
     private final IAccountContentService accountContentService;
     private final IAddressAccountContentService addressAccountContentService;
@@ -38,124 +67,140 @@ public class VideoCommentsFetcher {
     @Autowired
     private DouyinTaskService douyinTaskService;
 
-    // uid → 用户信息缓存
-    private final Map<String, Map<String, Object>> userCache = new HashMap<>();
 
-    private Map<String, Object> fetchUserFromAvatar(String type ,String accountName ,String vUid ,MobileElement commentNode,
-                                                    AndroidDriver driver,
-                                                    DouyinCrawler crawler,
-                                                    String deviceId
-    ) {
+    private Map<String, Object> fetchUserFromAvatar(String type, String accountName, String vUid,
+            MobileElement commentNode, AndroidDriver driver, DouyinCrawler crawler, String deviceId) {
         Map<String, Object> userInfo = new HashMap<>();
-
+        boolean entered = false;
         try {
-            // ✅ 新版适配：头像节点 resource-id 已改为 avatar（class 为自定义"按钮"），
-            //    用 resource-id + content-desc 双条件定位，比只匹配 content-desc 更稳
-            MobileElement avatar = commentNode.findElement(
-                    By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/avatar' and contains(@content-desc,'头像')]")
-            );
-
-            if (avatar != null && avatar.isDisplayed()) {
-                avatar.click();
-                Thread.sleep(1500); // ✅ 适当加长等待，避免主页未加载完就抓取
+            ensureActive();
+            // Read the nickname before navigating: the comment element is stale on a profile page.
+            String commenterName = commentNode.findElement(By.xpath(
+                    ".//*[@resource-id='com.ss.android.ugc.aweme:id/title']")).getText().trim();
+            MobileElement avatar = commentNode.findElement(By.xpath(
+                    ".//*[@resource-id='com.ss.android.ugc.aweme:id/avatar' or contains(@content-desc,'头像')]"));
+            if (!avatar.isDisplayed()) return userInfo;
+            avatar.click();
+            entered = true;
+            Thread.sleep(1500);
+            if (onCommentPanel()) {
+                entered = false;
+                return userInfo;
             }
-
-            // ✅ 评论者昵称：从评论节点实时读取（新版仍是 title），
-            //    替代外层传入的视频作者 accountName，避免抓错主页对象
-            String commenterName = "";
-            try {
-                commenterName = commentNode.findElement(
-                        By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title']")
-                ).getText().trim();
-            } catch (Exception ignored) {
+            userInfo = crawler.fetchAccountInfo("2", "2", deviceId, commenterName);
+            String userId = Objects.toString(userInfo.get("id"), "");
+            if (!userId.isEmpty()) {
+                if ("1".equals(type)) {
+                    douyinTaskService.storeAccountByAccount(vUid, deviceId, userId, accountName, userInfo);
+                } else {
+                    douyinTaskService.storeAccountByAddressAccount(vUid, deviceId, userId, accountName, userInfo);
+                }
             }
-
-            // ⭐⭐⭐ 直接调用你已有的主页抓取方法
-            userInfo = crawler.fetchAccountInfo("2", "2", "", commenterName.isEmpty() ? accountName : commenterName);
-
-            String uid = String.valueOf(userInfo.getOrDefault("id", ""));
-            String douyinId = (String) userInfo.get("id");
-            if (type.equals("1")){
-                douyinTaskService.storeAccountByAccount(vUid,deviceId, douyinId , accountName , userInfo);
-
-            }else {
-                douyinTaskService.storeAccountByAddressAccount(vUid,deviceId, douyinId , accountName, userInfo);
-            }
-
-
-            // 已抓过该用户 → 用缓存
-            if (userCache.containsKey(uid)) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("评论者采集被中断", e);
+        } catch (Exception e) {
+            if (e instanceof DouyinTaskService.ProfileStorageException) throw (DouyinTaskService.ProfileStorageException) e;
+            LOG.log(java.util.logging.Level.WARNING, "评论者资料获取失败 video=" + vUid, e);
+        } finally {
+            if (entered) {
+                // A DB/profile exception must not leave subsequent scrolls on the user's profile.
                 driver.navigate().back();
-                return userCache.get(uid);
+                try { Thread.sleep(800); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+                if (!onCommentPanel()) throw new IllegalStateException("未能恢复评论区，停止本轮避免误采");
             }
-
-            userCache.put(uid, userInfo);
-
-            driver.navigate().back();
-            Thread.sleep(800);
-
-        } catch (Exception ignored) {
         }
-
         return userInfo;
     }
 
-
     public static int parseDouyinCount(String text) {
-
-        if (text == null || text.isEmpty()) return 0;
-
-        text = text.replace("条评论", "").trim();
-
-        // 含 “万”（10.5万 或 3万）
-        if (text.contains("万") || text.contains("w") || text.contains("W")) {
-            text = text.replace("万", "").replace("w", "").replace("W", "");
-            double value = Double.parseDouble(text);
-            return (int) (value * 10000);
-        }
-
-        // 处理 "9999+"
-        if (text.contains("+")) {
-            text = text.replace("+", "");
-        }
-
-        // 常规数字（"评论 11" → 11）
-        return Integer.parseInt(text.replaceAll("\\D+", ""));
+        if (text == null) return -1;
+        if (text.contains("暂无评论") || text.contains("还没有评论")) return 0;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(万|亿|[wWkK])?")
+                .matcher(text.replace(",", "").replace("，", ""));
+        if (!m.find()) return -1;
+        double value = Double.parseDouble(m.group(1));
+        String unit = m.group(2);
+        if ("万".equals(unit) || "w".equalsIgnoreCase(unit)) value *= 10000;
+        else if ("亿".equals(unit)) value *= 100000000;
+        else if ("k".equalsIgnoreCase(unit)) value *= 1000;
+        return (int) Math.min(Integer.MAX_VALUE, value);
     }
 
+    private String saveCheckpoint(String videosDir, String uid, String deviceId, int total,
+            List<Map<String, Object>> comments, boolean complete) throws IOException {
+        java.nio.file.Path dir = java.nio.file.Paths.get(videosDir);
+        java.nio.file.Files.createDirectories(dir);
+        String name = (deviceId + "_" + uid).replaceAll("[^a-zA-Z0-9_-]", "_");
+        java.nio.file.Path path = dir.resolve("comments_" + name + ".json");
+        java.nio.file.Path temp = dir.resolve("comments_" + name + ".tmp");
+        Map<String, Object> output = new LinkedHashMap<>();
+        output.put("totalComments", total);
+        output.put("comments", comments);
+        output.put("complete", complete);
+        output.put("json_path", path.toString());
+        java.nio.file.Files.writeString(temp, JSON.toJSONString(output), java.nio.charset.StandardCharsets.UTF_8);
+        try {
+            java.nio.file.Files.move(temp, path, java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+        } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+            java.nio.file.Files.move(temp, path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
+        return path.toString();
+    }
 
     public Map<String, Object> fetchAllComments(String type,String accountName,String uid ,String devId ,int videoCount, String videosDir, String count) {
         List<Map<String, Object>> commentsList = new ArrayList<>();
         Set<String> existingComments = new HashSet<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        int totalComments = 0;
+        int totalComments = -1;
+        boolean opened = false;
+        boolean complete = false;
+        boolean deferred = false;
+        long started = nanoClock.getAsLong();
+        String commentsFile = null;
 
         try {
+            java.nio.file.Path previous = java.nio.file.Paths.get(videosDir, "comments_"
+                    + (devId + "_" + uid).replaceAll("[^a-zA-Z0-9_-]", "_") + ".json");
+            if (java.nio.file.Files.exists(previous)) {
+                Map<String, Object> checkpoint = JSON.parseObject(java.nio.file.Files.readString(previous));
+                Object saved = checkpoint.get("comments");
+                if (saved instanceof List<?>) {
+                    for (Object item : (List<?>) saved) {
+                        if (!(item instanceof Map<?, ?>)) continue;
+                        Map<String, Object> comment = (Map<String, Object>) item;
+                        String key = commentKey(Objects.toString(comment.get("source_nickname"), Objects.toString(comment.get("nickname"), "")),
+                                Objects.toString(comment.get("text"), ""), Objects.toString(comment.get("time"), ""),
+                                Objects.toString(comment.get("replyTo"), ""));
+                        if (existingComments.add(key)) commentsList.add(comment);
+                        if (commentsList.size() >= 1000) break;
+                    }
+                }
+            }
             //          打开评论区
             // ✅ 新增兜底 XPath：content-desc 含"评论"的入口（排除"放大评论区"）
-            String[] commentsBtnXpaths = {"//*[contains(@resource-id, 'comment') or contains(@text, '评论')][1]",
-                    "//*[@content-desc='评论']",
-                    "//*[contains(@content-desc,'评论') and not(contains(@content-desc,'放大'))]"};
-            boolean opened = false;
+            String[] commentsBtnXpaths = {
+                    "//*[starts-with(@content-desc,'评论') and not(contains(@content-desc,'放大'))]",
+                    "//*[@resource-id='com.ss.android.ugc.aweme:id/d+_']",
+                    "//*[contains(@resource-id,'comment') and @clickable='true']"};
             for (String xpath : commentsBtnXpaths) {
                 List<MobileElement> btns = driver.findElements(By.xpath(xpath));
                 if (!btns.isEmpty()) {
                     btns.get(0).click();
                     Thread.sleep(2000);
-                    opened = true;
+                    opened = onCommentPanel();
+                    if (!opened) continue;
                     System.out.println("成功打开视频 " + (videoCount + 1) + " 的评论区");
                     break;
                 }
             }
             if (!opened) {
                 System.err.println("无法打开视频 " + (videoCount + 1) + " 的评论区");
-                return null;
+                throw new IllegalStateException("评论入口或面板未识别，不能当作零评论");
             }
             try {
                 totalComments = parseDouyinCount(count);
-                if (totalComments > 1000) {
-                    totalComments = 1000;
-                }
+                if (totalComments < 0) throw new IllegalArgumentException("未知评论数量");
                 System.out.println("视频总评论数: " + totalComments);
             } catch (Exception e) {
                 try {
@@ -168,19 +213,25 @@ public class VideoCommentsFetcher {
 
                     totalComments = parseDouyinCount(totalText);
                 } catch (Exception e1) {
-                    System.err.println("获取总评论数失败: " + e.getMessage());
+                    if (!driver.findElements(By.xpath("//*[contains(@text,'暂无评论') or contains(@text,'还没有评论')]")).isEmpty()) {
+                        totalComments = 0;
+                    } else {
+                        LOG.warning("评论数量未知，将按页面实际内容采集 video=" + uid);
+                    }
                 }
             }
 
             // 3. 滑动加载评论循环
-            int estimatedCommentsPerScroll = 2;
-            int maxScrolls = (int) Math.ceil(totalComments / (double) estimatedCommentsPerScroll);
+            int maxScrolls = 500;
+            int commentLimit = 1000;
             int scrollCount = 0;
-            boolean hasNewComments = true;
 
 //           开始获取评论
-            int noNewCount = 0; // 连续滑动没有新评论计数
-            while (scrollCount < maxScrolls && commentsList.size() < totalComments * 2) {
+            int noNewCount = 0; // 连续滑动页面未变化计数
+            String previousViewport = "";
+            while (scrollCount < maxScrolls && commentsList.size() < commentLimit) {
+                ensureActive();
+                yieldIfWaiting(devId, started);
                 boolean hasNewThisScroll = false;
                 Set<String> seenRepliesThisScroll = new HashSet<>();
 
@@ -188,50 +239,43 @@ public class VideoCommentsFetcher {
                 // 1. 抓取主评论（FrameLayout/flq）
                 // --------------------------
                 // ✅ 新版适配：主评论容器由 e1-xxx 改为 flq（RecyclerView rkp 的直接子级）
-                List<MobileElement> commentElements = driver.findElements(By.xpath(
-                        "//androidx.recyclerview.widget.RecyclerView[@resource-id='com.ss.android.ugc.aweme:id/rkp']"
-                                + "/android.widget.FrameLayout[@resource-id='com.ss.android.ugc.aweme:id/flq']"
-                ));
-                // ✅ 兜底：部分机型层级有差异导致直接子级匹配为空时，退回全量 flq
-                if (commentElements.isEmpty()) {
-                    commentElements = driver.findElements(By.xpath(
-                            "//android.widget.FrameLayout[@resource-id='com.ss.android.ugc.aweme:id/flq']"
-                    ));
+                List<MobileElement> commentElements = commentRows();
+                StringBuilder viewport = new StringBuilder();
+                for (MobileElement row : commentElements) {
+                    for (MobileElement content : row.findElements(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/title' or @resource-id='com.ss.android.ugc.aweme:id/content']"))) {
+                        viewport.append(content.getText()).append('|');
+                    }
                 }
+                boolean viewportChanged = !previousViewport.equals(viewport.toString());
+                previousViewport = viewport.toString();
 
-                for (MobileElement el : commentElements) {
-                    String nickname = "", text = "", time = "";
+                for (int rowIndex = 0; rowIndex < commentElements.size() && commentsList.size() < commentLimit; rowIndex++) {
+                    ensureActive();
+                    yieldIfWaiting(devId, started);
+                    List<MobileElement> currentRows = commentRows();
+                    if (rowIndex >= currentRows.size()) break;
+                    MobileElement el = currentRows.get(rowIndex);
+                    String nickname = "", text = "", time = "", replyTo = "";
 
                     try {
-                        nickname = el.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title']")).getText().trim();
+                        nickname = el.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/title']")).getText().trim();
                     } catch (Exception ignored) {
                     }
                     try {
-                        text = el.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/content']")).getText().trim();
+                        text = el.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/content']")).getText().trim();
                     } catch (Exception ignored) {
                     }
                     try {
                         // ✅ 新版适配：时间 id 由 egj 改为 e4t
-                        time = el.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
+                        time = el.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
                     } catch (Exception ignored) {
                     }
 
+                    try {
+                        replyTo = el.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/02w']")).getText().trim();
+                    } catch (Exception ignored) { }
                     if (!text.isEmpty()) {
-//                        String key = nickname + text;
-//                        String viewPos = el.getCenter().toString();
-//                        + "|" + viewPos
-//                        if (!existingComments.contains(key)) {
-//                            Map<String, Object> commentMap = new HashMap<>();
-//                            commentMap.put("id", commentsList.size());
-//                            commentMap.put("nickname", nickname);
-//                            commentMap.put("text", text);
-//                            commentMap.put("time", time.isEmpty() ? sdf.format(new Date()) : time);
-//
-//                            commentsList.add(commentMap);
-//                            existingComments.add(key);
-//                            hasNewThisScroll = true;
-//                        }
-                        String key = "REPLY|" + nickname + "|" + text;
+                        String key = commentKey(nickname, text, time, replyTo);
 
 
                         if (!existingComments.contains(key)) {
@@ -243,7 +287,10 @@ public class VideoCommentsFetcher {
                             Map<String, Object> commentMap = new HashMap<>();
                             commentMap.put("id", commentsList.size());
                             commentMap.put("text", text);
-                            commentMap.put("time", time.isEmpty() ? sdf.format(new Date()) : time);
+                            commentMap.put("source_nickname", nickname);
+                            commentMap.put("time", time);
+                            commentMap.put("replyTo", replyTo);
+                            commentMap.put("observed_at", java.time.Instant.now().toString());
 
                             // ==============================
                             // ⭐ 点击头像 → 抓用户主页信息
@@ -288,14 +335,17 @@ public class VideoCommentsFetcher {
                 boolean hasExpand = true;
                 Set<String> clickedExpandNodes = new HashSet<>();
 
-                while (hasExpand) {
+                int expandRounds = 0;
+                while (hasExpand && expandRounds++ < 20 && commentsList.size() < commentLimit) {
+                    ensureActive();
+                    yieldIfWaiting(devId, started);
                     hasExpand = false;
 
                     try {
                         // ✅ 新版适配：展开按钮 id 3f7 已失效，改为纯文本/desc 匹配（"展开回复"等）
                         String[] EXPAND_REPLY_XPATHS = {
-                                "//android.widget.TextView[contains(@text,'展开')]",
-                                "//android.widget.TextView[contains(@content-desc,'展开')]"
+                                "//*[contains(@text,'展开') and contains(@text,'回复')]",
+                                "//*[contains(@content-desc,'展开') and contains(@content-desc,'回复')]"
                         };
 
 
@@ -315,7 +365,7 @@ public class VideoCommentsFetcher {
 
                                     clickedExpandNodes.add(pos);
                                     hasExpand = true;
-                                    hasNewThisScroll = true;
+                                    // A click alone is not evidence of new comments.
 
                                 } catch (Exception ignore2) {
                                 }
@@ -372,7 +422,7 @@ public class VideoCommentsFetcher {
 //
 //                                    clickedExpandNodes.add(pos);
 //                                    hasExpand = true;
-//                                    hasNewThisScroll = true;
+//                                    // A click alone is not evidence of new comments.
 
                                     if (!btn.isDisplayed()) continue;
 
@@ -385,7 +435,7 @@ public class VideoCommentsFetcher {
 
                                     clickedExpandNodes.add(pos);
                                     hasExpand = true;
-                                    hasNewThisScroll = true;
+                                    // A click alone is not evidence of new comments.
 
                                 } catch (Exception ignore2) {
                                 }
@@ -397,40 +447,36 @@ public class VideoCommentsFetcher {
                         // ================================
                         // ✅ 新版适配：子回复容器 e1 已失效，新版回复与主评论共用 flq 容器；
                         //    取全部 flq 后按 bounds 减去已抓取的主评论，剩余即为展开后的子回复
-                        List<MobileElement> replyElements = driver.findElements(By.xpath(
-                                "//android.widget.FrameLayout[@resource-id='com.ss.android.ugc.aweme:id/flq']"
-                        ));
+                        List<MobileElement> replyElements = commentRows();
 
-                        // 过滤掉本轮已抓取的主评论（按 bounds 去重），避免重复抓取
-                        Set<String> mainCommentBounds = new HashSet<>();
-                        for (MobileElement ce : commentElements) {
-                            mainCommentBounds.add(ce.getAttribute("bounds"));
-                        }
-                        replyElements.removeIf(re -> mainCommentBounds.contains(re.getAttribute("bounds")));
-
-                        for (MobileElement replyEl : replyElements) {
+                        for (int replyIndex = 0; replyIndex < replyElements.size() && commentsList.size() < commentLimit; replyIndex++) {
+                            ensureActive();
+                            yieldIfWaiting(devId, started);
+                            List<MobileElement> currentRows = commentRows();
+                            if (replyIndex >= currentRows.size()) break;
+                            MobileElement replyEl = currentRows.get(replyIndex);
 
                             String rNickname = "", rText = "", rTime = "", rReplyTo = "";
 
                             try {
-                                rNickname = replyEl.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/title']")).getText().trim();
+                                rNickname = replyEl.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/title']")).getText().trim();
                             } catch (Exception ignored) {
                             }
 
                             try {
-                                rText = replyEl.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/content']")).getText().trim();
+                                rText = replyEl.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/content']")).getText().trim();
                             } catch (Exception ignored) {
                             }
 
                             // ✅ 新版页面暂未发现 02w 节点，找不到时保持空字符串，不影响其他字段
                             try {
-                                rReplyTo = replyEl.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/02w']")).getText().trim();
+                                rReplyTo = replyEl.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/02w']")).getText().trim();
                             } catch (Exception ignored) {
                             }
 
                             try {
                                 // ✅ 新版适配：时间 id 由 egj 改为 e4t
-                                rTime = replyEl.findElement(By.xpath(".//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
+                                rTime = replyEl.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
                             } catch (Exception ignored) {
                             }
 
@@ -441,8 +487,9 @@ public class VideoCommentsFetcher {
 //                            String viewPos = replyEl.getCenter().toString();
 //                            String key = "REPLY|" + rNickname + "|"  + rText + "|" + viewPos;
 // ================= 子评论抓取 =================
-                            String tempKey = "REPLY_TMP|" + rNickname + "|" + rText;
-                            if (seenRepliesThisScroll.contains(tempKey)) continue;
+                            String tempKey = commentKey(rNickname, rText, rTime, rReplyTo);
+                            if (seenRepliesThisScroll.contains(tempKey)
+                                    || existingComments.contains(tempKey)) continue;
 
 // ⭐ 先抓用户主页信息
                             DouyinCrawler crawler = new DouyinCrawler((AndroidDriver<MobileElement>) driver,
@@ -456,7 +503,7 @@ public class VideoCommentsFetcher {
                             String userUid = String.valueOf(userInfo.getOrDefault("id", ""));
 
 // ================= 真正唯一Key =================
-                            String key = "REPLY|" + userUid + "|" + rText;
+                            String key = tempKey;
 
 // 已存在则跳过
                             if (existingComments.contains(key)) continue;
@@ -468,7 +515,9 @@ public class VideoCommentsFetcher {
                             replyMap.put("nickname", userInfo.getOrDefault("nickname", rNickname));
                             replyMap.put("replyTo", rReplyTo);
                             replyMap.put("text", rText);
-                            replyMap.put("time", rTime.isEmpty() ? sdf.format(new Date()) : rTime);
+                            replyMap.put("source_nickname", rNickname);
+                            replyMap.put("time", rTime);
+                            replyMap.put("observed_at", java.time.Instant.now().toString());
 
 // 头像
                             replyMap.put("touxiang", userInfo.getOrDefault("touxiang", ""));
@@ -499,8 +548,19 @@ public class VideoCommentsFetcher {
                             hasNewThisScroll = true;
                         }
 
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        if (e instanceof YieldComments || e instanceof DouyinTaskService.ProfileStorageException
+                                || Thread.currentThread().isInterrupted() || !onCommentPanel()) throw e;
+                        LOG.log(java.util.logging.Level.WARNING, "展开回复失败 video=" + uid, e);
                     }
+                }
+                commentsFile = saveCheckpoint(videosDir, uid, devId, totalComments, commentsList, false);
+                LOG.info("评论进度 video=" + uid + " page=" + scrollCount + " collected=" + commentsList.size() + " expected=" + totalComments);
+                if ((totalComments > 0 && commentsList.size() >= totalComments) || (totalComments == 0 && commentRows().isEmpty())) { complete = true; break; }
+                noNewCount = hasNewThisScroll || viewportChanged ? 0 : noNewCount + 1;
+                if (noNewCount >= 3) {
+                    LOG.warning("连续三次页面未变化且无新增评论，停止并保留断点 video=" + uid);
+                    break;
                 }
 
                 // ---------------------------------------------------
@@ -508,10 +568,11 @@ public class VideoCommentsFetcher {
                 // ---------------------------------------------------
                 try {
                     List<MobileElement> endTips = driver.findElements(
-                            By.xpath("//android.widget.TextView[contains(@text,'没有更多') or contains(@text,'暂时没有更多了')]")
+                            By.xpath("//*[@text='没有更多了' or @text='暂时没有更多了'][not(@resource-id='com.ss.android.ugc.aweme:id/content')][not(ancestor::*[@resource-id='com.ss.android.ugc.aweme:id/flq'])]")
                     );
 
                     if (!endTips.isEmpty()) {
+                        complete = !commentsList.isEmpty() || totalComments == 0;
                         System.out.println(">>> 已到底部，停止滚动");
                         break;
                     }
@@ -537,58 +598,41 @@ public class VideoCommentsFetcher {
             }
 
 
-            // 生成 JSON 文件
-            String commentsFile = null;
-            if (!commentsList.isEmpty()) {
-                String timestamp = String.valueOf(System.currentTimeMillis());
-                commentsFile = videosDir + "/video_" + timestamp + videoCount + "_comments.json";
-
-                try (FileWriter file = new FileWriter(commentsFile)) {
-                    Map<String, Object> output = new HashMap<>();
-                    output.put("totalComments", totalComments);
-                    output.put("comments", commentsList);
-                    output.put("json_path", commentsFile);
-
-                    file.write(JSON.toJSONString(output, true));
-                    System.out.println("评论信息已保存至: " + commentsFile);
-                } catch (IOException e) {
-                    System.err.println("保存评论时出错: " + e.getMessage());
+            if (commentsList.size() >= commentLimit) {
+                LOG.info("达到每视频评论采集上限 " + commentLimit + " video=" + uid);
+                complete = true;
+            }
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            deferred = e instanceof YieldComments;
+            if (deferred) LOG.info("评论本轮达到三分钟，保存断点后让出设备 video=" + uid + " collected=" + commentsList.size());
+            else LOG.log(java.util.logging.Level.SEVERE, "评论采集中断 video=" + uid + " collected=" + commentsList.size(), e);
+            complete = false;
+        } finally {
+            try {
+                commentsFile = saveCheckpoint(videosDir, uid, devId, totalComments, commentsList, complete);
+            } catch (IOException e) {
+                complete = false;
+                deferred = false;
+                LOG.log(java.util.logging.Level.SEVERE, "保存评论断点失败 video=" + uid, e);
+            }
+            if (opened) {
+                try {
+                    if (onCommentPanel()) driver.navigate().back();
+                    else { complete = false; deferred = false; }
+                } catch (Exception e) {
+                    complete = false;
+                    deferred = false;
+                    LOG.log(java.util.logging.Level.WARNING, "退出评论区失败 video=" + uid, e);
                 }
             }
-
-            // 返回完整结构
-            Map<String, Object> result = new HashMap<>();
-            result.put("totalComments", totalComments);
-            result.put("comments", commentsList);
-            result.put("json_path", commentsFile);
-
-            // ---- 退出评论区，返回视频页面 ----
-            try {
-                System.out.println("⏳ 正在退出评论区返回视频界面...");
-
-                // 连续按两次返回键，确保退出所有评论层
-                driver.navigate().back();
-                Thread.sleep(800);
-
-                System.out.println("✅ 已成功回到视频页面");
-            } catch (Exception e) {
-                System.err.println("⚠ 返回视频页面失败：" + e.getMessage());
-            }
-
-            return result;
-
-        } catch (Exception e) {
-            System.err.println("获取评论时出错: " + e.getMessage());
         }
-
-        // 发生异常仍返回结构
-        Map<String, Object> errorResult = new HashMap<>();
-        errorResult.put("totalComments", totalComments);
-        errorResult.put("comments", commentsList);
-        errorResult.put("json_path", null);
-
-        return errorResult;
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalComments", totalComments);
+        result.put("comments", commentsList);
+        result.put("json_path", commentsFile);
+        result.put("complete", complete);
+        result.put("deferred", deferred);
+        return result;
     }
-
-
 }

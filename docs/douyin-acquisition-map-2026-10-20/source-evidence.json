@@ -1,0 +1,254 @@
+[
+  {
+    "repository": "后端",
+    "file": "README.md",
+    "path": "D:\\IdeaProjects\\newPhone\\README.md",
+    "sha256": "87accd4234bf6138351b2949baab5536841444e5e8633d8a63c063682c2c0df9",
+    "lines": 49
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/tasks.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\tasks.tsx",
+    "sha256": "f3a073a4c9efc1729122675661a2ce82592cdec13410f063d1ae831fce7ceda8",
+    "lines": 1150
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\VideoTaskController.java",
+    "sha256": "1e023babaa62cb1a7d5759dea4969d5bc2fbf82d57b520d30eafaf3f0069a9d2",
+    "lines": 212
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\VideoTagsController.java",
+    "sha256": "b05e6c0aea1540ed47ce36958fe97a506088a85d41d0edaedafcd2d165caee1f",
+    "lines": 225
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/impl/VideoTaskServiceImpl.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\impl\\VideoTaskServiceImpl.java",
+    "sha256": "03dfacd8323a12bda68a77b2a1870db4439336d778e086a792ccfc0729a1c025",
+    "lines": 93
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/details.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\details.tsx",
+    "sha256": "a83f6a8fd801489e1d1722ead0a55f744a24e49e316d7150f429461a4451b903",
+    "lines": 978
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/account-overview.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\account-overview.tsx",
+    "sha256": "e9241982362853c111ae7685c8474c8290ecc64f37d4a9847d252119ce7e5436",
+    "lines": 331
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/VideoController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\VideoController.java",
+    "sha256": "a56d3003440fb1a2f3c8c8106d5389750df09a316840974e382929d43ed1df51",
+    "lines": 214
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/models.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\models.ts",
+    "sha256": "6bdbc91a0518e8221afa5410168151b8dccbd81895f82d36ff9f1c64fefc684b",
+    "lines": 275
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/people.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\people.tsx",
+    "sha256": "17f4338aed2bb560e9d41931bb0fca3be856f1188db34c7f54bfaf11b9d03bc0",
+    "lines": 240
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/shared.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\shared.tsx",
+    "sha256": "a925ee67e88a7afdd29f27346298115b53c7a8c37446dd02e99724ee6ac6a692",
+    "lines": 381
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/DouyinTaskService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\DouyinTaskService.java",
+    "sha256": "36fb8a688d2a925f32bf03d0703657828ea3e23cbed43638af65157a5ba61a22",
+    "lines": 389
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AddressVideoController.java",
+    "sha256": "9f0bbdb0db2a2a13c53bb580143c0f38e796aa8cde3226f50331ce315e522d5c",
+    "lines": 161
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/resources/mapper/module/AddressVideoMapper.xml",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\resources\\mapper\\module\\AddressVideoMapper.xml",
+    "sha256": "d9d2f5ca00ce3e2523315438d72abfb1f90a97c6dc2deb3e2e572f69458ed233",
+    "lines": 237
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/media.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\media.tsx",
+    "sha256": "4c47b396647fff26f8a94e5fef566297b88bebcb001ff74e64435bd5a654b965",
+    "lines": 454
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/comment-text.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\comment-text.tsx",
+    "sha256": "ae8d082dcc29d20d8fc90b997df271f804dc64ff96428979ff218ad006e8c204",
+    "lines": 70
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/topic-text.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\topic-text.tsx",
+    "sha256": "26ef0d6847ceab4357559a8e67aecc0a78e35358d138a9da8fa00c1d24579d9e",
+    "lines": 39
+  },
+  {
+    "repository": "前端",
+    "file": "src/lib/display-text.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\lib\\display-text.ts",
+    "sha256": "342e92472ff9f94e6d3e49b8c85a19f55aa19d40585901807a11a0eb6fdbe52e",
+    "lines": 50
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/relation-person-card.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\relation-person-card.tsx",
+    "sha256": "4ff7c80cfe65cf64bcb2998071c9466fac3ecfb04e8e41e8041b084d6a985e9a",
+    "lines": 174
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/ProbeRecordsPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\ProbeRecordsPage.tsx",
+    "sha256": "0a5f0bdd2ab9b8011f146a24f7552ae38f67aa363c92d02b9551ba4937ffdf86",
+    "lines": 360
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\RunLogController.java",
+    "sha256": "45a93b840c7ce162bef988d648adaabc7667bcc5b2a6e19624a0fba05b67f2f4",
+    "lines": 102
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/DouyinVideoService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\DouyinVideoService.java",
+    "sha256": "c029a2284eb3e7f951689c25b181584244aebcee28e068a79e93e07754da6f7a",
+    "lines": 828
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/ScheduledTask.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\ScheduledTask.java",
+    "sha256": "ba639b1cd5376c06eca70b371f9c63c19b283df4502106ee04c126a69eb0e05a",
+    "lines": 311
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/DeviceLeaseService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\DeviceLeaseService.java",
+    "sha256": "1f96502f0381a34a91ad78966e34a5dd61764a758bbb2fccb0a1b791e156f447",
+    "lines": 70
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AccountInfoFetcherVoid.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AccountInfoFetcherVoid.java",
+    "sha256": "6d6f6ce7bcc1d60387f69ecddd1513cb6e62c638c64fc626483bad72af02bab2",
+    "lines": 2021
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/DouyinAddressCrawler.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\DouyinAddressCrawler.java",
+    "sha256": "e64f4a2d6b328cc7be53d12250191fcb8f167be0ba6746c1c4e9c9ce26e7f082",
+    "lines": 778
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AccountInfoFetcher.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AccountInfoFetcher.java",
+    "sha256": "1066406cd5d14f01765bd20cde302767bd67f351af3869f729d150f63ad2c745",
+    "lines": 1061
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AddressInfoFetcher.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AddressInfoFetcher.java",
+    "sha256": "d6d95cf969c15340c0d4cd7dafa091b8cd63887a4b99e29942f4d0a9e42f0522",
+    "lines": 141
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/PlaceMockLocationHelper.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\PlaceMockLocationHelper.java",
+    "sha256": "36b3dd58d01dcb09f82a3e7626de64e928ad38338c22aa65f869dd11f1e2ad79",
+    "lines": 153
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AccountController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AccountController.java",
+    "sha256": "9c6a036eb2276d826cda97c3ac8b1127119af13dae8506a2b3a774494748cbf0",
+    "lines": 149
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/VideoCommentsFetcher.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\VideoCommentsFetcher.java",
+    "sha256": "fbfbcbfbfa12bc6077324440de98e587095c65ab6d89c0b05951c062d562e1bb",
+    "lines": 638
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/CommentArchiveService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\CommentArchiveService.java",
+    "sha256": "1a2fa501c550b61bf9a73d28396a58f58e6892e64c419737c5c662ebee0d00cc",
+    "lines": 97
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AdbVideoRecorder.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AdbVideoRecorder.java",
+    "sha256": "b7fc02de0323b0c7ea9169a2ea9f67c0182ca30f8d9860e2320bb52881cb0848",
+    "lines": 62
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/VideoMergeTest.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\VideoMergeTest.java",
+    "sha256": "ce236a54aaa4fc2c696eb181d9e9f2c9fe7c665908baf82ca6d6d77971e8715e",
+    "lines": 42
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/resources/application.yml",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\resources\\application.yml",
+    "sha256": "40d1c6a49d7900eb274349cc046cd52fc20a8e7b92678508e8af307826528b54",
+    "lines": 60
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/framework/config/ResourcesConfig.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\framework\\config\\ResourcesConfig.java",
+    "sha256": "2218eacbcb3895e2ed611546139a50fbfb25f260264a4f63db4e7d7a1a04f8fb",
+    "lines": 79
+  }
+]

@@ -22,8 +22,99 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="91603825-72bf-4802-ae2d-763b1daebf3e" name="Default Changelist" comment="123">
+    <list default="true" id="91603825-72bf-4802-ae2d-763b1daebf3e" name="Default Changelist" comment="跟新后的评论信息获取">
+      <change afterPath="$PROJECT_DIR$/docs/analytics-api.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/crawl-audit-2026-10-16.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/dependency-availability.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/build_focused_map.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/function-map.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/source-evidence.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/viewer-check.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能大纲.opml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能导图资料包.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能思维导图.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能思维导图.mm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能说明.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/阅读说明.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/backend-index.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/build_map.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/direct-index.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/function-map.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/map_content.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/source-evidence.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/source-inventory.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/verify_and_package.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/viewer-check.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/viewer-template.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/wrappers-index.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/功能导图总览.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/完整功能思维导图.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/完整功能说明.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/手机监测平台-功能大纲.opml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/手机监测平台-完整功能导图资料包.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/手机监测平台-完整功能思维导图.mm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/校验记录.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/阅读说明.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/AdbVideoRecorder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/CrawlBatch.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/AnalyticsController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/domain/analytics/AnalyticsQuery.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/domain/analytics/AnalyticsResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/AnalyticsMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/AnalyticsService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/AnalyticsUserService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/CommentArchiveService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DeviceLeaseService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/AnalyticsMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/ScheduledCrawlTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/AdbVideoRecorderTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/CrawlCompatibilityTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/FakeAdbProcess.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/VideoMergeSafetyTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/framework/web/exception/GlobalExceptionHandlerTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/controller/VideoTagsListTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/AddressCrawlCountTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/AddressVideoListTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/AnalyticsMapperTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/VideoCrawlCountTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/VideoTagsPaginationTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/AnalyticsServiceTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/CommentArchiveTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/DouyinCrawlLifecycleTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/PublisherTaskTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/web/controller/system/SysProfileSecurityTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/resources/crawl/douyin-40.3-comments.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/resources/logback-test.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ruoyi.ipr" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ruoyi.iws" beforeDir="false" afterPath="$PROJECT_DIR$/ruoyi.iws" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/ScheduledTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/ScheduledTask.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcherVoid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcherVoid.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/DouyinCrawler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/DouyinCrawler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoCommentsFetcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoCommentsFetcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoMergeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoMergeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/XPathRegistry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/XPathRegistry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/framework/web/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/framework/web/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/AccountController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/AccountController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/VideoTagsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/VideoTagsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/AddressVideoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/AddressVideoMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/VideoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/VideoMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinTaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinTaskService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinVideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinVideoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IAddressVideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IAddressVideoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IVideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IVideoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/AddressVideoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/AddressVideoServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoTagsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoTagsServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/web/controller/system/SysProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/web/controller/system/SysProfileController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logback.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/AddressVideoMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/AddressVideoMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/CommentMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/CommentMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoTagsMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoTagsMapper.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -209,7 +300,7 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/GeWen110123/newPhone.git&quot;,
-    &quot;accountId&quot;: &quot;62fd284a-bb38-4cf0-a9f3-9068c91df3f7&quot;
+    &quot;accountId&quot;: &quot;17d15333-c56f-45ef-a405-bbc67b7bbfa2&quot;
   }
 }</component>
   <component name="HierarchyBrowserManager">
@@ -239,7 +330,6 @@
     <option name="generalSettings">
       <MavenGeneralSettings>
         <option name="customMavenHome" value="$PROJECT_DIR$/../../apache-maven-3.8.1" />
-        <option name="localRepository" value="D:\maven-repository" />
         <option name="mavenHomeTypeForPersistence" value="CUSTOM" />
         <option name="userSettingsFile" value="D:\apache-maven-3.8.1\conf\settings.xml" />
       </MavenGeneralSettings>
@@ -297,37 +387,40 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.AppiumRestartUtil.executor": "Run",
-    "Maven.phone [clean].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "Spring Boot.PhoneApplication.executor": "Debug",
-    "Spring Boot.RuoYiApplication .executor": "Debug",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "H:/代码/app-java",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "MavenSettings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.AppiumRestartUtil (1).executor&quot;: &quot;Debug&quot;,
+    &quot;Application.AppiumRestartUtil.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.phone [clean,install,-U].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.phone [clean].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.PhoneApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.RuoYiApplication .executor&quot;: &quot;Debug&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/IdeaProjects/newPhone/src/main/java/com/phone&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.repository.indices&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\IdeaProjects\newPhone\src\main\java\com\phone" />
       <recent name="E:\IdeaProjects\abb\sql" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -347,11 +440,11 @@
       <command value="mvn dependency:tree | grep selenium" />
       <command value="mvn dependency:tree | Select-String selenium" />
       <command value="mvn dependency:tree" />
-      <command value="mvn clean install -U" />
       <command value="mvn dependency:tree | findstr guava" />
+      <command value="mvn clean install -U" />
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.PhoneApplication">
+  <component name="RunManager">
     <configuration selected="false" default="true" type="Applet" factoryName="Applet">
       <module name="" />
       <option name="MAIN_CLASS_NAME" />
@@ -371,20 +464,6 @@
       <option name="TEST_OBJECT" value="CLASS" />
       <properties />
       <listeners />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="AppiumRestartUtil" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.phone.adb.AppiumRestartUtil" />
-      <module name="module" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.phone.adb.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -413,27 +492,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="RuoYiApplication " type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true">
-      <option name="ALTERNATIVE_JRE_PATH" value="C:/Program Files/Java/jdk-17" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-      <module name="admin" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.phone.RuoYiApplication" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.phone.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Spring Boot.RuoYiApplication " />
-        <item itemvalue="Application.AppiumRestartUtil" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -867,7 +925,7 @@
       <option name="project" value="LOCAL" />
       <updated>1770603640671</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <option name="localTasksCounter" value="108" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -897,7 +955,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="分表处理存储  添加" />
     <MESSAGE value="分表处理存储  添加   主页信息获取  只获取一遍page内容" />
     <MESSAGE value=" 添加判断  如果数据不满足条件修改数据值为3   兜底执行  当没有数据时修改3 为0" />
     <MESSAGE value="任务按照倒叙排列" />
@@ -922,7 +979,8 @@
     <MESSAGE value="add 方法修改" />
     <MESSAGE value="111" />
     <MESSAGE value="123" />
-    <option name="LAST_COMMIT_MESSAGE" value="123" />
+    <MESSAGE value="跟新后的评论信息获取" />
+    <option name="LAST_COMMIT_MESSAGE" value="跟新后的评论信息获取" />
   </component>
   <component name="VssConfiguration">
     <CheckoutOptions>

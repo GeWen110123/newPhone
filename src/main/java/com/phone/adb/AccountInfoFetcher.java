@@ -116,126 +116,86 @@ public class AccountInfoFetcher {
 
         if (!ensureDeviceConnected()) return info;
 
-        // ⭐⭐⭐ 只获取一次页面源码
         String pageSource;
         try {
+            sleep(800);
             pageSource = driver.getPageSource();
         } catch (Exception e) {
             logger.severe("获取页面源码失败: " + e.getMessage());
             return info;
         }
 
+        if (pageSource == null || pageSource.trim().isEmpty()) {
+            logger.warning("获取到的主页UI源码为空");
+            return info;
+        }
 
-        // ⭐ 先解析最关键字段：昵称 + 抖音号
-        String nickname = getNickname(pageSource);
-        String douyinId = getDouyinId(pageSource, nickname);
+        // 新版抖音：优先从整棵 UI 树解析，旧 XPath 作为兜底。
+        String nickname = getNicknameV2(pageSource);
+        String douyinId = getDouyinIdV2(pageSource, nickname);
+
         if ("1".equals(type) && "1".equals(status)) {
             String inputDouyinId = normalizeDouyinIdForCompare(accountName);
             String fetchedDouyinId = normalizeDouyinIdForCompare(douyinId);
-            if (!inputDouyinId.isEmpty() && !fetchedDouyinId.isEmpty() && !inputDouyinId.equals(fetchedDouyinId)) {
-                logger.severe("获取人员与输入抖音号不一致，输入抖音号: " + accountName + "，页面抖音号: " + douyinId);
+            if (!inputDouyinId.isEmpty()
+                    && !fetchedDouyinId.isEmpty()
+                    && !inputDouyinId.equals(fetchedDouyinId)) {
+                logger.severe("获取人员与输入抖音号不一致，输入抖音号: " + accountName
+                        + "，页面抖音号: " + douyinId);
                 return info;
             }
         }
 
         info.put("nickname", nickname);
         info.put("id", douyinId);
-
-        // ==============================
-        // ⭐⭐ 优先从数据库读取缓存数据
-        // ==============================
-        // ==============================
-        // ⭐ 多表缓存查询
-        // ==============================
-        if (type.equals("2")||status.equals("0")) {
-            Map<String, Object> cacheMap = getCacheFromDB(douyinId);
-            if (cacheMap != null) {
-                logger.info("命中数据库缓存(多表之一)，直接返回: " + douyinId);
-                return cacheMap;
-            }
+        if (!isRealDouyinId(douyinId)) {
+            logger.warning("当前主页未读取到真实抖音号，不使用昵称替代身份");
+            return info;
         }
+        // The profile is already open. Refresh its visible fields instead of presenting
+        // historical commenter/follower cache as a new observation.
+        info.put("collected_at", java.time.Instant.now().toString());
 
-
-        // 1. 截图
         String accountImage = "zhuye/" + UUID.randomUUID() + "_profile_screen.png";
         takeScreenshot(accountImage);
         info.put("zhuye", toWebPath(DouyinPathUtils.resolve(accountImage)));
 
+        info.put("follow_count", getFollowCountV2(pageSource));
+        info.put("fans_count", getFansCountV2(pageSource));
+        info.put("likes_count", getLikesCountV2(pageSource));
+        info.put("works_count", getWorksCountV2(pageSource));
+        info.put("signature", getSignatureV2(pageSource, nickname));
+        info.put("region", getRegionV2(pageSource));
+        info.put("gender", getGenderV2(pageSource));
+        info.put("age", getAgeV2(pageSource));
+        info.put("school", getSchoolV2(pageSource));
 
-        info.put("follow_count", getFollowCount(pageSource));
-        info.put("fans_count", getFansCount(pageSource));
-        info.put("likes_count", getLikesCount(pageSource));
-        info.put("works_count", getWorksCount(pageSource));
-        info.put("signature", getSignature(pageSource, info.get("nickname").toString()));
-        info.put("region", getRegion(pageSource));
-        info.put("gender", getGender(pageSource));
-        info.put("age", getAge(pageSource));
-        info.put("school", getSchool(pageSource));
+        info.put("profile_text", getProfileTextV2(pageSource));
 
-
-        // ==============================
-// ⭐ 新增：主页简介正文（多行）
-// ==============================
-        String profileRawText = getProfileText(pageSource);
-        info.put("profile_text", profileRawText);
-
-// ==============================
-// ⭐ 新增：IP & 地区
-// ==============================
-        String ipLocation = getIpLocation(pageSource);
+        String ipLocation = getIpLocationV2(pageSource);
         info.put("ip_location", ipLocation);
 
-        String regionFull = getRegionFull(pageSource);
+        String regionFull = getRegionFullV2(pageSource);
         info.put("region_full", regionFull);
+        parseRegion(info, regionFull);
 
-        if (regionFull.contains("·")) {
-            String[] parts = regionFull.split("·");
-            info.put("province", parts[0]);
-            info.put("city", parts.length > 1 ? parts[1] : "");
-        }
-// ==============================
-        info.put("real_name", getRealName());
+        // 仅保留公开页面可见信息；不主动点击实名认证/实名入口。
+        info.put("real_name", getPublicRealName(pageSource));
 
-
-        if (openUserProfileFromAvatar()) {
+        if (openUserProfileFromAvatarV2()) {
             String screenshotFileName = "touxiang/" + UUID.randomUUID() + "_profile_screen.png";
             takeScreenshot(screenshotFileName);
             info.put("touxiang", toWebPath(DouyinPathUtils.resolve(screenshotFileName)));
             try {
                 driver.navigate().back();
             } catch (Exception ignored) {
-                driver.navigate().back();
+                try { driver.navigate().back(); } catch (Exception ignoredAgain) { }
             }
         }
 
-//        if ("1".equals(status)) {
-//            douyinTaskService.storeAccountAsync(devId, accountName, info,"");
-//
-//            int followCount = parseCount((String) info.get("follow_count"));
-//            int fansCount = parseCount((String) info.get("fans_count"));
-//
-//
-//            // ⭐ 采集关注
-//            if (followCount > 0 && clickFollowButtonAndCheck()) {
-//                int count =accountContentService.selectFollowList(douyinId).size();
-//                if (count<=followCount/2){
-//                    collectRelationList("follow", devId, douyinId,count);
-//                }
-//                driver.navigate().back();
-//            }
-//
-//            // ⭐ 采集粉丝
-//            if (fansCount > 0 && clickFansButtonAndCheck()) {
-//                int count =accountContentService.selectFansList(douyinId).size();
-//                if (count<=fansCount/2){
-//                    collectRelationList("fans", devId, douyinId,count);
-//                }
-//                driver.navigate().back();
-//            }
-//        }
-
         return info;
     }
+
 
     private void collectRelationList(String type, String devId, String douyinId,int count) {
 
@@ -598,6 +558,7 @@ public class AccountInfoFetcher {
         info.put("id", "");
         info.put("nickname", "");
         info.put("avatar", "");
+        info.put("touxiang", "");
         info.put("likes_count", "");
         info.put("follow_count", "");
         info.put("fans_count", "");
@@ -627,58 +588,315 @@ public class AccountInfoFetcher {
     }
 
 
-    private String getIpLocation(String pageSource) {
-        Matcher m = Pattern.compile("IP：([^\"<]+)").matcher(pageSource);
-        return m.find() ? m.group(1).trim() : "";
-    }
-
-    private String getRegionFull(String pageSource) {
-        Matcher m = Pattern.compile("([\\u4e00-\\u9fa5]+[省自治区市]·[\\u4e00-\\u9fa5]+市)")
-                .matcher(pageSource);
-        return m.find() ? m.group(1) : "";
-    }
-
-    private String getProfileText(String pageSource) {
-        String longestText = "";
+    /**
+     * 从新版抖音 UI XML 中提取 text/content-desc。
+     * 不再限制 android.widget.TextView，兼容新版自定义 View。
+     */
+    private List<String> extractUiTexts(String pageSource) {
+        List<String> values = new ArrayList<>();
+        if (pageSource == null || pageSource.isEmpty()) return new ArrayList<>();
 
         try {
-            Pattern p = Pattern.compile(
-                    "<android\\.widget\\.TextView[^>]*text=\"([^\"]+)\"[^>]*focusable=\"true\"[^>]*/?>"
-            );
+            // Preserve node order and repeated numbers. Deduplicating 67/67 shifts
+            // the following labels and can attribute fans to the following count.
+            Pattern p = Pattern.compile("<[^>]+>");
             Matcher m = p.matcher(pageSource);
-
             while (m.find()) {
-                String text = m.group(1)
-                        .replace("&#10;", "\n")
-                        .trim();
-
-                // ❌ 排除抖音号
-                if (text.startsWith("抖音号")) {
-                    continue;
-                }
-//
-//                // ❌ 太短的不要
-//                if (text.length() < 10) {
-//                    continue;
-//                }
-//
-//                // ❌ 没中文的一般不是简介
-//                if (!text.matches(".*[\\u4e00-\\u9fa5].*")) {
-//                    continue;
-//                }
-
-                // ⭐ 取最长的一条
-                if (text.length() > longestText.length()) {
-                    longestText = text;
-                }
+                Matcher text = Pattern.compile("\\btext=\"([^\"]*)\"").matcher(m.group());
+                Matcher desc = Pattern.compile("\\bcontent-desc=\"([^\"]*)\"").matcher(m.group());
+                String value = text.find() ? decodeXmlText(text.group(1)) : "";
+                if (value.isEmpty() && desc.find()) value = decodeXmlText(desc.group(1));
+                if (!value.isEmpty()) values.add(value);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning("解析UI文本失败: " + e.getMessage());
         }
-
-        return longestText;
+        return new ArrayList<>(values);
     }
 
+    private String decodeXmlText(String text) {
+        if (text == null) return "";
+        return org.apache.commons.lang3.StringEscapeUtils.unescapeXml(text).trim();
+    }
+
+    private String normalizeUiValue(String value) {
+        if (value == null) return "";
+        return value.replace('\n', ' ')
+                .replace('\r', ' ')
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private boolean isCountText(String text) {
+        if (text == null || text.trim().isEmpty()) return false;
+        String value = normalizeUiValue(text)
+                .replace(",", "")
+                .replace("，", "");
+        return value.matches("[0-9]+(?:\\.[0-9]+)?[万亿wWkK]?\\+?");
+    }
+
+    private String findStatFromUi(String pageSource, String... labels) {
+        // Current versions group each number and its label in a two-child container.
+        // This also handles label-first variants without crossing into the next statistic.
+        for (String label : labels) {
+            String sibling = "//*[@text='" + label + "' or @content-desc='" + label
+                    + "']/parent::*[count(*)=2]/*[not(@text='" + label + "' or @content-desc='" + label + "')]";
+            String local = finder.findTextFromSource(pageSource, new String[]{sibling}, this::isCountText, label);
+            if (!local.isEmpty()) return cleanNumberString(local);
+        }
+        List<String> texts = extractUiTexts(pageSource);
+
+        for (int i = 0; i < texts.size(); i++) {
+            String current = normalizeUiValue(texts.get(i));
+            if (current.isEmpty()) continue;
+
+            for (String label : labels) {
+                if (current.equals(label) && i > 0) {
+                    String previous = normalizeUiValue(texts.get(i - 1));
+                    if (isCountText(previous)) return cleanNumberString(previous);
+                }
+                if (current.equals(label) && i + 1 < texts.size()) {
+                    String next = normalizeUiValue(texts.get(i + 1));
+                    if (isCountText(next)) return cleanNumberString(next);
+                }
+
+                if (current.startsWith(label)) {
+                    String value = normalizeUiValue(current.substring(label.length()));
+                    if (isCountText(value)) return cleanNumberString(value);
+                }
+            }
+        }
+
+        // 最后再走原 XPathRegistry，保证旧版本兼容。
+        return "";
+    }
+
+    private String getNicknameV2(String src) {
+        try {
+            String old = finder.findTextFromSource(src, XPathRegistry.NICKNAME_XPATHS,
+                    txt -> txt != null && !txt.trim().isEmpty(), "nickname");
+            if (old != null && !old.trim().isEmpty()) return old.trim();
+        } catch (Exception ignored) { }
+
+        List<String> texts = extractUiTexts(src);
+        String fallback = "";
+
+        for (int i = 1; i < texts.size(); i++) {
+            if (normalizeUiValue(texts.get(i)).startsWith("抖音号")) {
+                String candidate = normalizeUiValue(texts.get(i - 1));
+                if (!candidate.isEmpty() && !candidate.contains("头像") && !candidate.contains("抖音号")
+                        && candidate.length() <= 60) return candidate;
+            }
+        }
+
+        for (String raw : texts) {
+            String text = normalizeUiValue(raw);
+            if (text.isEmpty()) continue;
+            if (text.contains("头像") || text.equals("返回") || text.equals("搜索") || text.equals("背景图片")) continue;
+            if (text.startsWith("抖音号") || text.startsWith("IP") || text.startsWith("IP属地")) continue;
+            if (text.matches("[0-9]+(?:\\.[0-9]+)?[万亿]?[关注粉丝作品获赞]*")) continue;
+            if (text.equals("关注") || text.equals("粉丝") || text.equals("作品") || text.equals("获赞")) continue;
+            if (text.contains("编辑资料") || text.contains("私信") || text.equals("更多")) continue;
+            if (text.length() <= 30 && !text.contains("：") && !text.contains(":")) {
+                if (fallback.isEmpty()) fallback = text;
+            }
+        }
+        return fallback;
+    }
+
+    private String getDouyinIdV2(String src, String nickname) {
+        List<String> texts = extractUiTexts(src);
+        for (int i = 0; i < texts.size(); i++) {
+            String text = normalizeUiValue(texts.get(i));
+            if (text.startsWith("抖音号")) {
+                String id = text.substring(3)
+                        .replace("：", "")
+                        .replace(":", "")
+                        .trim();
+                if (id.isEmpty() && i + 1 < texts.size()) id = normalizeUiValue(texts.get(i + 1));
+                if (isRealDouyinId(id)) return id;
+            }
+        }
+
+        try {
+            String id = finder.findTextFromSource(src, XPathRegistry.DOUYIN_ID_XPATHS,
+                    txt -> txt != null && !txt.trim().isEmpty(), "douyin_id");
+            if (id != null) {
+                id = TextCleaner.cleanDouyinId(id);
+                if (isRealDouyinId(id)) return id;
+            }
+        } catch (Exception ignored) { }
+
+        return "";
+    }
+
+    public static boolean isRealDouyinId(String id) {
+        return id != null && !id.startsWith("NICKNAME_") && id.matches("[A-Za-z0-9_.-]{1,64}");
+    }
+
+    private String getFollowCountV2(String src) {
+        String value = findStatFromUi(src, "关注");
+        if (!value.isEmpty()) return value;
+        return getFollowCountLegacy(src);
+    }
+
+    private String getFansCountV2(String src) {
+        String value = findStatFromUi(src, "粉丝");
+        if (!value.isEmpty()) return value;
+        return getFansCountLegacy(src);
+    }
+
+    private String getLikesCountV2(String src) {
+        String value = findStatFromUi(src, "获赞", "获赞数");
+        if (!value.isEmpty()) return value;
+        return getLikesCountLegacy(src);
+    }
+
+    private String getWorksCountV2(String src) {
+        String value = findStatFromUi(src, "作品", "作品数");
+        if (!value.isEmpty()) return value;
+        return getWorksCountLegacy(src);
+    }
+
+    private String getSignatureV2(String src, String nickname) {
+        List<String> texts = extractUiTexts(src);
+        boolean afterStats = false;
+        List<String> bio = new ArrayList<>();
+        for (String raw : texts) {
+            String text = normalizeUiValue(raw);
+            if (text.equals("粉丝")) { afterStats = true; continue; }
+            if (!afterStats) continue;
+            if (text.startsWith("IP") || text.startsWith("作品") || text.equals("关注") || text.equals("私信")) break;
+            if (isProfileBio(text, nickname)) bio.add(raw);
+        }
+        if (!bio.isEmpty()) return String.join("\n", bio);
+        try {
+            String old = finder.findTextFromSource(src, XPathRegistry.SIGNATURE_XPATHS,
+                    txt -> isProfileBio(normalizeUiValue(txt), nickname), "signature");
+            if (old != null && !old.trim().isEmpty()) return old.trim();
+        } catch (Exception ignored) { }
+        return "";
+    }
+
+    private boolean isProfileBio(String text, String nickname) {
+        return text != null && text.length() >= 3 && text.length() <= 1000 && !text.equals(nickname)
+                && !isCountText(text) && !text.startsWith("抖音号") && !text.startsWith("IP")
+                && !text.startsWith("作品") && !text.contains("按钮") && !text.contains("头像")
+                && !Arrays.asList("编辑资料", "背景图片", "探店足迹", "求更新", "刚刚看过").contains(text);
+    }
+
+    private String getRegionV2(String src) {
+        String ip = getIpLocationV2(src);
+        if (!ip.isEmpty()) return ip;
+        try {
+            String old = finder.findTextFromSource(src, XPathRegistry.IP_XPATHS,
+                    txt -> txt != null && !txt.isEmpty(), "region");
+            return old == null ? "" : old.trim();
+        } catch (Exception ignored) { return ""; }
+    }
+
+    private List<String> profileHeaderTexts(String src) {
+        List<String> header = new ArrayList<>();
+        for (String raw : extractUiTexts(src)) {
+            String text = normalizeUiValue(raw);
+            if (text.startsWith("作品") || text.equals("日常")) break;
+            header.add(text);
+        }
+        return header;
+    }
+
+    private String getGenderV2(String src) {
+        for (String text : profileHeaderTexts(src)) {
+            Matcher match = Pattern.compile("^(男|女)(?:[·•\\s]+(?:[0-9]{1,3}岁|[0-9]{2}后))?$").matcher(text);
+            if (match.matches()) return match.group(1);
+        }
+        return "";
+    }
+
+    private String getAgeV2(String src) {
+        for (String text : profileHeaderTexts(src)) {
+            Matcher match = Pattern.compile("^(?:(?:男|女)[·•\\s]+)?([0-9]{1,3}岁|[0-9]{2}后)$").matcher(text);
+            if (match.matches()) return match.group(1);
+        }
+        return "";
+    }
+
+    private String getSchoolV2(String src) {
+        boolean profileTags = false;
+        for (String text : profileHeaderTexts(src)) {
+            if (text.startsWith("IP")) { profileTags = true; continue; }
+            if (profileTags && text.matches("[\\p{IsHan}A-Za-z· ]{2,40}(?:大学|学院|学校)")) return text;
+        }
+        return "";
+    }
+
+    private String getProfileTextV2(String src) {
+        return getSignatureV2(src, getNicknameV2(src));
+    }
+
+    private String getIpLocationV2(String src) {
+        for (String raw : extractUiTexts(src)) {
+            String text = normalizeUiValue(raw);
+            if (text.startsWith("IP属地：")) return text.substring(4).trim();
+            if (text.startsWith("IP属地:")) return text.substring(4).trim();
+            if (text.startsWith("IP：")) return text.substring(3).trim();
+            if (text.startsWith("IP:")) return text.substring(3).trim();
+        }
+
+        Matcher m = Pattern.compile("IP(?:属地)?[：:]([^<>\\\"]+)").matcher(src);
+        return m.find() ? decodeXmlText(m.group(1)).trim() : "";
+    }
+
+    private String getRegionFullV2(String src) {
+        Pattern p = Pattern.compile("([\\u4e00-\\u9fa5]{2,12}(?:省|自治区|市)?(?:·|-|—)[\\u4e00-\\u9fa5]{2,12}(?:市|区|县)?)");
+        for (String raw : extractUiTexts(src)) {
+            Matcher m = p.matcher(normalizeUiValue(raw));
+            if (m.find()) return m.group(1);
+        }
+        return "";
+    }
+
+    private void parseRegion(Map<String, Object> info, String regionFull) {
+        if (regionFull == null || regionFull.trim().isEmpty()) return;
+        String value = regionFull.trim();
+        String[] parts = value.split("[·\\-—]", 2);
+        if (parts.length > 0) info.put("province", parts[0].trim());
+        if (parts.length > 1) info.put("city", parts[1].trim());
+    }
+
+    private String getPublicRealName(String src) {
+        // 仅读取页面当前已经公开显示的姓名字段，不点击实名认证入口。
+        String[] patterns = {
+                "真实姓名[：:]([^\\s<>\"]+)",
+                "姓名[：:]([^\\s<>\"]+)"
+        };
+        for (String regex : patterns) {
+            Matcher m = Pattern.compile(regex).matcher(src);
+            if (m.find()) return decodeXmlText(m.group(1)).trim();
+        }
+        return "";
+    }
+
+    // 旧版 XPath 解析作为兼容兜底。
+    private String getFollowCountLegacy(String src) {
+        try { return cleanNumberString(finder.findTextFromSource(src, XPathRegistry.FOLLOW_COUNT_XPATHS, null, "follow_count")); }
+        catch (Exception e) { return ""; }
+    }
+
+    private String getFansCountLegacy(String src) {
+        try { return cleanNumberString(finder.findTextFromSource(src, XPathRegistry.FANS_COUNT_XPATHS, null, "fans_count")); }
+        catch (Exception e) { return ""; }
+    }
+
+    private String getLikesCountLegacy(String src) {
+        try { return cleanNumberString(finder.findTextFromSource(src, XPathRegistry.LIKES_COUNT_XPATHS, null, "likes_count")); }
+        catch (Exception e) { return ""; }
+    }
+
+    private String getWorksCountLegacy(String src) {
+        try { return cleanNumberString(finder.findTextFromSource(src, XPathRegistry.WORKS_COUNT_XPATHS, null, "works_count")); }
+        catch (Exception e) { return ""; }
+    }
 
     private boolean ensureDeviceConnected() {
         try {
@@ -792,130 +1010,52 @@ public class AccountInfoFetcher {
     }
 
 
-    private String getRealName() {
-        // 1️⃣ 尝试直接从主页获取
-        String[] homepageXPs = new String[]{
-                "//*[contains(@text, '真实姓名')]",
-                "//*[contains(@text, '真实姓名：')]",
-                "//*[contains(@text, '真实姓名:')]",
-                "//*[contains(@text, '姓名：') and not(contains(@text, '未设置'))]",
-                "//*[contains(@text, '姓名:') and not(contains(@text, '未设置'))]",
-                "//*[contains(@resource-id, 'real_name')]",
-                "//*[contains(@resource-id, 'id_card_name')]"
-        };
 
-        String realName = finder.findTextWithRetry(homepageXPs, 1,
-                txt -> txt != null && !txt.trim().isEmpty(), "real_name");
 
-        if (realName != null && !realName.isEmpty()) {
-            return extractName(realName);
-        }
-
-        logger.info("未直接获取到实名信息，尝试点击已实名按钮...");
-
-        // 2️⃣ 点击“已实名”按钮或其他实名入口
-        String[] verifiedButtonXPs = new String[]{
-                "//*[contains(@text, '已实名')]",
-                "//*[contains(@text, '实名认证')]",
-                "//*[contains(@resource-id, 'real_name')]",
-                "//*[contains(@content-desc, '实名认证')]",
-                "//*[contains(@text, '实名信息')]",
-                "//*[contains(@resource-id, 'verified') and contains(@text, '实名')]",
-                "//*[@resource-id='com.ss.android.ugc.aweme:id/b8p']",
-                "//*[contains(@resource-id, 'authentication')]",
-                "//*[contains(@text, '认证说明')]"
-        };
-
-        boolean clicked = false;
-        for (String xp : verifiedButtonXPs) {
-            if (finder.exists(xp)) {
-                try {
-                    driver.findElement(By.xpath(xp)).click();
-                    finder.sleep(1500); // 等待弹窗/页面加载
-                    clicked = true;
-                    break;
-                } catch (Exception e) {
-                    logger.warning("点击已实名按钮失败: " + e.getMessage());
-                }
-            }
-        }
-
-        // 3️⃣ 点击后弹窗/页面再次抓取实名信息
-        if (clicked) {
-            String[] popupXPs = new String[]{
-                    "//*[contains(@text, '真实姓名')]/following-sibling::*",
-                    "//*[contains(@text, '姓名') and not(contains(@text, '未设置'))]",
-                    "//*[contains(@resource-id, 'real_name')]",
-                    "//*[contains(@resource-id, 'id_card_name')]"
-            };
-
-            realName = finder.findTextWithRetry(popupXPs, 3,
-                    txt -> txt != null && !txt.trim().isEmpty(), "real_name_after_click");
-
-            // 尝试点击“我知道了”或返回上一页
-            String[] closeXPs = new String[]{"//*[@text='我知道了']"};
-            for (String xp : closeXPs) {
-                if (finder.exists(xp)) {
-                    try {
-                        driver.findElement(By.xpath(xp)).click();
-                        break;
-                    } catch (Exception ignored) {
-                        driver.navigate().back();
-                    }
-                }
-            }
-        }
-
-        return realName != null ? extractName(realName) : "";
-    }
-
-    private boolean openUserProfileFromAvatar() {
+    private boolean openUserProfileFromAvatarV2() {
         String[] avatarXPs = new String[]{
                 "//*[@content-desc='用户头像']",
-                "//*[@resource-id='com.ss.android.ugc.aweme:id/kru']",
-                "//android.widget.ImageView[contains(@content-desc,'头像')]",
+                "//*[contains(@content-desc,'头像')]",
+                "//*[contains(@content-desc,'avatar')]",
+                "//*[contains(@resource-id,'avatar') and @clickable='true']",
                 "//android.widget.ImageView[@clickable='true']"
         };
 
-        // 1️⃣ 找头像
         for (String xp : avatarXPs) {
-            if (finder.exists(xp)) {
-                try {
-                    driver.findElement(By.xpath(xp)).click();
-                    finder.sleep(1500); // 等待跳转
+            try {
+                List<WebElement> elements = driver.findElements(By.xpath(xp));
+                for (WebElement element : elements) {
+                    if (!element.isDisplayed()) continue;
+                    element.click();
+                    sleep(1200);
                     logger.info("已点击用户头像，进入个人主页");
                     return true;
-                } catch (Exception e) {
-                    logger.warning("点击用户头像失败: " + e.getMessage());
                 }
+            } catch (Exception e) {
+                logger.fine("头像候选定位失败: " + e.getMessage());
             }
         }
 
-        logger.warning("未找到用户头像元素");
+        logger.warning("未找到可点击的用户头像元素");
         return false;
     }
 
-    // ======================
-    // 工具方法：提取姓名
-    // ======================
-    private String extractName(String text) {
-        if (text == null || text.trim().isEmpty()) return "";
-        String name = text;
-        if (text.contains("真实姓名：")) name = text.split("真实姓名：")[1].trim();
-        else if (text.contains("真实姓名:")) name = text.split("真实姓名:")[1].trim();
-        else if (text.contains("姓名：")) name = text.split("姓名：")[1].trim();
-        else if (text.contains("姓名:")) name = text.split("姓名:")[1].trim();
-        else if (text.contains("：")) name = text.split("：")[1].trim();
-        else if (text.contains(":")) name = text.split(":", 2)[1].trim();
-        else name = text.trim();
-        return name;
-    }
+
 
     // ======================
-    // 工具方法：保留原始数字+小数点+单位字符串
+    // Normalize display units before persisting numeric profile fields.
     // ======================
     private String cleanNumberString(String txt) {
         if (txt == null) return "";
-        return txt.replaceAll("[^0-9\\.亿万]", "");
+        Matcher count = Pattern.compile("([0-9]+(?:\\.[0-9]+)?)\\s*([亿万wWkK]?)")
+                .matcher(txt.replace(",", "").replace("，", ""));
+        if (!count.find()) return "";
+        long multiplier = 1;
+        String unit = count.group(2);
+        if ("亿".equals(unit)) multiplier = 100000000L;
+        else if ("万".equals(unit) || "w".equalsIgnoreCase(unit)) multiplier = 10000L;
+        else if ("k".equalsIgnoreCase(unit)) multiplier = 1000L;
+        return new java.math.BigDecimal(count.group(1)).multiply(java.math.BigDecimal.valueOf(multiplier))
+                .setScale(0, java.math.RoundingMode.DOWN).toPlainString();
     }
 }

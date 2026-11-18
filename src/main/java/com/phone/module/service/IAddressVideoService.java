@@ -11,6 +11,9 @@ import com.phone.module.domain.AddressVideo;
  */
 public interface IAddressVideoService 
 {
+    int updateCrawledAddressVideo(AddressVideo video);
+    long countAddressVideos(String address);
+
     /**
      * 查询地址视频总
      * 

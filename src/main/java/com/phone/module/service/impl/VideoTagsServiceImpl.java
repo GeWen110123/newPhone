@@ -59,6 +59,7 @@ public class VideoTagsServiceImpl implements IVideoTagsService
     public int insertVideoTags(VideoTags videoTags)
     {
         videoTags.setCreateTime(DateUtils.getNowDate());
+        if (videoTags.getUpdateTime() == null) videoTags.setUpdateTime(videoTags.getCreateTime());
         return videoTagsMapper.insertVideoTags(videoTags);
     }
 

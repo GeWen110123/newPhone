@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.phone.module.mapper.AnalyticsMapper">
+    <!-- All filters are bound server-created values. This module's source lists require authentication. -->
+    <sql id="executionKind">
+        <if test="kind == 'location'">
+            AND (COALESCE(t.tags, '') LIKE '%地址%' OR COALESCE(t.tags, '') LIKE '%附近%' OR COALESCE(t.tags, '') LIKE '%综合视频%')
+        </if>
+        <if test="kind == 'account'">
+            AND NOT (COALESCE(t.tags, '') LIKE '%地址%' OR COALESCE(t.tags, '') LIKE '%附近%' OR COALESCE(t.tags, '') LIKE '%综合视频%')
+            AND (COALESCE(t.tags, '') LIKE '%视频%' OR COALESCE(t.tags, '') LIKE '%基本信息%' OR COALESCE(t.tags, '') LIKE '%评论%'
+                 OR COALESCE(t.tags, '') LIKE '%粉丝%' OR COALESCE(t.tags, '') LIKE '%关注%')
+        </if>
+    </sql>
+    <!-- Match the crawler branch precedence: address, comprehensive search, nearby, account. -->
+    <sql id="geographicExecution">
+        (COALESCE(t.tags, '') LIKE '%地址%' OR
+         (COALESCE(t.tags, '') NOT LIKE '%综合视频%' AND COALESCE(t.tags, '') LIKE '%附近%'))
+    </sql>
+    <sql id="geographicTarget">
+        CASE WHEN COALESCE(t.tags, '') LIKE '%地址%' THEN NULLIF(TRIM(t.douyin_id), '')
+             WHEN COALESCE(t.tags, '') NOT LIKE '%综合视频%' AND COALESCE(t.tags, '') LIKE '%附近%'
+             THEN NULLIF(TRIM(t.address), '') ELSE NULL END
+    </sql>
+    <sql id="executionWhere">
+        WHERE 1 = 1 <include refid="executionKind"/>
+        <if test="start != null">AND COALESCE(t.update_time, t.create_time) &gt;= #{start}</if>
+        AND (COALESCE(t.update_time, t.create_time) &lt; #{end}
+             <if test="start == null">OR COALESCE(t.update_time, t.create_time) IS NULL</if>)
+    </sql>
+    <sql id="counts">
+        COUNT(*) AS total,
+        COALESCE(SUM(CASE WHEN t.status = '0' THEN 1 ELSE 0 END), 0) AS waiting,
+        COALESCE(SUM(CASE WHEN t.status = '1' THEN 1 ELSE 0 END), 0) AS running,
+        COALESCE(SUM(CASE WHEN t.status = '2' THEN 1 ELSE 0 END), 0) AS completed,
+        COALESCE(SUM(CASE WHEN t.status = '3' THEN 1 ELSE 0 END), 0) AS error,
+        COALESCE(SUM(CASE WHEN t.status IS NULL OR t.status NOT IN ('0', '1', '2', '3') THEN 1 ELSE 0 END), 0) AS `unknown`
+    </sql>
+    <select id="executionSummary" resultType="map">
+        SELECT <include refid="counts"/>, COUNT(DISTINCT t.task_id) AS taskTotal,
+               COUNT(DISTINCT NULLIF(TRIM(t.dev_id), '')) AS activeDevices,
+               CASE WHEN COALESCE(SUM(CASE WHEN t.run_num IS NULL OR t.run_num &lt; 0 THEN 1 ELSE 0 END), 0) &gt; 0
+                    THEN NULL ELSE COALESCE(SUM(t.run_num), 0) END AS runTotal,
+               COALESCE(SUM(CASE WHEN t.run_num &gt;= 0 THEN t.run_num ELSE 0 END), 0) AS runKnownTotal,
+               COALESCE(SUM(CASE WHEN t.run_num IS NULL THEN 1 ELSE 0 END), 0) AS runMissing,
+               COALESCE(SUM(CASE WHEN t.run_num &lt; 0 THEN 1 ELSE 0 END), 0) AS runInvalid
+        FROM video_tags t <include refid="executionWhere"/>
+    </select>
+    <select id="missingExecutionTime" resultType="long">
+        SELECT COUNT(*) FROM video_tags t WHERE t.update_time IS NULL AND t.create_time IS NULL
+        <include refid="executionKind"/>
+    </select>
+    <select id="executionTrend" resultType="map">
+        SELECT <choose><when test="monthly">DATE_FORMAT(COALESCE(t.update_time, t.create_time), '%Y-%m')</when>
+            <otherwise>DATE_FORMAT(COALESCE(t.update_time, t.create_time), '%Y-%m-%d')</otherwise></choose> AS date,
+            COUNT(*) AS total, SUM(CASE WHEN t.status = '2' THEN 1 ELSE 0 END) AS completed,
+            SUM(CASE WHEN t.status = '3' THEN 1 ELSE 0 END) AS error
+        FROM video_tags t <include refid="executionWhere"/>
+        AND COALESCE(t.update_time, t.create_time) IS NOT NULL
+        GROUP BY date ORDER BY date
+    </select>
+    <select id="executionCalendar" resultType="map">
+        SELECT DATE_FORMAT(COALESCE(t.update_time, t.create_time), '%Y-%m-%d') AS date, COUNT(*) AS value
+        FROM video_tags t WHERE COALESCE(t.update_time, t.create_time) &gt;= #{calendarStart}
+          AND COALESCE(t.update_time, t.create_time) &lt; #{end} <include refid="executionKind"/>
+        GROUP BY date ORDER BY date
+    </select>
+    <select id="executionRegions" resultType="map">
+        SELECT <include refid="geographicTarget"/> AS name,
+               CONCAT('target:', <include refid="geographicTarget"/>) AS `key`, COUNT(*) AS value
+        FROM video_tags t <include refid="executionWhere"/>
+          AND <include refid="geographicExecution"/> AND (<include refid="geographicTarget"/>) IS NOT NULL
+        GROUP BY name, `key` ORDER BY value DESC, name LIMIT 12
+    </select>
+    <select id="executionRegionSummary" resultType="map">
+        SELECT COALESCE(SUM(CASE WHEN <include refid="geographicExecution"/> THEN 1 ELSE 0 END), 0) AS total,
+               COALESCE(SUM(CASE WHEN <include refid="geographicExecution"/> AND (<include refid="geographicTarget"/>) IS NULL THEN 1 ELSE 0 END), 0) AS missing,
+               COALESCE(SUM(CASE WHEN COALESCE(t.tags, '') NOT LIKE '%地址%' AND COALESCE(t.tags, '') LIKE '%综合视频%' THEN 1 ELSE 0 END), 0) AS searchExcluded
+        FROM video_tags t <include refid="executionWhere"/>
+    </select>
+    <select id="executionTags" resultType="map">
+        SELECT COALESCE(NULLIF(TRIM(t.tags), ''), '未配置策略') AS name, COUNT(*) AS value
+        FROM video_tags t <include refid="executionWhere"/> GROUP BY name ORDER BY value DESC, name LIMIT 12
+    </select>
+    <select id="executionDevices" resultType="map">
+        SELECT COALESCE(NULLIF(TRIM(t.dev_id), ''), '未分配设备') AS name,
+               COUNT(*) AS total, SUM(CASE WHEN t.status = '2' THEN 1 ELSE 0 END) AS completed,
+               SUM(CASE WHEN t.status = '3' THEN 1 ELSE 0 END) AS error
+        FROM video_tags t <include refid="executionWhere"/> GROUP BY name ORDER BY total DESC, name LIMIT 10
+    </select>
+    <select id="executionTasks" resultType="map">
+        SELECT COALESCE(NULLIF(MAX(TRIM(t.task_name)), ''), CONCAT('任务 #', t.task_id), '未关联任务') AS name,
+               COALESCE(CONCAT('task:', t.task_id), 'task:missing') AS `key`,
+               COUNT(*) AS total, SUM(CASE WHEN t.status = '2' THEN 1 ELSE 0 END) AS completed,
+               SUM(CASE WHEN t.status = '3' THEN 1 ELSE 0 END) AS error
+        FROM video_tags t <include refid="executionWhere"/> GROUP BY t.task_id ORDER BY total DESC, name LIMIT 10
+    </select>
+    <select id="accountTotal" resultType="long">SELECT COUNT(DISTINCT NULLIF(TRIM(douyin_id), '')) FROM account</select>
+    <select id="locationTotal" resultType="long">SELECT COUNT(DISTINCT NULLIF(TRIM(address), '')) FROM address_video</select>
+    <select id="accountTaskTotal" resultType="long">SELECT COUNT(*) FROM video_task WHERE type = '1'</select>
+    <select id="locationTaskTotal" resultType="long">SELECT COUNT(*) FROM video_task WHERE type = '2'</select>
+    <select id="deviceTotal" resultType="long">SELECT COUNT(*) FROM device</select>
+    <select id="groupTotal" resultType="long">SELECT COUNT(*) FROM device_group</select>
+    <select id="deviceStatuses" resultType="map">
+        SELECT CASE status WHEN '1' THEN '在线' WHEN '0' THEN '离线' ELSE '未知' END AS name, COUNT(*) AS value
+        FROM device GROUP BY name ORDER BY value DESC, name
+    </select>
+    <select id="deviceModels" resultType="map">
+        SELECT COALESCE(NULLIF(TRIM(model), ''), '未知型号') AS name, COUNT(*) AS value
+        FROM device GROUP BY name ORDER BY value DESC, name LIMIT 12
+    </select>
+    <!-- Member strings are name_id tokens. Resolve the numeric suffix so renamed devices still match. -->
+    <sql id="groupMemberRows">
+        SELECT g.id, g.group_name, g.device_count AS recordedCount, COUNT(DISTINCT d.id) AS currentMemberCount
+        FROM device_group g
+        LEFT JOIN JSON_TABLE(CONCAT('[', REPLACE(JSON_QUOTE(COALESCE(g.dev_id, '')), ',', '","'), ']'),
+                             '$[*]' COLUMNS (token VARCHAR(2550) PATH '$')) members ON TRUE
+        LEFT JOIN device d ON d.id = CASE WHEN TRIM(members.token) REGEXP '_[0-9]+$'
+                                          THEN CAST(SUBSTRING_INDEX(TRIM(members.token), '_', -1) AS UNSIGNED) ELSE NULL END
+        GROUP BY g.id, g.group_name, g.device_count
+    </sql>
+    <select id="groups" resultType="map">
+        SELECT CONCAT('group:', g.id) AS `key`, COALESCE(NULLIF(TRIM(g.group_name), ''), CONCAT('分组 #', g.id)) AS name,
+               g.currentMemberCount AS value, g.currentMemberCount, g.recordedCount
+        FROM (<include refid="groupMemberRows"/>) g ORDER BY value DESC, g.id LIMIT 12
+    </select>
+    <select id="groupSummary" resultType="map">
+        SELECT COALESCE(SUM(g.currentMemberCount), 0) AS membershipsTotal,
+               COALESCE(SUM(CASE WHEN g.recordedCount IS NOT NULL AND g.recordedCount != g.currentMemberCount THEN 1 ELSE 0 END), 0) AS mismatchedGroups,
+               COALESCE(SUM(CASE WHEN g.recordedCount IS NULL THEN 1 ELSE 0 END), 0) AS unknownRecordedGroups
+        FROM (<include refid="groupMemberRows"/>) g
+    </select>
+    <select id="users" resultType="map">
+        SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN u.status = '0' THEN 1 ELSE 0 END), 0) AS active,
+               COALESCE(SUM(CASE WHEN u.status = '1' THEN 1 ELSE 0 END), 0) AS disabled,
+               COALESCE(SUM(CASE WHEN u.status IS NULL OR u.status NOT IN ('0', '1') THEN 1 ELSE 0 END), 0) AS `unknown`
+        FROM sys_user u
+        WHERE u.del_flag = '0'
+        <!-- Populated only by the existing @DataScope aspect on a server-created query. -->
+        ${params.dataScope}
+    </select>
+    <!-- Latest row per nonblank platform uid. Unknown uid rows are independent assets. -->
+    <sql id="accountVideoRows">
+        SELECT v.*, ROW_NUMBER() OVER (
+            PARTITION BY CASE WHEN NULLIF(TRIM(v.uid), '') IS NULL THEN CONCAT('missing:', v.id) ELSE CONCAT('uid:', TRIM(v.uid)) END
+            ORDER BY v.create_time DESC, v.id DESC) AS latest,
+            MIN(v.create_time) OVER (PARTITION BY CASE WHEN NULLIF(TRIM(v.uid), '') IS NULL THEN CONCAT('missing:', v.id) ELSE CONCAT('uid:', TRIM(v.uid)) END) AS first_time
+        FROM video v
+    </sql>
+    <sql id="locationVideoRows">
+        SELECT v.*, ROW_NUMBER() OVER (
+            PARTITION BY CASE WHEN NULLIF(TRIM(v.uid), '') IS NULL THEN CONCAT('missing:', v.source_row_number) ELSE CONCAT('uid:', TRIM(v.uid)) END
+            ORDER BY v.create_time DESC, v.video_index DESC, COALESCE(v.video_path, '') DESC,
+                     COALESCE(v.image_path, '') DESC, COALESCE(v.json_path, '') DESC, COALESCE(v.douyin_id, '') DESC,
+                     COALESCE(v.address, '') DESC) AS latest,
+            MIN(v.create_time) OVER (PARTITION BY CASE WHEN NULLIF(TRIM(v.uid), '') IS NULL THEN CONCAT('missing:', v.source_row_number) ELSE CONCAT('uid:', TRIM(v.uid)) END) AS first_time
+        FROM (SELECT a.*, ROW_NUMBER() OVER (ORDER BY a.uid, a.create_time, a.video_index) AS source_row_number FROM address_video a) v
+    </sql>
+    <sql id="assetSummary">
+        COUNT(*) AS total,
+        COALESCE(SUM(CASE WHEN NULLIF(TRIM(v.video_path), '') IS NOT NULL THEN 1 ELSE 0 END), 0) AS videoFiles,
+        COALESCE(SUM(CASE WHEN NULLIF(TRIM(v.image_path), '') IS NOT NULL THEN 1 ELSE 0 END), 0) AS imageFiles,
+        COALESCE(SUM(CASE WHEN NULLIF(TRIM(v.json_path), '') IS NOT NULL THEN 1 ELSE 0 END), 0) AS commentFiles
+    </sql>
+    <select id="accountVideoSummary" resultType="map">
+        SELECT <include refid="assetSummary"/> FROM (<include refid="accountVideoRows"/>) v WHERE v.latest = 1
+    </select>
+    <select id="locationVideoSummary" resultType="map">
+        SELECT <include refid="assetSummary"/> FROM (<include refid="locationVideoRows"/>) v WHERE v.latest = 1
+    </select>
+    <sql id="contentTrendFields">
+        <choose><when test="monthly">DATE_FORMAT(v.first_time, '%Y-%m')</when>
+        <otherwise>DATE_FORMAT(v.first_time, '%Y-%m-%d')</otherwise></choose> AS date, COUNT(*) AS value
+    </sql>
+    <sql id="contentTrendWhere">
+        WHERE v.latest = 1 AND v.first_time IS NOT NULL AND v.first_time &lt; #{end}
+        <if test="start != null">AND v.first_time &gt;= #{start}</if>
+        GROUP BY date ORDER BY date
+    </sql>
+    <select id="accountVideoTrend" resultType="map">
+        SELECT <include refid="contentTrendFields"/> FROM (<include refid="accountVideoRows"/>) v <include refid="contentTrendWhere"/>
+    </select>
+    <select id="locationVideoTrend" resultType="map">
+        SELECT <include refid="contentTrendFields"/> FROM (<include refid="locationVideoRows"/>) v <include refid="contentTrendWhere"/>
+    </select>
+    <sql id="accountTargetRows">
+        SELECT NULLIF(TRIM(v.douyin_id), '') AS target,
+               CASE WHEN NULLIF(TRIM(v.uid), '') IS NULL THEN CONCAT('missing:', v.id) ELSE CONCAT('uid:', TRIM(v.uid)) END AS asset
+        FROM video v
+        GROUP BY target, asset
+    </sql>
+    <sql id="locationTargetRows">
+        SELECT NULLIF(TRIM(v.address), '') AS target,
+               CASE WHEN NULLIF(TRIM(v.uid), '') IS NULL THEN CONCAT('missing:', v.source_row_number) ELSE CONCAT('uid:', TRIM(v.uid)) END AS asset
+        FROM (SELECT a.uid, a.address, ROW_NUMBER() OVER (ORDER BY a.uid, a.create_time, a.video_index) AS source_row_number FROM address_video a) v
+        GROUP BY target, asset
+    </sql>
+    <select id="topAccounts" resultType="map">
+        SELECT COALESCE(v.target, '未指定目标') AS name, COALESCE(CONCAT('target:', v.target), 'synthetic:missing') AS `key`, COUNT(*) AS value
+        FROM (<include refid="accountTargetRows"/>) v GROUP BY v.target ORDER BY value DESC, name LIMIT 10
+    </select>
+    <select id="topLocations" resultType="map">
+        SELECT COALESCE(v.target, '未指定目标') AS name, COALESCE(CONCAT('target:', v.target), 'synthetic:missing') AS `key`, COUNT(*) AS value
+        FROM (<include refid="locationTargetRows"/>) v GROUP BY v.target ORDER BY value DESC, name LIMIT 10
+    </select>
+    <select id="accountTargetMemberships" resultType="long">SELECT COUNT(*) FROM (<include refid="accountTargetRows"/>) v</select>
+    <select id="locationTargetMemberships" resultType="long">SELECT COUNT(*) FROM (<include refid="locationTargetRows"/>) v</select>
+    <select id="commentSummary" resultType="map">
+        SELECT COUNT(*) AS total, COUNT(DISTINCT NULLIF(TRIM(c.user_uid), '')) AS uniqueCommenters
+        FROM comment c INNER JOIN (
+            <if test="kind != 'location'">
+                SELECT DISTINCT CONVERT(v.uid USING utf8mb4) COLLATE utf8mb4_unicode_ci AS uid
+                FROM video v WHERE NULLIF(TRIM(v.uid), '') IS NOT NULL
+            </if>
+            <if test="kind == 'all'">UNION</if>
+            <if test="kind != 'account'">
+                SELECT DISTINCT CONVERT(a.uid USING utf8mb4) COLLATE utf8mb4_unicode_ci AS uid
+                FROM address_video a WHERE NULLIF(TRIM(a.uid), '') IS NOT NULL
+            </if>
+        ) vids ON vids.uid = CONVERT(c.uid USING utf8mb4) COLLATE utf8mb4_unicode_ci
+    </select>
+</mapper>

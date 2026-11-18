@@ -30,17 +30,19 @@ DOUYIN_OUTPUT=D:/douyin_output
 ## 构建与启动
 
 ```bash
-mvn clean package -DskipTests
-java -jar target/phone.jar
+mvn package
+java -jar target/phone.jar --server.port=8099 --phone.maintenance-enabled=false
 ```
 
-抖音定时任务默认关闭，确认 ADB、Appium Server、设备和数据库均已准备好后再开启：
+统计、执行列表、登录和其他业务接口由同一个 Spring Boot 服务提供，统一使用8099，不需要常驻8100服务。前端开发代理仅配置 `API_TARGET=http://127.0.0.1:8099`。
+
+当前配置的抖音定时任务默认开启；仅做隔离验证时显式关闭，避免重复调度：
 
 ```text
-DOUYIN_SCHEDULER_ENABLED=true
+DOUYIN_SCHEDULER_ENABLED=false
 ```
 
-这样可以避免开发、迁移或部署阶段自动触发设备操作。采集实现集中在 `com.phone.adb` 与 `com.phone.module.service`，原有接口路径和 Mapper 命名保持不变。
+正常主服务应保留业务需要的调度配置；启动维护程序默认关闭，不能为重启服务随意启用。采集实现集中在 `com.phone.adb` 与 `com.phone.module.service`，原有接口路径和 Mapper 命名保持不变。Windows上不要覆盖正在运行的jar或IDE使用的classes，先独立构建、测试，再停止旧实例并切换，避免文件锁和版本混用。
 
 ## 本次剥离
 

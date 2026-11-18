@@ -11,6 +11,7 @@ import com.phone.module.domain.Video;
  */
 public interface IVideoService 
 {
+    long countVideos(String douyinId);
     /**
      * 查询video
      * 

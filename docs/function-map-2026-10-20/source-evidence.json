@@ -1,0 +1,912 @@
+[
+  {
+    "repository": "前端",
+    "file": "src/lib/routes.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\lib\\routes.ts",
+    "sha256": "09573959ab467f114de23f028678f6f984e3f4e64656ddab183642eace628ac6",
+    "lines": 262
+  },
+  {
+    "repository": "后端",
+    "file": "README.md",
+    "path": "D:\\IdeaProjects\\newPhone\\README.md",
+    "sha256": "87accd4234bf6138351b2949baab5536841444e5e8633d8a63c063682c2c0df9",
+    "lines": 49
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/auth/AuthProvider.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\auth\\AuthProvider.tsx",
+    "sha256": "d5eed8d2269e69fbd59945440269216296acce859c111a5fc7a52915270df4c1",
+    "lines": 236
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysLoginController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysLoginController.java",
+    "sha256": "3259201d8bff6dae1123ae7ff83f4f5281c2d2cab7849fa135c8f195990aac8e",
+    "lines": 99
+  },
+  {
+    "repository": "前端",
+    "file": "src/lib/session.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\lib\\session.ts",
+    "sha256": "41b8634d716d417811f341fdd6b949a384bea73c1f046ccfc12de4d0d156b10e",
+    "lines": 257
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/auth/login-preferences.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\auth\\login-preferences.ts",
+    "sha256": "38a02d3b4b38085f05171f0e01faab19048536ee21ad871a6a6cc2c8ff483b05",
+    "lines": 18
+  },
+  {
+    "repository": "前端",
+    "file": "src/utils/request.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\utils\\request.ts",
+    "sha256": "8158e6ca1b5b197c0e755c19423bd411780bff640dddfbfb20336841766d5dbc",
+    "lines": 146
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/framework/config/SecurityConfig.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\framework\\config\\SecurityConfig.java",
+    "sha256": "c2efdc67cbcfb53524736795f72a8ea359df697f0c9478984deb5785913f1977",
+    "lines": 149
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/auth/PasswordDialog.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\auth\\PasswordDialog.tsx",
+    "sha256": "72998b590f29839474a0f86a109fc1a79b7202889624f8182c47e0d980fd7c42",
+    "lines": 161
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysProfileController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysProfileController.java",
+    "sha256": "4d48eb48879fde42d6f8b923bf09c1092a9c63685fd3b5b09fe0f8c0a4548a8c",
+    "lines": 150
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/ui/password-input.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\ui\\password-input.tsx",
+    "sha256": "8459972b8a6464d6e3a17b83b3d45c8b36374ff420fb4c324eeddda21e464bbc",
+    "lines": 54
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/auth/RegisterPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\auth\\RegisterPage.tsx",
+    "sha256": "7e0442d9ac27942cbafc4aef6dbaffea3d7029872849727560a03b1fe0512b32",
+    "lines": 247
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysRegisterController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysRegisterController.java",
+    "sha256": "2ddc5603e9828c8e8fd8224c682581c25d02f2d06676ecc61f53003095254df1",
+    "lines": 35
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/framework/web/service/SysRegisterService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\framework\\web\\service\\SysRegisterService.java",
+    "sha256": "8629123cd94bde9de26dea7350af5cc004f96c0d398fddeb4010ec1534b524db",
+    "lines": 112
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/auth/LoginPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\auth\\LoginPage.tsx",
+    "sha256": "a7847be872a3d03217d77c817e8168f8819c0c71e746d51f3dffc13b0c4c164d",
+    "lines": 312
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/framework/web/service/SysLoginService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\framework\\web\\service\\SysLoginService.java",
+    "sha256": "69baeccaaccae3877687d19c3b7451642d552b90f1f6329a8cd9fb64c349a01a",
+    "lines": 126
+  },
+  {
+    "repository": "前端",
+    "file": "src/api/login.js",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\api\\login.js",
+    "sha256": "0af04589146f74b6e590c82a7f51b1138870275261617c6e58096a958a394a21",
+    "lines": 72
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/framework/web/service/SysPermissionService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\framework\\web\\service\\SysPermissionService.java",
+    "sha256": "5b1b276c8e7861224db1205c19efbba9a70956e8fcfba6b54604779ba544c299",
+    "lines": 68
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/analytics/AnalyticsPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\analytics\\AnalyticsPage.tsx",
+    "sha256": "1ca957076a4583b9db88c69712234de6086e3dcffc09bce8432f323eb25630aa",
+    "lines": 1093
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AnalyticsController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AnalyticsController.java",
+    "sha256": "500f5103438b7e66c74469caadf6ed29f424430a0ba4d6006cc4fb0ded9bbdc5",
+    "lines": 36
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/AnalyticsService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\AnalyticsService.java",
+    "sha256": "dedfa2848f2abee10a2f5d6be887de40a060fe8c932e9ec49ad17d5fe8e0e147",
+    "lines": 273
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/analytics/ChartTooltip.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\analytics\\ChartTooltip.tsx",
+    "sha256": "b07452c619c2e7e2d3795b7b54f9db373b833bee138ded449a0d0a6d7c136cc2",
+    "lines": 160
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/analytics/use-server-analytics.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\analytics\\use-server-analytics.ts",
+    "sha256": "3660bb42652a8cb6698468a1cd9d2a330ed3878f6841aa0b40ae5d4d342953ee",
+    "lines": 148
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/analytics/chart-motion.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\analytics\\chart-motion.ts",
+    "sha256": "fe88d76de8fa95e585cee5505a32569ad4bd665dd79a047986ebae09622d0ca7",
+    "lines": 38
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/domain/analytics/AnalyticsQuery.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\domain\\analytics\\AnalyticsQuery.java",
+    "sha256": "db6b33c8330ddd95fd06fde8e7280f9abf7927bd89e0f1b51bfe78845ae5814f",
+    "lines": 34
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/tasks.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\tasks.tsx",
+    "sha256": "f3a073a4c9efc1729122675661a2ce82592cdec13410f063d1ae831fce7ceda8",
+    "lines": 1150
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\VideoTaskController.java",
+    "sha256": "1e023babaa62cb1a7d5759dea4969d5bc2fbf82d57b520d30eafaf3f0069a9d2",
+    "lines": 212
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\VideoTagsController.java",
+    "sha256": "b05e6c0aea1540ed47ce36958fe97a506088a85d41d0edaedafcd2d165caee1f",
+    "lines": 225
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/impl/VideoTaskServiceImpl.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\impl\\VideoTaskServiceImpl.java",
+    "sha256": "03dfacd8323a12bda68a77b2a1870db4439336d778e086a792ccfc0729a1c025",
+    "lines": 93
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/details.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\details.tsx",
+    "sha256": "a83f6a8fd801489e1d1722ead0a55f744a24e49e316d7150f429461a4451b903",
+    "lines": 978
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/account-overview.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\account-overview.tsx",
+    "sha256": "e9241982362853c111ae7685c8474c8290ecc64f37d4a9847d252119ce7e5436",
+    "lines": 331
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/VideoController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\VideoController.java",
+    "sha256": "a56d3003440fb1a2f3c8c8106d5389750df09a316840974e382929d43ed1df51",
+    "lines": 214
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/models.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\models.ts",
+    "sha256": "6bdbc91a0518e8221afa5410168151b8dccbd81895f82d36ff9f1c64fefc684b",
+    "lines": 275
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/people.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\people.tsx",
+    "sha256": "17f4338aed2bb560e9d41931bb0fca3be856f1188db34c7f54bfaf11b9d03bc0",
+    "lines": 240
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/shared.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\shared.tsx",
+    "sha256": "a925ee67e88a7afdd29f27346298115b53c7a8c37446dd02e99724ee6ac6a692",
+    "lines": 381
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/DetailBackTop.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\DetailBackTop.tsx",
+    "sha256": "8025647f6e59d4ea5a8478641623ab51cfc59c912ee1c25d5fba37d4aa8f70a1",
+    "lines": 91
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/DouyinTaskService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\DouyinTaskService.java",
+    "sha256": "36fb8a688d2a925f32bf03d0703657828ea3e23cbed43638af65157a5ba61a22",
+    "lines": 389
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AddressVideoController.java",
+    "sha256": "9f0bbdb0db2a2a13c53bb580143c0f38e796aa8cde3226f50331ce315e522d5c",
+    "lines": 161
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/resources/mapper/module/AddressVideoMapper.xml",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\resources\\mapper\\module\\AddressVideoMapper.xml",
+    "sha256": "d9d2f5ca00ce3e2523315438d72abfb1f90a97c6dc2deb3e2e572f69458ed233",
+    "lines": 237
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/media.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\media.tsx",
+    "sha256": "4c47b396647fff26f8a94e5fef566297b88bebcb001ff74e64435bd5a654b965",
+    "lines": 454
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/comment-text.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\comment-text.tsx",
+    "sha256": "ae8d082dcc29d20d8fc90b997df271f804dc64ff96428979ff218ad006e8c204",
+    "lines": 70
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/topic-text.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\topic-text.tsx",
+    "sha256": "26ef0d6847ceab4357559a8e67aecc0a78e35358d138a9da8fa00c1d24579d9e",
+    "lines": 39
+  },
+  {
+    "repository": "前端",
+    "file": "src/lib/display-text.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\lib\\display-text.ts",
+    "sha256": "342e92472ff9f94e6d3e49b8c85a19f55aa19d40585901807a11a0eb6fdbe52e",
+    "lines": 50
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/relation-person-card.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\relation-person-card.tsx",
+    "sha256": "4ff7c80cfe65cf64bcb2998071c9466fac3ecfb04e8e41e8041b084d6a985e9a",
+    "lines": 174
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/devices/DevicesPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\devices\\DevicesPage.tsx",
+    "sha256": "560161314d95af384e79ac4a3986e1e39f50b9fd06daef38b0c71e89252aefc6",
+    "lines": 480
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/devices/DeviceGroupsPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\devices\\DeviceGroupsPage.tsx",
+    "sha256": "3fe697fb31ed584af031e0637841c38f762367b18fde3f915e129e587234399d",
+    "lines": 303
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\DeviceController.java",
+    "sha256": "15bfeb138e478f8964ce473516b2d0e9cd77d6e089d8381f74faab30a583f26a",
+    "lines": 251
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\DeviceGroupController.java",
+    "sha256": "160167746268813600231c3b299db94f652a0430bd71fb466607e78e195806dc",
+    "lines": 180
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/devices/api.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\devices\\api.ts",
+    "sha256": "8fc2bb1258a52a233e048f66302a68f707bd88909c088728ad026b4c9ffe027b",
+    "lines": 104
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/ProbeRecordsPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\ProbeRecordsPage.tsx",
+    "sha256": "0a5f0bdd2ab9b8011f146a24f7552ae38f67aa363c92d02b9551ba4937ffdf86",
+    "lines": 360
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\RunLogController.java",
+    "sha256": "45a93b840c7ce162bef988d648adaabc7667bcc5b2a6e19624a0fba05b67f2f4",
+    "lines": 102
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/DouyinVideoService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\DouyinVideoService.java",
+    "sha256": "c029a2284eb3e7f951689c25b181584244aebcee28e068a79e93e07754da6f7a",
+    "lines": 828
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/resources/mapper/module/VideoTagsMapper.xml",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\resources\\mapper\\module\\VideoTagsMapper.xml",
+    "sha256": "c3fd75fa43f19a59aba6f9e94647a1bbd0576ee01931aac7836d810858d46099",
+    "lines": 120
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/UsersPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\UsersPage.tsx",
+    "sha256": "ef08723385de05c69fe6a8d4b8ae8ed802bdba4a4dad6591b6bd8bdc4ff9b21e",
+    "lines": 404
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/SettingsPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\SettingsPage.tsx",
+    "sha256": "62315d867c186fa916a9e6776264d3060cd775008f38dec55d47bef317878c26",
+    "lines": 25
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/AccountPages.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\AccountPages.tsx",
+    "sha256": "b3a34ddf1de79b8527ac873b1179bd05a48a1e1a609f550370ba0d50e22b05c4",
+    "lines": 537
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysUserController.java",
+    "sha256": "c8bc23b521eeb6d1a757c4c6a427fb6a77deae341cc28f6b4043fc2024c083d0",
+    "lines": 233
+  },
+  {
+    "repository": "前端",
+    "file": "src/api/system/user.js",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\api\\system\\user.js",
+    "sha256": "06d27379b515ec5492d9e390ea23b7673d2937251c1a720b61caf17c428ae792",
+    "lines": 246
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/common.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\common.tsx",
+    "sha256": "872b249e9e1a933f55470194b16879682b362a4d1b3b52cf5a1fc225abcdc7fe",
+    "lines": 765
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/devices/StrategyPages.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\devices\\StrategyPages.tsx",
+    "sha256": "e3933ecef68fb446358bf47610c5571b927f3e28c988cf622c1e59cd4f7424d4",
+    "lines": 510
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\TaskTemplateController.java",
+    "sha256": "c457163f0ca6c09aeb4ccf9bfbaf46229a518b9dce9c1e927f96b9a82cd9c99a",
+    "lines": 153
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\StrategyTemplateController.java",
+    "sha256": "c85a90d5427a9ca5a8f7ec0afc9f5292223c824fbcc56e5e15a1b7c8f65f5987",
+    "lines": 98
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/ScheduledTask.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\ScheduledTask.java",
+    "sha256": "ba639b1cd5376c06eca70b371f9c63c19b283df4502106ee04c126a69eb0e05a",
+    "lines": 311
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\TaskLogController.java",
+    "sha256": "37c27772574a2fa80a4df0ad34ce1c3af55d7cfda30a3b018b7f55bfbc42cfe9",
+    "lines": 98
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\StrategyLogController.java",
+    "sha256": "7c02e3ee2bf87a7dbf2766ed7a0b6d61945c0453524d6fa3c3fcee20483e1f14",
+    "lines": 98
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/AdministrationPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\AdministrationPage.tsx",
+    "sha256": "f7c8fce83f3208ed6d5955cf6ca439d4c628b7dac795219a0a8217a423c9580c",
+    "lines": 80
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/schemas.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\schemas.ts",
+    "sha256": "ab05f1c381b24168d8431ea771fc94a660ef62382755647611fa289a2c46d049",
+    "lines": 361
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/CrudPage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\CrudPage.tsx",
+    "sha256": "7bd2a89a735d458475e3f5c0fd854b8049738a20e9936e17637251ed0167a532",
+    "lines": 717
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/RolePages.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\RolePages.tsx",
+    "sha256": "8a29d1efc652cf513a4904b2af595df6cfe22e652e04dd6477d6bdc12d0e18ba",
+    "lines": 533
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysRoleController.java",
+    "sha256": "b512d906dcbe4527119461fd97278d86f6e30a411ce934cfaacd65875af503b6",
+    "lines": 242
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysMenuController.java",
+    "sha256": "147e08cd1410c80c335839d0ade524b8317002deff4e16cb40b1bfb3a8281e94",
+    "lines": 154
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysDeptController.java",
+    "sha256": "9937c741cf022853da2491f91b8277cfb46ee03ecc02ea92d75ceae81b4a80f6",
+    "lines": 163
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysPostController.java",
+    "sha256": "c74bc338165e3e13a9067a90ee7fc54b6ab86af276f6ddac78759246e30a9686",
+    "lines": 130
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/IconPicker.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\IconPicker.tsx",
+    "sha256": "969631c0f4f3badcd4c9254688203a32fc8e318120391f11fac9d0bbdc70ff3a",
+    "lines": 109
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/NoticePages.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\NoticePages.tsx",
+    "sha256": "0609163c674ebb3fa0d766dec14b2906c92ddf8d55154d02ca12f564fb6cf1ce",
+    "lines": 440
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysDictTypeController.java",
+    "sha256": "ca23a595737bb785c6e030e97377845c368ad90431faee1c5be091e8741d0be5",
+    "lines": 132
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysDictDataController.java",
+    "sha256": "1af8d584099f5dba9bbd83790cff806e2158841a059867b9251891fc7c02e616",
+    "lines": 121
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysNoticeController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysNoticeController.java",
+    "sha256": "0d8869318dea4f74eff993030765ca3fe6c5b4a6d6bbb6bc1654f9cccb4b1103",
+    "lines": 92
+  },
+  {
+    "repository": "前端",
+    "file": "src/api/system/config.js",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\api\\system\\config.js",
+    "sha256": "6971284cc76b18e82ff40fa87fd9eccc60a5372ca16e32a3a861489084acbb1c",
+    "lines": 60
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/MonitorPages.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\MonitorPages.tsx",
+    "sha256": "bab703f56e4dc40b1de677fa5e88aa1511176769eb682850e132f80a9e547892",
+    "lines": 708
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/GeneratorPages.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\GeneratorPages.tsx",
+    "sha256": "34615314e78fd40e571427547d7b7a61c84854d208625a3f75475e023d630836",
+    "lines": 869
+  },
+  {
+    "repository": "前端",
+    "file": "src/api/monitor/operlog.js",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\api\\monitor\\operlog.js",
+    "sha256": "22d19780a806007f9f029b5cdc91bd36c48a31a11f9b198fa7d961b0bc12fe9a",
+    "lines": 26
+  },
+  {
+    "repository": "前端",
+    "file": "src/api/monitor/logininfor.js",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\api\\monitor\\logininfor.js",
+    "sha256": "f66b5863f3e6f72e3a4cbdc6019be2a4ef052bc0f33939859f349953d49b1a4a",
+    "lines": 34
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/RoutePage.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\RoutePage.tsx",
+    "sha256": "41b2eca2f5aaf28feb1908078503402c22de5efa27eb02f5a45824528356821b",
+    "lines": 101
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/CacheCharts.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\CacheCharts.tsx",
+    "sha256": "03683a406ba567a64a151068623222143be76a617435338972cff3e600bd4e0e",
+    "lines": 137
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/CronDialog.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\CronDialog.tsx",
+    "sha256": "559873ead80ef40a00a123bc0e6de2c92e0e70c091f243ad7b686670b6fdd59b",
+    "lines": 390
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/DeviceLeaseService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\DeviceLeaseService.java",
+    "sha256": "1f96502f0381a34a91ad78966e34a5dd61764a758bbb2fccb0a1b791e156f447",
+    "lines": 70
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AccountInfoFetcherVoid.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AccountInfoFetcherVoid.java",
+    "sha256": "6d6f6ce7bcc1d60387f69ecddd1513cb6e62c638c64fc626483bad72af02bab2",
+    "lines": 2021
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/DouyinCrawler.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\DouyinCrawler.java",
+    "sha256": "df62ba718c3a71908ba973c0ecf3ee2af9cec357e992b108e4f24217e82189c8",
+    "lines": 402
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/DouyinAddressCrawler.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\DouyinAddressCrawler.java",
+    "sha256": "e64f4a2d6b328cc7be53d12250191fcb8f167be0ba6746c1c4e9c9ce26e7f082",
+    "lines": 778
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AccountInfoFetcher.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AccountInfoFetcher.java",
+    "sha256": "1066406cd5d14f01765bd20cde302767bd67f351af3869f729d150f63ad2c745",
+    "lines": 1061
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AddressInfoFetcher.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AddressInfoFetcher.java",
+    "sha256": "d6d95cf969c15340c0d4cd7dafa091b8cd63887a4b99e29942f4d0a9e42f0522",
+    "lines": 141
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/PlaceMockLocationHelper.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\PlaceMockLocationHelper.java",
+    "sha256": "36b3dd58d01dcb09f82a3e7626de64e928ad38338c22aa65f869dd11f1e2ad79",
+    "lines": 153
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AccountController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AccountController.java",
+    "sha256": "9c6a036eb2276d826cda97c3ac8b1127119af13dae8506a2b3a774494748cbf0",
+    "lines": 149
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/VideoCommentsFetcher.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\VideoCommentsFetcher.java",
+    "sha256": "fbfbcbfbfa12bc6077324440de98e587095c65ab6d89c0b05951c062d562e1bb",
+    "lines": 638
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/CommentArchiveService.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\CommentArchiveService.java",
+    "sha256": "1a2fa501c550b61bf9a73d28396a58f58e6892e64c419737c5c662ebee0d00cc",
+    "lines": 97
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/AdbVideoRecorder.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\AdbVideoRecorder.java",
+    "sha256": "b7fc02de0323b0c7ea9169a2ea9f67c0182ca30f8d9860e2320bb52881cb0848",
+    "lines": 62
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/adb/VideoMergeTest.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\adb\\VideoMergeTest.java",
+    "sha256": "ce236a54aaa4fc2c696eb181d9e9f2c9fe7c665908baf82ca6d6d77971e8715e",
+    "lines": 42
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/resources/application.yml",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\resources\\application.yml",
+    "sha256": "40d1c6a49d7900eb274349cc046cd52fc20a8e7b92678508e8af307826528b54",
+    "lines": 60
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/framework/config/ResourcesConfig.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\framework\\config\\ResourcesConfig.java",
+    "sha256": "2218eacbcb3895e2ed611546139a50fbfb25f260264a4f63db4e7d7a1a04f8fb",
+    "lines": 79
+  },
+  {
+    "repository": "前端",
+    "file": "src/App.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\App.tsx",
+    "sha256": "d5033f6d1d356a8b775e45ee4ecee325a0d7fed69bd51db11ee15bff55d30377",
+    "lines": 447
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/business.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\business.tsx",
+    "sha256": "91b219dadd8de60a82428acb6083d003141e4ffc15d557f91d0e4ff72cf51c6f",
+    "lines": 786
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/WorkspacePreferences.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\WorkspacePreferences.tsx",
+    "sha256": "8397c2e56a4dc9238b71432d9b30bd49ddd59ceebdd3725418e150eeb4636eba",
+    "lines": 255
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/TopNavigation.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\TopNavigation.tsx",
+    "sha256": "b853cc49308cf2f8a010e640d66ec32a482e0566ed62e963d5d664eb3aa68817",
+    "lines": 234
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/ResponsiveSidebar.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\ResponsiveSidebar.tsx",
+    "sha256": "e6ddb598214d7aca6b37ab8e020c401e9b5bdf7cb690ad51411de579415d77b2",
+    "lines": 64
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/WorkspacePages.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\WorkspacePages.tsx",
+    "sha256": "a52de73e6a9c49339935009351ad35ba5909e6841e6663de4bf7adbda903d1e3",
+    "lines": 186
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/system/TablePreferences.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\system\\TablePreferences.tsx",
+    "sha256": "26ae8145f9d87fac202a74865cf59217ff46234cab48970e7aaaabbfc55b1151",
+    "lines": 165
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/devices/controls.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\devices\\controls.tsx",
+    "sha256": "00e056cf3ebb941f6e35cb46cef89e6a90ebc5f180ff650c5cfe36f9f5b03c8e",
+    "lines": 425
+  },
+  {
+    "repository": "前端",
+    "file": "src/features/core/table-tools.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\features\\core\\table-tools.tsx",
+    "sha256": "e9303a48c92c25684ca80ea43534521db724d130bc2b26f4e86f997ce9b80ce4",
+    "lines": 135
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/loading-state.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\loading-state.tsx",
+    "sha256": "eeb416179d4494992286ac3eaa2bc7d7ec6842a8b6a8807c16ff94bb0042d877",
+    "lines": 94
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/stable-loading-region.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\stable-loading-region.tsx",
+    "sha256": "26f058b0a09ad3aa784d13d8323be420ca076979c658ae800ac493e1d8c1031f",
+    "lines": 68
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/react-bits/FadeContent.tsx",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\react-bits\\FadeContent.tsx",
+    "sha256": "9e157498122e618eee84900b647eac2534a9087b8137125e37e8dcb4f1c407ec",
+    "lines": 65
+  },
+  {
+    "repository": "前端",
+    "file": "src/components/react-bits/motion-policy.ts",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\components\\react-bits\\motion-policy.ts",
+    "sha256": "068e89e2a9baf1a8950802030915638706c489410fd0ad1e85b244196d02c8d7",
+    "lines": 116
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\DeviceAppController.java",
+    "sha256": "27749c342c47a897dae0d3856e4734ca8cbfa0869f6a83438fe86f45d58aaaa4",
+    "lines": 104
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\DeviceCommandController.java",
+    "sha256": "6eff9b431444ae4c01bd772b2473c4fef7e87fdb5ffd2947125e6d8c4f04d3c8",
+    "lines": 104
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/impl/DeviceAppServiceImpl.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\impl\\DeviceAppServiceImpl.java",
+    "sha256": "388188821a8ec7b7af0415f5e175a4e542955c9cc17a59c30e19266112839918",
+    "lines": 95
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/service/impl/DeviceCommandServiceImpl.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\service\\impl\\DeviceCommandServiceImpl.java",
+    "sha256": "eea13fbb1cc056229661d77f6186aef3b6a3419f26c62d841cf07749733467ee",
+    "lines": 95
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AccountIpController.java",
+    "sha256": "77c8d269dcd18e1fa7b5654f703beb19e88813d362d9b199c13eeb5188c5989f",
+    "lines": 94
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/CommentController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\CommentController.java",
+    "sha256": "61a3b401aa3a71763f307482a9047f902a904c48a7bf0d27700b6979008bd7b2",
+    "lines": 154
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AccountContentController.java",
+    "sha256": "c6971c138f33176d8adbd33edb2b2c336af249e948c10d21acf58f8e1513dc60",
+    "lines": 183
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AddressAccountContentController.java",
+    "sha256": "87081b5168939689e4d87da461f540955dfd80450a0b20306bbd84a4adac7d65",
+    "lines": 117
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\DeviceLogController.java",
+    "sha256": "4dbf16b13f6fb24d57a908718d440299a733ece4e5a3011cb761c9896d52f526",
+    "lines": 104
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/StatusController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\StatusController.java",
+    "sha256": "7c8fd3ccfa5b77bc92569a5449d5790a6afe4e946069b5204a223282dd5832b4",
+    "lines": 19
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/web/controller/system/SysIndexController.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\web\\controller\\system\\SysIndexController.java",
+    "sha256": "1d8cfe4a1b620e971d70879d7389cebd81f18462e3f2dc1d440c749ab2aa81d4",
+    "lines": 29
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/controller/AccountFolderReader.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\controller\\AccountFolderReader.java",
+    "sha256": "be1af6f77a32f501b6a529bf485df70aa340cbc76a7d06b6f95213f26d98a155",
+    "lines": 85
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/test.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\test.java",
+    "sha256": "ee858695d760cf465524f0633729d8a1e8573ccebc4d5e1456ff6c1cd9ed9740",
+    "lines": 207
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/douyin/DouyinApiClient.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\douyin\\DouyinApiClient.java",
+    "sha256": "3bcafcd18303a6b465b2d42da85ec0e492b9f2785552eab34b8cfe9587d7aeca",
+    "lines": 84
+  },
+  {
+    "repository": "后端",
+    "file": "src/main/java/com/phone/module/douyin/Main.java",
+    "path": "D:\\IdeaProjects\\newPhone\\src\\main\\java\\com\\phone\\module\\douyin\\Main.java",
+    "sha256": "8168096948987264fe4f87a593c231ec7534d99257a8535d0565551eee194b8c",
+    "lines": 18
+  },
+  {
+    "repository": "前端",
+    "file": "src/api/module/Home.js",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\api\\module\\Home.js",
+    "sha256": "2098fb37e29401ceaac6de55ef045af195641560273889202ed0b40055e20aad",
+    "lines": 192
+  },
+  {
+    "repository": "前端",
+    "file": "src/api/manage.js",
+    "path": "C:\\Users\\test\\Desktop\\newDyProject\\src\\api\\manage.js",
+    "sha256": "b8ad02b082ea65b03a565fc1acfb440a950b2495ea446d47dd6f97e6f864c53d",
+    "lines": 70
+  }
+]

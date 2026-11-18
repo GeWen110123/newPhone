@@ -20,6 +20,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -304,35 +305,42 @@ public class AccountInfoFetcherVoid {
                 .waitAction(WaitOptions.waitOptions(Duration.ofMillis(150)))
                 .perform();
     }
+    static final String PROFILE_VIDEO_CARDS = "//*[@resource-id='com.ss.android.ugc.aweme:id/qbt']/parent::*[@resource-id='com.ss.android.ugc.aweme:id/container']";
 
-    private boolean enterVideoList() {
-        String[] xps = {
-                // 优先级1：直接点击第一个可点击的视频项（核心目标元素）
-                "//androidx.recyclerview.widget.RecyclerView[@resource-id='com.ss.android.ugc.aweme:id/il6']//android.view.View[@resource-id='com.ss.android.ugc.aweme:id/p=z'][1]",
-                // 优先级2：作品Tab入口（确保先进入作品列表页）
-                "//androidx.appcompat.app.ActionBar.Tab[contains(@content-desc, '作品')]",
-                "//android.widget.TextView[contains(@text, '作品') and @resource-id='android:id/text1']",
-                // 优先级3：原有兼容XPath
-                "//*[@resource-id='com.ss.android.ugc.aweme:id/feu']",
-                "//*[contains(@resource-id, 'work') or contains(@resource-id, 'video')]",
-                "//android.view.ViewGroup[contains(@resource-id, 'work')]",
-                "//*[contains(@text, '置顶')]",
-                "//*[@resource-id='com.ss.android.ugc.aweme:id/container']"
-        };
-
-        for (String xp : xps) {
-            Optional<MobileElement> opt = findFirst(xp);
-            if (opt.isPresent()) {
-                try {
-                    opt.get().click();
-                    Thread.sleep(800);
-                    return true;
-                } catch (Exception ignored) {
+    private boolean clickFirstVideo() {
+        try {
+            List<MobileElement> elements = findAll(PROFILE_VIDEO_CARDS);
+            if (elements.isEmpty()) elements = findAll("//*[@resource-id='com.ss.android.ugc.aweme:id/container' and @clickable='true']");
+            int width = driver.manage().window().getSize().width;
+            int height = driver.manage().window().getSize().height;
+            for (MobileElement element : elements) {
+                if (!element.isDisplayed()) continue;
+                Rectangle box = element.getRect();
+                // Exclude full-screen overlays and header/avatar containers sharing the same ID.
+                if (box.getWidth() < width * 0.15 || box.getWidth() > width * 0.65
+                        || box.getHeight() < height * 0.08 || box.getY() < height * 0.2
+                        || box.getY() >= height) continue;
+                tapCenter(element);
+                for (int attempt = 0; attempt < 8; attempt++) {
+                    ensureCrawlActive();
+                    Thread.sleep(500);
+                    if (isOnVideoDetailPage()) {
+                        logger.info("已进入第一个人员作品详情页");
+                        return true;
+                    }
                 }
+                logger.warning("作品卡片点击后未进入视频详情页");
+                return false;
             }
+            logger.warning("未找到可见的人员作品卡片");
+            return false;
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            logger.log(java.util.logging.Level.WARNING, "点击人员第一个作品失败", e);
+            return false;
         }
-        return false;
     }
+
 
     private boolean goVideoList() {
         // 新版地点内容页可能已经直接打开第一条内容，页面计数器显示为“1/125”。
@@ -640,7 +648,7 @@ public class AccountInfoFetcherVoid {
                 }
             }
         }
-        return "0";
+        return "评论".equals(statType) ? "" : "0";
     }
 
     private String extractStatNumber(String raw) {
@@ -760,91 +768,99 @@ public class AccountInfoFetcherVoid {
     // ⭐ 视频时长解析（线程版）— 滑动保持进度条可见 + pagSource 解析 mm:ss
     // ---------------------------------------------------------
     private int extractVideoDuration(String deviceId) {
-        final int maxAttempts = 3;
-        final int[] videoDurationHolder = {0};
-
+        Process swipe = null;
         try {
-            // 点击让进度条出现
+            ensureCrawlActive();
+            String visible = driver.getPageSource();
+            // Photo carousels have no video duration; scrubbing here changes the selected photo.
+            if (visible.contains("text=\"图文\"") || visible.contains("content-desc=\"图文\"")
+                    || visible.contains("text=\"动图\"")) return 0;
+            Integer readable = parseDurationFromXml(visible);
+            if (readable != null) return readable;
             adbTap(deviceId, 540, 1200);
-
-            // 启动解析线程
-            Thread extractor = new Thread(() -> {
-                int attempts = 0;
-                while (attempts < maxAttempts && videoDurationHolder[0] <= 0) {
-                    attempts++;
-                    try {
-                        Thread.sleep(450);
-
-                        String xml = driver.getPageSource();
-                        Integer parsed = parseDurationFromXml(xml);
-
-                        if (parsed != null && parsed > 0) {
-                            videoDurationHolder[0] = parsed;
-                            logger.info("解析到视频时长: " + parsed + " 秒");
-                            return;
-                        }
-                        Thread.sleep(150);
-                    } catch (Exception ignored) {
-                    }
-                }
-            });
-
-            extractor.start();
-
-            // 慢滑动保持视频进度条活跃
-            adbSwipeSlow(deviceId, 300, 2088, 900, 2088, 3000);
-
-            // 等待线程
-            extractor.join(3500);
-            Thread.sleep(500);
-
-            if (videoDurationHolder[0] <= 0) {
-                logger.info("未获取到视频时长");
-                return 0;
+            // Only this worker calls the driver. A timed-out helper thread must not keep using it.
+            swipe = new ProcessBuilder(ADB, "-s", deviceId, "shell", "input", "swipe",
+                    "300", "2088", "900", "2088", "3000")
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                    .redirectError(ProcessBuilder.Redirect.DISCARD).start();
+            for (int attempt = 0; attempt < 3; attempt++) {
+                Thread.sleep(450);
+                Integer duration = parseDurationFromXml(driver.getPageSource());
+                if (duration != null && duration > 0) return duration;
             }
-            return videoDurationHolder[0];
-
+            return 0;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("读取视频时长被中断", e);
         } catch (Exception e) {
-            logger.warning("extractVideoDuration 异常: " + e.getMessage());
-            return 14;
+            logger.log(java.util.logging.Level.WARNING, "读取视频时长失败", e);
+            return 0;
+        } finally {
+            if (swipe != null) {
+                try {
+                    if (!swipe.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)) swipe.destroyForcibly();
+                } catch (InterruptedException e) {
+                    swipe.destroyForcibly();
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
     }
 
     private void adbTap(String deviceId, int x, int y) throws Exception {
-        new ProcessBuilder(ADB, "-s", deviceId, "shell", "input", "tap",
+        Process process = new ProcessBuilder(ADB, "-s", deviceId, "shell", "input", "tap",
                 String.valueOf(x), String.valueOf(y))
-                .start().waitFor();
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD).start();
+        try {
+            if (!process.waitFor(10, java.util.concurrent.TimeUnit.SECONDS)) {
+                throw new IllegalStateException("ADB tap 超时");
+            }
+            if (process.exitValue() != 0) throw new IllegalStateException("ADB tap 失败");
+        } finally {
+            if (process.isAlive()) process.destroyForcibly();
+        }
     }
 
-    private void adbSwipeSlow(String deviceId, int startX, int startY,
-                              int endX, int endY, int durationMs) throws Exception {
-        new ProcessBuilder(ADB, "-s", deviceId, "shell", "input", "swipe",
-                String.valueOf(startX), String.valueOf(startY),
-                String.valueOf(endX), String.valueOf(endY),
-                String.valueOf(durationMs))
-                .start().waitFor();
-    }
-
-    private Integer parseDurationFromXml(String xml) {
+    static Integer parseDurationFromXml(String xml) {
         if (xml == null) return null;
-
-        Pattern p = Pattern.compile("text=\"(\\d{1,2}:\\d{1,2})\"");
-        Matcher m = p.matcher(xml);
-
-        while (m.find()) {
-            String time = m.group(1);
-            String[] parts = time.split(":");
-            try {
-                int minutes = Integer.parseInt(parts[0]);
-                int seconds = Integer.parseInt(parts[1]);
-                return minutes * 60 + seconds;
-            } catch (Exception ignored) {
+        Matcher attributes = Pattern.compile("(?:text|content-desc)=\"([^\"]*)\"").matcher(xml);
+        int maximum = 0;
+        while (attributes.find()) {
+            Matcher times = Pattern.compile("(?<!\\d)(\\d{1,3}):(\\d{2})(?!\\d)").matcher(attributes.group(1));
+            while (times.find()) {
+                int seconds = Integer.parseInt(times.group(2));
+                if (seconds < 60) maximum = Math.max(maximum, Integer.parseInt(times.group(1)) * 60 + seconds);
             }
         }
-        return null;
+        return maximum > 0 ? maximum : null;
     }
 
-    private String recordVideoToFile(int index, int durationSec, String deviceId, String douyinId) {
+    private Map<String, Object> videoSummary(Map<String, Object> video) {
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("uid", video.get("uid"));
+        summary.put("video_index", video.get("video_index"));
+        return summary;
+    }
+
+    private static void ensureCrawlActive() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException("采集已取消");
+    }
+
+    private String recordVideoToFile(int index, int durationSec, String deviceId, String douyinId, String uid, String address) {
+        String previousPath;
+        if (address == null) {
+            Video previous = videoService.selectVideoByUId(uid);
+            previousPath = previous == null ? null : previous.getVideoPath();
+        } else {
+            AddressVideo previous = addressVideoService.selectAddressVideo(uid, address);
+            previousPath = previous == null ? null : previous.getVideoPath();
+        }
+        String reusable = reusableRecording(previousPath);
+        if (reusable != null) {
+            logger.info("续采评论，复用已保存录屏: " + reusable);
+            return reusable;
+        }
 
         int segmentLength = 30; // 每段30秒
         int totalSegments = (int) Math.ceil(durationSec / (double) segmentLength);
@@ -868,6 +884,7 @@ public class AccountInfoFetcherVoid {
             List<String> segmentFiles = new ArrayList<>();
 
             AndroidDriver<?> androidDriver = (AndroidDriver<?>) driver;
+            AdbVideoRecorder recorder = new AdbVideoRecorder(ADB);
 
             for (int part = 1; part <= totalSegments; part++) {
 
@@ -883,12 +900,12 @@ public class AccountInfoFetcherVoid {
                 logger.info("开始录制分段 " + part + "/" + totalSegments +
                         " → " + thisDuration + " 秒 → " + partFile);
 
-                androidDriver.startRecordingScreen();
-
-                Thread.sleep((thisDuration + 1) * 1000L);
-
-                String base64 = androidDriver.stopRecordingScreen();
-                Files.write(Paths.get(partFile), Base64.getDecoder().decode(base64));
+                ensureCrawlActive();
+                // Also keep the Appium session alive during longer recordings over ADB.
+                if (!"com.ss.android.ugc.aweme".equals(androidDriver.getCurrentPackage())) {
+                    throw new IllegalStateException("录制时已离开抖音页面");
+                }
+                recorder.recordSegment(deviceId, thisDuration, Paths.get(partFile));
 
                 segmentFiles.add(partFile);
             }
@@ -904,8 +921,8 @@ public class AccountInfoFetcherVoid {
             return finalFilename;
 
         } catch (Exception e) {
-            logger.warning("分段录制失败: " + e.getMessage());
-            return "";
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            throw new IllegalStateException("分段录制失败", e);
         }
     }
 
@@ -922,7 +939,7 @@ public class AccountInfoFetcherVoid {
             File dest = new File(filename);
 
             if (!dest.getParentFile().exists()) dest.getParentFile().mkdirs();
-            src.renameTo(dest);
+            Files.move(src.toPath(), dest.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
             return filename;
 
@@ -964,7 +981,7 @@ public class AccountInfoFetcherVoid {
         // 必须进入主页 & 作品区
         if (!isOnProfilePage()) {
             logger.warning("不在个人主页");
-            return allVideoData;
+            throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
         }
 
 
@@ -976,9 +993,9 @@ public class AccountInfoFetcherVoid {
                 if (!text.isEmpty()) {
                     try {
                         // 去掉非数字字符，只取数字
-                        String numStr = text.replaceAll("[^0-9]", "");
-                        if (!numStr.isEmpty()) {
-                            maxVideos = Integer.parseInt(numStr);
+                        int parsedCount = VideoCommentsFetcher.parseDouyinCount(text);
+                        if (parsedCount >= 0) {
+                            maxVideos = parsedCount;
                             logger.info("解析到作品数量: " + maxVideos);
                             break; // 找到第一个有效的就用
                         }
@@ -998,16 +1015,17 @@ public class AccountInfoFetcherVoid {
 
         logger.info("总共需要处理的视频数量: " + maxVideos);
 
-        if (!enterVideoList()) {
+        if (!clickFirstVideo()) {
             logger.warning("无法进入作品区");
-            return allVideoData;
+            throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
         }
         if (tags.contains("前六条")){
-            maxVideos=7;
+            maxVideos=Math.min(maxVideos, 6);
         }
 
         while (index < maxVideos) {
             try {
+                ensureCrawlActive();
                 // 确保最新 PageSource
                 driver.getPageSource();
                 logger.info("处理第 " + (index + 1) + " 个视频");
@@ -1025,6 +1043,7 @@ public class AccountInfoFetcherVoid {
                 String desc = normalize(safeText(descEl));
                 if (desc.contains("广告")) {
                     logger.info("取到视频为 广告 ，跳过");
+                    index++;
                     if (!swipeToNextVideo()) break;
                     continue;
                 }
@@ -1051,15 +1070,14 @@ public class AccountInfoFetcherVoid {
                     continue;
                 }
 // 数据库去重
-                if (videoService.selectVideoByUId(uid) != null) {
+                if (hasRequiredVideoData(videoService.selectVideoByUId(uid), tags)) {
                     logger.info("视频已存在数据库，跳过");
                     processed.add(uid); // 可选：避免后面再次查询 DB
                     if (!swipeToNextVideo()) break;
                     index++;
                     continue;
                 }
-// 标记已处理
-                processed.add(uid);
+// Persist successfully before marking a video as processed.
 
 // ↓↓↓ 这里才是真正的“新视频处理逻辑” ↓↓↓
 
@@ -1070,6 +1088,7 @@ public class AccountInfoFetcherVoid {
                 Map<String, Object> video = new LinkedHashMap<>();
                 video.put("video_index", index + 1);
                 video.put("uid", uid);
+                video.put("comments_requested", tags != null && tags.contains("评论"));
                 video.put("author", author);
                 video.put("rawTime", rawTime);
                 video.put("descCon", descCon);
@@ -1093,12 +1112,14 @@ public class AccountInfoFetcherVoid {
                         logger.info("⚠️ 视频时长获取失败，重试 " + attempt + "/" + maxRetry);
                         Thread.sleep(500); // 等待0.5秒再试
                     }
+                    video.put("duration_known", duration > 0);
                     if (duration <= 0) duration = 30; // 防止解析失败时，给默认50秒
                     if (duration > 600) duration = 600; // 防止解析失败时，给默认50秒
-                    logger.info("🎬 解析到视频时长: " + duration + " 秒");
+                    video.put("recording_duration_seconds", duration);
+                    logger.info("本次录屏时长: " + duration + " 秒，页面时长已识别=" + video.get("duration_known"));
 
 //                // ◆ 录制视频
-                    String videoPath = recordVideoToFile(index, duration, deviceId, accountName);
+                    String videoPath = recordVideoToFile(index, duration, deviceId, accountName, uid, null);
                     video.put("video_path", videoPath);
                 } else {
                     video.put("video_path", "");
@@ -1110,8 +1131,7 @@ public class AccountInfoFetcherVoid {
 
                 if (tags.contains("评论")) {
 
-                    if (StringUtils.isNotEmpty((String) video.get("comments_count"))
-                            && !video.get("comments_count").equals("0")) {
+                    if (!"0".equals(video.get("comments_count"))) {
                         // 指定保存评论的目录
                         String videosDir = DouyinPathUtils.resolve("videosDir");
 
@@ -1122,11 +1142,16 @@ public class AccountInfoFetcherVoid {
                                 accountService);
 // 抓取当前视频的全部评论（包含 totalComments + comments + json_path）
                         Map<String, Object> commentResult = fetcher.fetchAllComments("1", accountName, uid, deviceId, index, videosDir, (String) video.get("comments_count"));
+                        if (!Boolean.TRUE.equals(commentResult.get("complete")) && !Boolean.TRUE.equals(commentResult.get("deferred"))) {
+                            throw new IllegalStateException("评论采集未完成，已保留断点: " + commentResult.get("json_path"));
+                        }
 // 取出评论数组
                         List<Map<String, Object>> comments = (List<Map<String, Object>>) commentResult.get("comments");
 // 写入视频数据
                         video.put("comments", comments);
                         video.put("json_path", commentResult.get("json_path"));       // ✔ 正确：保存路径字符串
+                        video.put("comments_complete", Boolean.TRUE.equals(commentResult.get("complete")));
+                        video.put("comments_deferred", Boolean.TRUE.equals(commentResult.get("deferred")));
                         video.put("totalComments", commentResult.get("totalComments")); // ✔ 正确：真实总评论数
 
                         Thread.sleep(1000); // 等待0.5秒确保下一个视频加载完成
@@ -1139,12 +1164,17 @@ public class AccountInfoFetcherVoid {
                     video.put("totalComments", ""); // ✔ 正确：真实总评论数
 
                 }
-                allVideoData.add(video);
-
+                ensureCrawlActive();
                 saveSingleVideo(video, deviceId, accountName);
+                processed.add(uid);
+                allVideoData.add(videoSummary(video));
 
 
-                logger.info("第 " + (index + 1) + " 个视频处理完成");
+                logger.info("第 " + (index + 1) + " 个视频" + (Boolean.TRUE.equals(video.get("comments_deferred")) ? "已保存部分评论，稍后续采" : "处理完成"));
+                if (Boolean.TRUE.equals(video.get("comments_deferred")) || douyinTaskService.hasWaitingTasks(deviceId)) {
+                    logger.info("当前视频已落库，释放设备处理排队的地址/发布者任务");
+                    return new CrawlBatch(allVideoData);
+                }
 
                 index++;
 
@@ -1153,49 +1183,16 @@ public class AccountInfoFetcherVoid {
                 Thread.sleep(500); // 等待0.5秒确保下一个视频加载完成
 
             } catch (Exception e) {
-                logger.warning("处理视频异常: " + e);
-                index++;
+                if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+                logger.log(java.util.logging.Level.SEVERE, "处理视频失败 index=" + index + " device=" + deviceId, e);
+                throw new IllegalStateException("视频未保存完成，停止本轮等待重试", e);
             }
         }
 
-        // 核心：处理完视频后检查是否需要重启
-        checkAndRestartAppium();
+        // Driver lifecycle is owned by DouyinVideoService; do not restart shared Appium.
 
         logger.info("总共处理视频数量: " + allVideoData.size());
         return allVideoData;
-    }
-
-
-    private void checkAndRestartAppium() {
-        try {
-            logger.info("=====================================");
-            logger.info("🎯开始重启Appium...");
-            logger.info("=====================================");
-
-            // 1. 关闭旧Driver（释放资源）
-            if (driver != null) {
-                try {
-                    driver.quit();
-                    logger.info("✅ 已关闭旧的Appium Driver");
-                } catch (Exception e) {
-                    logger.warning("⚠️ 关闭旧Driver异常（忽略）: " + e.getMessage());
-                }
-                Thread.sleep(2000); // 等待2秒确保关闭完成
-            }
-
-            // 2. 调用Appium重启工具类
-            AppiumRestartUtil.restartAppium();
-            logger.info("✅ Appium服务重启完成");
-            Thread.sleep(5000); // 等待5秒让Appium完全启动
-
-            logger.info("=====================================");
-            logger.info("🎉 Appium重启完成，继续处理视频");
-            logger.info("=====================================");
-
-        } catch (Exception e) {
-            logger.severe("❌ 重启Appium失败！" + e.getMessage());
-            throw new RuntimeException("Appium重启失败，终止视频采集", e);
-        }
     }
 
 
@@ -1234,6 +1231,13 @@ public class AccountInfoFetcherVoid {
 
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("uid", map.get("uid"));
+        if (Boolean.TRUE.equals(map.get("comments_requested"))) {
+            json.put("comments_complete", Boolean.TRUE.equals(map.get("comments_complete"))
+                    || "0".equals(String.valueOf(map.get("comments_count"))));
+        }
+        json.put("captured_at", map.get("timestamp"));
+        json.put("duration_known", map.get("duration_known"));
+        json.put("recording_duration_seconds", map.get("recording_duration_seconds"));
         json.put("likes", map.get("likes_count"));
         json.put("comments", map.get("comments_count"));
         json.put("shares", map.get("share_count"));
@@ -1246,7 +1250,25 @@ public class AccountInfoFetcherVoid {
         video.setJsonPath(toWebPath((String) map.get("json_path")));
         video.setJsonString(JSONObject.toJSONString(json));
 
-        videoService.insertVideo(video);
+        Video previous = videoService.selectVideoByUId(video.getUid());
+        if (previous == null) {
+            videoService.insertVideo(video);
+        } else {
+            video.setId(previous.getId());
+            if (!Boolean.TRUE.equals(map.get("comments_requested"))) {
+                video.setContent(previous.getContent());
+                JSONObject old = JSON.parseObject(previous.getJsonString());
+                if (old != null) {
+                    for (String key : Arrays.asList("comments", "comments_complete", "comments_imported", "comments_imported_count")) {
+                        if (old.containsKey(key)) json.put(key, old.get(key));
+                    }
+                }
+                video.setJsonString(JSON.toJSONString(json));
+                video.setJsonPath(previous.getJsonPath());
+            }
+            if (StringUtils.isEmpty(video.getVideoPath())) video.setVideoPath(previous.getVideoPath());
+            videoService.updateVideo(video);
+        }
     }
 
 
@@ -1274,6 +1296,13 @@ public class AccountInfoFetcherVoid {
         // 视频基础 JSON
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("uid", map.get("uid"));
+        if (Boolean.TRUE.equals(map.get("comments_requested"))) {
+            json.put("comments_complete", Boolean.TRUE.equals(map.get("comments_complete"))
+                    || "0".equals(String.valueOf(map.get("comments_count"))));
+        }
+        json.put("captured_at", map.get("timestamp"));
+        json.put("duration_known", map.get("duration_known"));
+        json.put("recording_duration_seconds", map.get("recording_duration_seconds"));
         json.put("likes", map.get("likes_count"));
         json.put("comments", map.get("comments_count"));
         json.put("shares", map.get("share_count"));
@@ -1307,8 +1336,62 @@ public class AccountInfoFetcherVoid {
         } catch (Exception ignored) {
         }
 
-        // 入库
-        addressVideoService.insertAddressVideo(video);
+        AddressVideo previous = addressVideoService.selectAddressVideo(video.getUid(), address);
+        if (previous == null) {
+            addressVideoService.insertAddressVideo(video);
+        } else {
+            if (!Boolean.TRUE.equals(map.get("comments_requested"))) {
+                video.setContent(previous.getContent());
+                video.setJsonPath(previous.getJsonPath());
+                if (StringUtils.isNotEmpty(previous.getJsonString())) {
+                    JSONObject oldMetadata = JSON.parseObject(previous.getJsonString());
+                    for (String key : Arrays.asList("comments", "comments_complete", "comments_imported", "comments_imported_count")) {
+                        if (oldMetadata != null && oldMetadata.containsKey(key)) json.put(key, oldMetadata.get(key));
+                    }
+                    video.setJsonString(JSONObject.toJSONString(json));
+                }
+            }
+            if (StringUtils.isEmpty(video.getVideoPath())) video.setVideoPath(previous.getVideoPath());
+            if (StringUtils.isEmpty(video.getDouyinId())) video.setDouyinId(previous.getDouyinId());
+            addressVideoService.updateCrawledAddressVideo(video);
+        }
+    }
+
+    static boolean hasRequiredAddressData(AddressVideo video, String tags) {
+        if (video == null) return false;
+        if (tags.contains("视频") && StringUtils.isEmpty(video.getVideoPath())) return false;
+        if (tags.contains("基本信息") && !AccountInfoFetcher.isRealDouyinId(video.getDouyinId())) return false;
+        if (!tags.contains("评论")) return true;
+        try {
+            JSONObject metadata = JSON.parseObject(video.getJsonString());
+            if (metadata == null) return false;
+            int expected = VideoCommentsFetcher.parseDouyinCount(metadata.getString("comments"));
+            if (expected == 0) return true;
+            if (StringUtils.isEmpty(video.getContent())) {
+                // The maintenance job moves comments into the comment table.
+                // Only explicit archival metadata establishes completeness of an empty source.
+                return Boolean.TRUE.equals(metadata.getBoolean("comments_imported"))
+                        && (Boolean.TRUE.equals(metadata.getBoolean("comments_complete"))
+                        || (expected > 0 && metadata.getIntValue("comments_imported_count") >= expected));
+            }
+            Object comments = JSON.parse(video.getContent());
+            if (!(comments instanceof List<?>)) return false;
+            // A recorded panel end/limit may have fewer visible comments than its public badge.
+            if (Boolean.TRUE.equals(metadata.getBoolean("comments_complete"))) return true;
+            return expected > 0 && ((List<?>) comments).size() >= expected;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    static boolean hasRequiredVideoData(Video video, String tags) {
+        if (video == null) return false;
+        AddressVideo data = new AddressVideo();
+        data.setVideoPath(video.getVideoPath());
+        data.setDouyinId(video.getDouyinId());
+        data.setContent(video.getContent());
+        data.setJsonString(video.getJsonString());
+        return hasRequiredAddressData(data, tags);
     }
 
     private void saveAddressVideoCopy(AddressVideo source, long videoIndex, String devId, String address) {
@@ -1408,6 +1491,16 @@ public class AccountInfoFetcherVoid {
     }
 
 
+    static String reusableRecording(String saved) {
+        if (saved == null || saved.isBlank()) return null;
+        try {
+            Path root = Paths.get(DouyinPathUtils.root()).toAbsolutePath().normalize();
+            Path path = saved.startsWith("/profile/") ? root.resolve(saved.substring(9)) : Paths.get(saved);
+            path = path.toAbsolutePath().normalize();
+            return path.startsWith(root) && Files.isRegularFile(path) && Files.size(path) > 0 ? path.toString() : null;
+        } catch (Exception e) { return null; }
+    }
+
     private String toWebPath(String fullPath) {
         if (fullPath == null) return null;
 
@@ -1432,6 +1525,29 @@ public class AccountInfoFetcherVoid {
     // ---------------------------------------------------------
     // ⭐ 主流程：录制所有视频 + 获取评论 + 截图 + 保存数据
     // ---------------------------------------------------------
+    private String collectPublisher(String deviceId, String tags) throws InterruptedException {
+        if (!enterAuthorProfile()) throw new IllegalStateException("进入发布者主页失败");
+        try {
+            if (!waitUntilProfilePage() || !isOnProfilePage()) {
+                throw new IllegalStateException("发布者主页未加载完成");
+            }
+            AccountInfoFetcher fetcher = new AccountInfoFetcher((AndroidDriver<MobileElement>) driver,
+                    DouyinPathUtils.root(), accountContentService, addressAccountContentService,
+                    accountService, douyinTaskService);
+            Map<String, Object> result = fetcher.getAccountBasicInfo("2", "0", deviceId, "");
+            String id = (String) result.get("id");
+            if (!AccountInfoFetcher.isRealDouyinId(id)) {
+                throw new IllegalStateException("未识别到发布者真实抖音号，保留视频等待重试");
+            }
+            douyinTaskService.storeAccountAsync(deviceId, id, result, tags);
+            logger.info("已保存发布者主页信息 douyinId=" + id);
+            return id;
+        } finally {
+            driver.navigate().back();
+            Thread.sleep(1000);
+        }
+    }
+
     public List<Map<String, Object>> addressVideosAndComments(String count, String deviceId, String address, String tags) {
 
         logger.info("开始录制所有视频并获取评论");
@@ -1457,13 +1573,14 @@ public class AccountInfoFetcherVoid {
 
         if (!isOnVideoDetailPage() && !goVideoList()) {
             logger.warning("无法进入作品区");
-            return allVideoData;
+            throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
         }
         String uidByCopy = null;
         int sameUidCount = 0;
 
         while (index < maxVideos) {
             try {
+                ensureCrawlActive();
                 // 确保最新 PageSource
                 driver.getPageSource();
                 logger.info("处理第 " + (index + 1) + " 个视频");
@@ -1481,6 +1598,7 @@ public class AccountInfoFetcherVoid {
                 String desc = normalize(safeText(descEl));
                 if (desc.contains("广告")) {
                     logger.info("取到视频为 广告 ，跳过");
+                    index++;
                     if (!swipeToNextVideo()) break;
                     continue;
                 }
@@ -1524,7 +1642,7 @@ public class AccountInfoFetcherVoid {
 //                boolean existsInDb = comprehensiveVideo
 //                        ? videoService.selectVideoByUId(uid) != null
 //                        : addressVideoService.selectAddressVideoByUid(uid) != null;
-                if (videoService.selectVideoByUId(uid) != null) {
+                if (hasRequiredAddressData(addressVideoService.selectAddressVideo(uid, address), safeTags)) {
                     logger.info("视频已存在数据库，跳过");
                     processed.add(uid); // 可选：避免后面再次查询 DB
                     if (!swipeToNextVideo()) break;
@@ -1532,45 +1650,14 @@ public class AccountInfoFetcherVoid {
                     continue;
                 }
 
-// 标记已处理
-                processed.add(uid);
+// Persist successfully before marking a video as processed.
 
 // ↓↓↓ 这里才是真正的“新视频处理逻辑” ↓↓↓    进入人员主页 进行人员信息获取
 
 
                 String douyinId = "";
                 if (safeTags.contains("基本信息")) {
-//                    点击进入主页
-                    // 1️⃣ 点击进入作者主页
-                    if (!enterAuthorProfile()) {
-                        logger.warning("进入作者主页失败");
-                        return allVideoData;
-                    }
-
-                    // 2️⃣ 等待主页加载完成（稳态）
-                    if (!waitUntilProfilePage()) {
-                        logger.warning("不在个人主页");
-                        return allVideoData;
-                    }
-
-                    // 必须进入主页 & 作品区
-                    if (!isOnProfilePage()) {
-                        logger.warning("不在个人主页");
-                        return allVideoData;
-                    }
-
-
-                    AccountInfoFetcher fetcher1 =
-                            new AccountInfoFetcher((AndroidDriver<MobileElement>) driver,
-                                    DouyinPathUtils.root()
-                                    , accountContentService,
-                                    addressAccountContentService,
-                                    accountService, douyinTaskService);
-                    Map<String, Object> result = fetcher1.getAccountBasicInfo("2", "0", deviceId, douyinId);
-                    douyinId = (String) result.get("id");
-                    douyinTaskService.storeAccountAsync(deviceId, douyinId, result, safeTags);
-                    driver.navigate().back();
-                    Thread.sleep(1000);
+                    douyinId = collectPublisher(deviceId, safeTags);
                 }
 
 //                ===========================================
@@ -1579,6 +1666,7 @@ public class AccountInfoFetcherVoid {
                 Map<String, Object> video = new LinkedHashMap<>();
                 video.put("video_index", index + 1);
                 video.put("uid", uid);
+                video.put("comments_requested", tags != null && tags.contains("评论"));
                 video.put("author", author);
                 video.put("rawTime", rawTime);
                 video.put("descCon", descCon);
@@ -1600,12 +1688,14 @@ public class AccountInfoFetcherVoid {
                         logger.info("⚠️ 视频时长获取失败，重试 " + attempt + "/" + maxRetry);
                         Thread.sleep(500); // 等待0.5秒再试
                     }
+                    video.put("duration_known", duration > 0);
                     if (duration <= 0) duration = 30; // 防止解析失败时，给默认50秒
                     if (duration > 600) duration = 600; // 防止解析失败时，给默认50秒
-                    logger.info("🎬 解析到视频时长: " + duration + " 秒");
+                    video.put("recording_duration_seconds", duration);
+                    logger.info("本次录屏时长: " + duration + " 秒，页面时长已识别=" + video.get("duration_known"));
 
 //                // ◆ 录制视频
-                    String videoPath = recordVideoToFile(index, duration, deviceId, douyinId);
+                    String videoPath = recordVideoToFile(index, duration, deviceId, douyinId, uid, address);
                     video.put("video_path", videoPath);
                 } else {
                     video.put("video_path", "");
@@ -1619,8 +1709,7 @@ public class AccountInfoFetcherVoid {
                     String commentsCount = (String) video.get("comments_count");
                     logger.info("评论采集开关已开启，当前视频评论数: " + commentsCount);
 
-                    if (StringUtils.isNotEmpty(commentsCount)
-                            && !"0".equals(commentsCount)) {
+                    if (!"0".equals(commentsCount)) {
                         // 指定保存评论的目录
                         String videosDir = DouyinPathUtils.resolve("videosDir");
 
@@ -1631,11 +1720,16 @@ public class AccountInfoFetcherVoid {
                                 accountService);
 // 抓取当前视频的全部评论（包含 totalComments + comments + json_path）
                         Map<String, Object> commentResult = fetcher.fetchAllComments("2", address, uid, deviceId, index, videosDir, (String) video.get("comments_count"));
+                        if (!Boolean.TRUE.equals(commentResult.get("complete")) && !Boolean.TRUE.equals(commentResult.get("deferred"))) {
+                            throw new IllegalStateException("评论采集未完成，已保留断点: " + commentResult.get("json_path"));
+                        }
 // 取出评论数组
                         List<Map<String, Object>> comments = (List<Map<String, Object>>) commentResult.get("comments");
 // 写入视频数据
                         video.put("comments", comments);
                         video.put("json_path", commentResult.get("json_path"));       // ✔ 正确：保存路径字符串
+                        video.put("comments_complete", Boolean.TRUE.equals(commentResult.get("complete")));
+                        video.put("comments_deferred", Boolean.TRUE.equals(commentResult.get("deferred")));
                         video.put("totalComments", commentResult.get("totalComments")); // ✔ 正确：真实总评论数
 
                         Thread.sleep(1000); // 等待0.5秒确保下一个视频加载完成
@@ -1655,12 +1749,17 @@ public class AccountInfoFetcherVoid {
                     video.put("totalComments", ""); // ✔ 正确：真实总评论数
 
                 }
-                allVideoData.add(video);
-
+                ensureCrawlActive();
                 saveSingleVideoByAddress(video, deviceId, douyinId, address);
+                processed.add(uid);
+                allVideoData.add(videoSummary(video));
 
 
-                logger.info("第 " + (index + 1) + " 个视频处理完成");
+                logger.info("第 " + (index + 1) + " 个视频" + (Boolean.TRUE.equals(video.get("comments_deferred")) ? "已保存部分评论，稍后续采" : "处理完成"));
+                if (Boolean.TRUE.equals(video.get("comments_deferred")) || douyinTaskService.hasWaitingTasks(deviceId)) {
+                    logger.info("当前视频已落库，释放设备处理排队的地址/发布者任务");
+                    return new CrawlBatch(allVideoData);
+                }
 
                 index++;
 
@@ -1669,13 +1768,13 @@ public class AccountInfoFetcherVoid {
                 Thread.sleep(500); // 等待0.5秒确保下一个视频加载完成
 
             } catch (Exception e) {
-                logger.warning("处理视频异常: " + e);
-                index++;
+                if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+                logger.log(java.util.logging.Level.SEVERE, "处理视频失败 index=" + index + " device=" + deviceId, e);
+                throw new IllegalStateException("视频未保存完成，停止本轮等待重试", e);
             }
         }
 
-        // 核心：处理完视频后检查是否需要重启
-        checkAndRestartAppium();
+        // Driver lifecycle is owned by DouyinVideoService; do not restart shared Appium.
 
         logger.info("总共处理视频数量: " + allVideoData.size());
         return allVideoData;
@@ -1710,13 +1809,14 @@ public class AccountInfoFetcherVoid {
 
         if (!isOnVideoDetailPage() && !goVideoList()) {
             logger.warning("无法进入作品区");
-            return allVideoData;
+            throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
         }
         String uidByCopy = null;
         int sameUidCount = 0;
 
         while (index < maxVideos) {
             try {
+                ensureCrawlActive();
                 // 确保最新 PageSource
                 driver.getPageSource();
                 logger.info("处理第 " + (index + 1) + " 个视频");
@@ -1734,6 +1834,7 @@ public class AccountInfoFetcherVoid {
                 String desc = normalize(safeText(descEl));
                 if (desc.contains("广告")) {
                     logger.info("取到视频为 广告 ，跳过");
+                    index++;
                     if (!swipeToNextVideo()) break;
                     continue;
                 }
@@ -1774,7 +1875,7 @@ public class AccountInfoFetcherVoid {
                     continue;
                 }
 // 数据库去重
-                if (addressVideoService.selectAddressVideo(uid, address) != null) {
+                if (hasRequiredAddressData(addressVideoService.selectAddressVideo(uid, address), safeTags)) {
                     logger.info("视频已存在数据库，跳过");
                     processed.add(uid); // 可选：避免后面再次查询 DB
                     if (!swipeToNextVideo()) break;
@@ -1783,9 +1884,9 @@ public class AccountInfoFetcherVoid {
                 }
 
                 AddressVideo existingAddressVideo = addressVideoService.selectAddressVideoByUid(uid);
-                if (existingAddressVideo != null) {
+                if (hasRequiredAddressData(existingAddressVideo, safeTags)) {
                     Map<String, Object> video = buildVideoMapFromAddressVideo(existingAddressVideo, index);
-                    allVideoData.add(video);
+                    allVideoData.add(videoSummary(video));
                     saveAddressVideoCopy(existingAddressVideo, index + 1L, deviceId, address);
                     logger.info("视频已存在其他地址，复用已有数据保存到当前地址");
                     processed.add(uid);
@@ -1794,45 +1895,14 @@ public class AccountInfoFetcherVoid {
                     continue;
                 }
 
-// 标记已处理
-                processed.add(uid);
+// Persist successfully before marking a video as processed.
 
 // ↓↓↓ 这里才是真正的“新视频处理逻辑” ↓↓↓    进入人员主页 进行人员信息获取
 
 
                 String douyinId = "";
                 if (safeTags.contains("基本信息")) {
-//                    点击进入主页
-                    // 1️⃣ 点击进入作者主页
-                    if (!enterAuthorProfile()) {
-                        logger.warning("进入作者主页失败");
-                        return allVideoData;
-                    }
-
-                    // 2️⃣ 等待主页加载完成（稳态）
-                    if (!waitUntilProfilePage()) {
-                        logger.warning("不在个人主页");
-                        return allVideoData;
-                    }
-
-                    // 必须进入主页 & 作品区
-                    if (!isOnProfilePage()) {
-                        logger.warning("不在个人主页");
-                        return allVideoData;
-                    }
-
-
-                    AccountInfoFetcher fetcher1 =
-                            new AccountInfoFetcher((AndroidDriver<MobileElement>) driver,
-                                    DouyinPathUtils.root()
-                                    , accountContentService,
-                                    addressAccountContentService,
-                                    accountService, douyinTaskService);
-                    Map<String, Object> result = fetcher1.getAccountBasicInfo("2", "0", deviceId, douyinId);
-                    douyinId = (String) result.get("id");
-                    douyinTaskService.storeAccountAsync(deviceId, douyinId, result, safeTags);
-                    driver.navigate().back();
-                    Thread.sleep(1000);
+                    douyinId = collectPublisher(deviceId, safeTags);
                 }
 
 //                ===========================================
@@ -1841,6 +1911,7 @@ public class AccountInfoFetcherVoid {
                 Map<String, Object> video = new LinkedHashMap<>();
                 video.put("video_index", index + 1);
                 video.put("uid", uid);
+                video.put("comments_requested", tags != null && tags.contains("评论"));
                 video.put("author", author);
                 video.put("rawTime", rawTime);
                 video.put("descCon", descCon);
@@ -1862,13 +1933,15 @@ public class AccountInfoFetcherVoid {
                         logger.info("⚠️ 视频时长获取失败，重试 " + attempt + "/" + maxRetry);
                         Thread.sleep(500); // 等待0.5秒再试
                     }
+                    video.put("duration_known", duration > 0);
                     if (duration <= 0) duration = 30; // 防止解析失败时，给默认50秒
                     if (duration > 600) duration = 600; // 防止解析失败时，给默认50秒
-                    logger.info("🎬 解析到视频时长: " + duration + " 秒");
+                    video.put("recording_duration_seconds", duration);
+                    logger.info("本次录屏时长: " + duration + " 秒，页面时长已识别=" + video.get("duration_known"));
 
 //                // ◆ 录制视频
                     String videoPath = recordVideoToFile(index, duration, deviceId,
-                            comprehensiveVideo ? address : douyinId);
+                            comprehensiveVideo ? address : douyinId, uid, address);
                     video.put("video_path", videoPath);
                 } else {
                     video.put("video_path", "");
@@ -1880,8 +1953,7 @@ public class AccountInfoFetcherVoid {
 
                 if (safeTags.contains("评论")) {
 
-                    if (StringUtils.isNotEmpty((String) video.get("comments_count"))
-                            && !video.get("comments_count").equals("0")) {
+                    if (!"0".equals(video.get("comments_count"))) {
                         // 指定保存评论的目录
                         String videosDir = DouyinPathUtils.resolve("videosDir");
 
@@ -1892,11 +1964,16 @@ public class AccountInfoFetcherVoid {
                                 accountService);
 // 抓取当前视频的全部评论（包含 totalComments + comments + json_path）
                         Map<String, Object> commentResult = fetcher.fetchAllComments(comprehensiveVideo ? "1" : "2", address, uid, deviceId, index, videosDir, (String) video.get("comments_count"));
+                        if (!Boolean.TRUE.equals(commentResult.get("complete")) && !Boolean.TRUE.equals(commentResult.get("deferred"))) {
+                            throw new IllegalStateException("评论采集未完成，已保留断点: " + commentResult.get("json_path"));
+                        }
 // 取出评论数组
                         List<Map<String, Object>> comments = (List<Map<String, Object>>) commentResult.get("comments");
 // 写入视频数据
                         video.put("comments", comments);
                         video.put("json_path", commentResult.get("json_path"));       // ✔ 正确：保存路径字符串
+                        video.put("comments_complete", Boolean.TRUE.equals(commentResult.get("complete")));
+                        video.put("comments_deferred", Boolean.TRUE.equals(commentResult.get("deferred")));
                         video.put("totalComments", commentResult.get("totalComments")); // ✔ 正确：真实总评论数
 
                         Thread.sleep(1000); // 等待0.5秒确保下一个视频加载完成
@@ -1909,12 +1986,17 @@ public class AccountInfoFetcherVoid {
                     video.put("totalComments", ""); // ✔ 正确：真实总评论数
 
                 }
-                allVideoData.add(video);
-
+                ensureCrawlActive();
                 saveSingleVideoByAddress(video, deviceId, douyinId, address);
+                processed.add(uid);
+                allVideoData.add(videoSummary(video));
 
 
-                logger.info("第 " + (index + 1) + " 个视频处理完成");
+                logger.info("第 " + (index + 1) + " 个视频" + (Boolean.TRUE.equals(video.get("comments_deferred")) ? "已保存部分评论，稍后续采" : "处理完成"));
+                if (Boolean.TRUE.equals(video.get("comments_deferred")) || douyinTaskService.hasWaitingTasks(deviceId)) {
+                    logger.info("当前视频已落库，释放设备处理排队的地址/发布者任务");
+                    return new CrawlBatch(allVideoData);
+                }
 
                 index++;
 
@@ -1923,13 +2005,13 @@ public class AccountInfoFetcherVoid {
                 Thread.sleep(500); // 等待0.5秒确保下一个视频加载完成
 
             } catch (Exception e) {
-                logger.warning("处理视频异常: " + e);
-                index++;
+                if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+                logger.log(java.util.logging.Level.SEVERE, "处理视频失败 index=" + index + " device=" + deviceId, e);
+                throw new IllegalStateException("视频未保存完成，停止本轮等待重试", e);
             }
         }
 
-        // 核心：处理完视频后检查是否需要重启
-        checkAndRestartAppium();
+        // Driver lifecycle is owned by DouyinVideoService; do not restart shared Appium.
 
         logger.info("总共处理视频数量: " + allVideoData.size());
         return allVideoData;

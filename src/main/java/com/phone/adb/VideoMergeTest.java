@@ -1,64 +1,42 @@
 package com.phone.adb;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
+import java.nio.file.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-/**
- * 将录制视频合并为一个视频文件
- * */
+/** Merge recordings only after verifying FFmpeg success; preserve parts on failure. */
 public class VideoMergeTest {
-
-    // ffmpeg.exe 的绝对路径
-    private static String ffmpegPath() {
-        return DouyinPathUtils.resolve("ffmpeg", "bin", "ffmpeg.exe");
-    }
-
-    // 视频输出文件夹
-    private static String videoOutputFolder() {
-        return DouyinPathUtils.resolve("video");
-    }
-
     public static void mergeVideoSegments(List<String> segmentFiles, String finalFilename) throws Exception {
-        // 临时列表文件
-        String listFile = Paths.get(videoOutputFolder(), "merge_list.txt").toString();
-
-        StringBuilder sb = new StringBuilder();
-        for (String seg : segmentFiles) {
-            sb.append("file '").append(seg.replace("\\", "/")).append("'\n");
-        }
-        Files.write(Paths.get(listFile), sb.toString().getBytes(StandardCharsets.UTF_8));
-
-        // 调用 ffmpeg 合并
-        Process ffmpeg = new ProcessBuilder(
-                ffmpegPath(),
-                "-f", "concat",
-                "-safe", "0",
-                "-i", listFile,
-                "-c", "copy",
-                finalFilename
-        ).inheritIO() // 输出 ffmpeg 日志到控制台
-                .start();
-
-        ffmpeg.waitFor();
-        // 删除所有 part 文件
-        for (String seg : segmentFiles) {
-            File partFile = new File(seg);
-            if (partFile.exists()) {
-                if (partFile.delete()) {
-                    System.out.println("删除分段文件 → " + seg);
-                } else {
-                    System.err.println("删除分段文件失败 → " + seg);
-                }
+        if (segmentFiles.isEmpty()) throw new IOException("没有可合并的视频分段");
+        Path output = Paths.get(finalFilename).toAbsolutePath();
+        Path listFile = Files.createTempFile(output.getParent(), "merge-", ".txt");
+        Process ffmpeg = null;
+        try {
+            StringBuilder list = new StringBuilder();
+            for (String segment : segmentFiles) {
+                list.append("file '").append(segment.replace("\\", "/").replace("'", "'\\''")).append("'\n");
             }
+            Files.writeString(listFile, list, StandardCharsets.UTF_8);
+            ffmpeg = new ProcessBuilder(DouyinPathUtils.resolve("ffmpeg", "bin", "ffmpeg.exe"),
+                    "-nostdin", "-y", "-f", "concat", "-safe", "0", "-i", listFile.toString(),
+                    "-c", "copy", finalFilename)
+                    .redirectErrorStream(true)
+                    .redirectOutput(new File(finalFilename + ".ffmpeg.log")).start();
+            verifyMerge(ffmpeg, output);
+            for (String segment : segmentFiles) Files.deleteIfExists(Paths.get(segment));
+        } finally {
+            if (ffmpeg != null && ffmpeg.isAlive()) ffmpeg.destroyForcibly();
+            Files.deleteIfExists(listFile);
         }
+    }
 
-
-        // 删除临时列表文件
-        new File(listFile).delete();
-
+    static void verifyMerge(Process process, Path output) throws Exception {
+        if (!process.waitFor(120, TimeUnit.SECONDS)) throw new IOException("FFmpeg 合并超时，保留原分段");
+        if (process.exitValue() != 0 || !Files.exists(output) || Files.size(output) == 0) {
+            throw new IOException("FFmpeg 合并失败，保留原分段，详见 " + output + ".ffmpeg.log");
+        }
     }
 }

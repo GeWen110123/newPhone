@@ -20,6 +20,11 @@ public class VideoServiceImpl implements IVideoService {
     @Autowired
     private VideoMapper videoMapper;
 
+    @Override
+    public long countVideos(String douyinId) {
+        return videoMapper.countVideos(douyinId);
+    }
+
     /**
      * 查询video
      *

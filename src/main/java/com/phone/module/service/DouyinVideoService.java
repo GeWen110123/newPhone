@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phone.adb.AccountInfoFetcherVoid;
+import com.phone.adb.CrawlBatch;
 import com.phone.adb.DouyinAddressCrawler;
 import com.phone.adb.DouyinCrawler;
 import com.phone.adb.PlaceMockLocationHelper;
@@ -21,7 +22,6 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +35,6 @@ public class DouyinVideoService {
 
     private static final Logger logger = Logger.getLogger(DouyinVideoService.class.getName());
 
-    @Autowired
-    private RedisTemplate redisTemplate;
     @Autowired
     private IVideoTagsService videoTagsService;
     @Autowired
@@ -60,114 +58,62 @@ public class DouyinVideoService {
     /**
      * 异步入口
      */
+    @Autowired
+    private DeviceLeaseService deviceLeases;
+
     @Async
-    public void asyncCrawlTask(String devId, String accountName, VideoTags tags, String lockKey, Boolean locked) {
-        crawlWithRedisTemplateLock(devId, accountName, tags, lockKey, locked);
-
-        Account account = new Account();
-        account.setDouyinId(accountName);
-        List<Account> accountList = accountService.selectAccountList(account);
-
+    public void asyncCrawlTask(String devId, String accountName, VideoTags tags, String lockKey, String token) {
         RunLog runLog = new RunLog();
-
-        if (accountList.size() > 0) {
-            account = accountService.selectAccountList(account).get(0);
-            int count = getRealWorksCount(account.getJsonString());
-
-
-            runLog.setDevId(devId);
-            runLog.setDouyinId(tags.getDouyinId());
-
-            if (tags.getTags().contains("前六条")) {
-
-                runLog.setType("人员");
-                Video v = new Video();
-                v.setDouyinId(accountName);
-                List<Video> videoList = videoService.selectVideoList(v);
-                if (videoList.size() >= count || videoList.size() >= 6) {
-                    tags.setStatus("2");
-                    runLog.setRuningDetail("完成对" + tags.getDouyinId() + "前六条数据获取");
-                } else {
-                    tags.setStatus("3");
-                    runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
-                }
-
-
-            } else if (tags.getTags().contains("地址")) {
-                runLog.setType("地址");
-                AddressVideo v = new AddressVideo();
-                v.setAddress(accountName);
-                if (addressVideoService.selectAddressVideoList(v).size() >= count) {
-                    runLog.setRuningDetail("完成对地址" + tags.getDouyinId() + "数据获取");
-                    tags.setStatus("2");
-                } else {
-//                   如果地址存在问题 进行修改为未执行状态  继续执行
-                    tags.setStatus("0");
-                    runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
-                }
-            } else {
-                count = getUserWorksCount(account.getJsonString());
-                runLog.setType("人员");
-                Video v = new Video();
-                v.setDouyinId(accountName);
-                if (videoService.selectVideoList(v).size() >= count) {
-                    tags.setStatus("2");
-                    runLog.setRuningDetail("完成对" + tags.getDouyinId() + "前六条数据获取");
-                } else {
-                    tags.setStatus("3");
-                    runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
-                }
+        runLog.setDevId(devId);
+        runLog.setDouyinId(accountName);
+        runLog.setType("采集");
+        try (AutoCloseable lease = deviceLeases.keepAlive(lockKey, token)) {
+            List<Map<String, Object>> result = crawlSingleAccount(devId, accountName,
+                    tags.getTags(), tags.getAddress());
+            if (result == null || Thread.currentThread().isInterrupted()) {
+                throw new IllegalStateException("采集未完成，保留已保存数据等待重试");
             }
-
-
-        } else {
-            if (tags.getTags().contains("地址")) {
+            if (result instanceof CrawlBatch) {
                 tags.setStatus("0");
-            } else {
-                tags.setStatus("3");
+                tags.setRunNum(Math.max(0L, (tags.getRunNum() == null ? 1L : tags.getRunNum()) - 1L));
+                runLog.setRuningDetail(accountName + "本轮已保存=" + result.size() + "，让出设备处理排队任务，稍后继续");
+                logger.info(runLog.getRuningDetail());
+                return;
             }
-            runLog.setType("异常");
-            runLog.setRuningDetail(tags.getDouyinId() + "数据获取结束，存在异常，等待再次处理");
-            runLogService.insertRunLog(runLog);
-
+            Account query = new Account();
+            query.setDouyinId(accountName);
+            List<Account> accounts = accountService.selectAccountList(query);
+            int expected = accounts.isEmpty() ? 0 : getUserWorksCount(accounts.get(0).getJsonString());
+            String options = tags.getTags() == null ? "" : tags.getTags();
+            long saved;
+            if (options.contains("地址") || options.contains("附近") || options.contains("综合视频")) {
+                saved = addressVideoService.countAddressVideos(accountName);
+            } else {
+                saved = videoService.countVideos(accountName);
+                if (options.contains("前六条") && expected > 0) expected = Math.min(expected, 6);
+            }
+            // Unknown counts and partial runs must never be reported as successful.
+            boolean complete = expected > 0 && saved >= expected;
+            tags.setStatus(complete ? "2" : "3");
+            runLog.setRuningDetail(accountName + "本轮新增=" + result.size() + "，已保存=" + saved
+                    + "，页面目标=" + expected + (complete ? "，采集完成" : "，未确认完整，等待重试"));
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            tags.setStatus("3");
+            runLog.setRuningDetail(accountName + "采集中断: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            logger.log(java.util.logging.Level.SEVERE, "采集失败 task=" + tags.getId() + " device=" + devId, e);
+        } finally {
+            try {
+                if (tags.getId() != null) videoTagsService.updateVideoTags(tags);
+                runLogService.insertRunLog(runLog);
+            } finally {
+                deviceLeases.release(lockKey, token);
+            }
         }
-        runLogService.insertRunLog(runLog);
-
-        videoTagsService.updateVideoTags(tags);
     }
 
     public static int getRealWorksCount(String jsonString) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            Map<String, Object> map = mapper.readValue(
-                    jsonString,
-                    new TypeReference<Map<String, Object>>() {
-                    }
-            );
-
-            // ① 先拿 works_count
-            int worksCount = Optional.ofNullable(map.get("works_count"))
-                    .map(Object::toString)
-                    .map(Integer::parseInt)
-                    .orElse(0);
-
-            // ② 再看 works 文本是不是“打卡”类型
-            String worksText = Optional.ofNullable(map.get("works"))
-                    .map(Object::toString)
-                    .orElse("");
-
-            if (worksText.contains("打卡")) {
-                worksCount = worksCount / 10;
-            } else {
-                worksCount = worksCount / 5;
-            }
-
-            return worksCount;
-
-        } catch (Exception e) {
-            logger.warning("解析 works_count 失败: " + e.getMessage());
-            return 0;
-        }
+        return getUserWorksCount(jsonString);
     }
 
     public static int getUserWorksCount(String jsonString) {
@@ -194,37 +140,11 @@ public class DouyinVideoService {
     }
 
     /**
-     * 使用 RedisTemplate 实现设备排它锁
-     * 执行抓取操作
-     */
-    private void crawlWithRedisTemplateLock(String devId,
-                                            String accountName,
-                                            VideoTags tags,
-                                            String lockKey,
-                                            boolean locked) {
-        try {
-            if (tags.getTags().contains("附近")) {
-                crawlSingleAccount(devId, accountName, tags.getTags(), tags.getAddress());
-            } else {
-                crawlSingleAccount(devId, accountName, tags.getTags(), "");
-
-            }
-            // 执行抓取
-        } catch (Exception e) {
-            logger.severe("❌ Redis 分布式锁错误：" + e.getMessage());
-        } finally {
-            if (Boolean.TRUE.equals(redisTemplate.hasKey(lockKey)) && Boolean.TRUE.equals(locked)) {
-                redisTemplate.delete(lockKey);
-                logger.info("🔓 Redis 锁已释放：" + devId);
-            }
-        }
-    }
-
-    /**
      * 单设备抓取（修复版：解决 socket hang up 错误）
      */
     public List<Map<String, Object>> crawlSingleAccount(String devId, String accountName, String tags, String address) {
         AndroidDriver<MobileElement> driver = null;
+        tags = tags == null ? "" : tags;
 
         try {
             DesiredCapabilities caps = new DesiredCapabilities();
@@ -257,7 +177,7 @@ public class DouyinVideoService {
             caps.setCapability("uiautomator2ServerLaunchTimeout", 30000);
             caps.setCapability("uiautomator2ServerInstallTimeout", 30000);
             caps.setCapability("adbExecTimeout", 10000);
-            caps.setCapability("newCommandTimeout", 60);
+            caps.setCapability("newCommandTimeout", 300);
 
 // 4. 关闭卡顿来源：动画、弹窗、监听
             caps.setCapability("disableWindowAnimation", true);
@@ -279,11 +199,16 @@ public class DouyinVideoService {
             int retryCount = 0;
             while (retryCount < 3) { // 最多重试3次
                 try {
+                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException("驱动创建已取消");
                     retryCount++;
                     driver = new AndroidDriver<>(new URL("http://127.0.0.1:4723/wd/hub"), caps);
                     logger.info("驱动创建成功！");
                     break;
                 } catch (Exception e) {
+                    if (e instanceof InterruptedException || Thread.currentThread().isInterrupted()) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("驱动创建已取消", e);
+                    }
                     if (retryCount >= 3) {
                         throw new RuntimeException("驱动创建失败（已重试3次）", e);
                     }
@@ -312,7 +237,6 @@ public class DouyinVideoService {
                         addressAccountContentService,
                         accountService
                 );
-                driver.startRecordingScreen();
 
                 Account account = new Account();
                 account.setDouyinId(accountName);
@@ -363,7 +287,6 @@ public class DouyinVideoService {
                         addressAccountContentService,
                         accountService
                 );
-                driver.startRecordingScreen();
 
                 String workesCount = getStoredWorksCount(accountName);
                 if (!StringUtils.isNotBlank(workesCount)) {
@@ -411,7 +334,6 @@ public class DouyinVideoService {
                         addressAccountContentService,
                         accountService
                 );
-                driver.startRecordingScreen();
 
                 Thread.sleep(1000);
                 if (!swipeLeftToNearbyVideoFeed(driver)) {
@@ -440,7 +362,6 @@ public class DouyinVideoService {
                         accountContentService,
                         addressAccountContentService,
                         accountService);
-                driver.startRecordingScreen();
 
                 // 基础信息查询
                 if (tags.contains("基本信息")) {
@@ -452,7 +373,8 @@ public class DouyinVideoService {
             }
 
         } catch (Exception e) {
-            logger.severe("❌ crawlSingleAccount 异常：" + e.getMessage());
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            logger.log(java.util.logging.Level.SEVERE, "crawlSingleAccount 失败 device=" + devId, e);
             return null;
         } finally {
             // ========== 修复：优雅关闭驱动，避免端口残留 ==========

@@ -4,9 +4,9 @@ spring:
   application:
     name: phone
   datasource:
-    url: "jdbc:mysql://localhost:3306/phone?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai"
-    username: "phone"
-    password: "Danteng2020!@#"
+    url: "${MYSQL_URL:jdbc:mysql://localhost:3306/phone?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}"
+    username: "${MYSQL_USERNAME:root}"
+    password: "${MYSQL_PASSWORD:Danteng2020!@#}"
     hikari:
       maximum-pool-size: 10
   redis:
@@ -31,13 +31,13 @@ phone:
   version: 1.0.0
   copyrightYear: 2026
   demoEnabled: false
-  profile: "D:/douyin_output"
+  profile: "F:/douyin_output"
   addressEnabled: false
   captchaType: math
   register-enabled: false
-  scheduler-enabled: ${DOUYIN_SCHEDULER_ENABLED:false}
+  scheduler-enabled: ${DOUYIN_SCHEDULER_ENABLED:true}
   maintenance-enabled: ${DOUYIN_MAINTENANCE_ENABLED:false}
-  cors-origins: ${CORS_ORIGINS:http://localhost:3000}
+  cors-origins: ${CORS_ORIGINS:http://localhost:5555}
 token:
   header: Authorization
   secret: "replace-with-a-long-random-secret"

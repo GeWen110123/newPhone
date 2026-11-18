@@ -12,6 +12,9 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface AddressVideoMapper 
 {
+    int updateCrawledAddressVideo(AddressVideo video);
+    long countAddressVideos(@Param("address") String address);
+
     /**
      * 查询地址视频总
      * 

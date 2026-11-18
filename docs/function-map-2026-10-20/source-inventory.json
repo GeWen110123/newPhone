@@ -1,0 +1,3724 @@
+{
+  "controllers": [
+    {
+      "name": "AccountContentController",
+      "base": "/module/accountContent",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "endpointCount": 9
+    },
+    {
+      "name": "AccountController",
+      "base": "/module/account",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "endpointCount": 8
+    },
+    {
+      "name": "AccountFolderReader",
+      "base": "/module/accountReader",
+      "file": "src/main/java/com/phone/module/controller/AccountFolderReader.java",
+      "endpointCount": 0
+    },
+    {
+      "name": "AccountIpController",
+      "base": "/module/ipAddress",
+      "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "AddressAccountContentController",
+      "base": "/module/addressAccountContent",
+      "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "AddressVideoController",
+      "base": "/module/AddressVideo",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "endpointCount": 7
+    },
+    {
+      "name": "AnalyticsController",
+      "base": "/module/analytics",
+      "file": "src/main/java/com/phone/module/controller/AnalyticsController.java",
+      "endpointCount": 3
+    },
+    {
+      "name": "CommentController",
+      "base": "/module/comment",
+      "file": "src/main/java/com/phone/module/controller/CommentController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "DeviceAppController",
+      "base": "/module/DeviceApp",
+      "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "DeviceCommandController",
+      "base": "/module/DeviceCommand",
+      "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "DeviceController",
+      "base": "/module/device",
+      "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "DeviceGroupController",
+      "base": "/module/deviceGroup",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "endpointCount": 8
+    },
+    {
+      "name": "DeviceLogController",
+      "base": "/module/DeviceLog",
+      "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "RunLogController",
+      "base": "/module/RunLog",
+      "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "StrategyLogController",
+      "base": "/module/strategy_log",
+      "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "StrategyTemplateController",
+      "base": "/module/template",
+      "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "TaskLogController",
+      "base": "/module/taskLog",
+      "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "TaskTemplateController",
+      "base": "/module/taskTemplate",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "endpointCount": 7
+    },
+    {
+      "name": "VideoController",
+      "base": "/module/video",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "endpointCount": 7
+    },
+    {
+      "name": "VideoTagsController",
+      "base": "/module/VideoTags",
+      "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "VideoTaskController",
+      "base": "/module/video_task",
+      "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+      "endpointCount": 6
+    },
+    {
+      "name": "StatusController",
+      "base": "",
+      "file": "src/main/java/com/phone/module/StatusController.java",
+      "endpointCount": 1
+    },
+    {
+      "name": "SysDeptController",
+      "base": "/system/dept",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "endpointCount": 8
+    },
+    {
+      "name": "SysDictDataController",
+      "base": "/system/dict/data",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "endpointCount": 7
+    },
+    {
+      "name": "SysDictTypeController",
+      "base": "/system/dict/type",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "endpointCount": 8
+    },
+    {
+      "name": "SysIndexController",
+      "base": "",
+      "file": "src/main/java/com/phone/web/controller/system/SysIndexController.java",
+      "endpointCount": 1
+    },
+    {
+      "name": "SysLoginController",
+      "base": "",
+      "file": "src/main/java/com/phone/web/controller/system/SysLoginController.java",
+      "endpointCount": 3
+    },
+    {
+      "name": "SysMenuController",
+      "base": "/system/menu",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "endpointCount": 7
+    },
+    {
+      "name": "SysNoticeController",
+      "base": "/system/notice",
+      "file": "src/main/java/com/phone/web/controller/system/SysNoticeController.java",
+      "endpointCount": 5
+    },
+    {
+      "name": "SysPostController",
+      "base": "/system/post",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "endpointCount": 7
+    },
+    {
+      "name": "SysProfileController",
+      "base": "/system/user/profile",
+      "file": "src/main/java/com/phone/web/controller/system/SysProfileController.java",
+      "endpointCount": 4
+    },
+    {
+      "name": "SysRegisterController",
+      "base": "",
+      "file": "src/main/java/com/phone/web/controller/system/SysRegisterController.java",
+      "endpointCount": 1
+    },
+    {
+      "name": "SysRoleController",
+      "base": "/system/role",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "endpointCount": 14
+    },
+    {
+      "name": "SysUserController",
+      "base": "/system/user",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "endpointCount": 13
+    }
+  ],
+  "backend": [
+    {
+      "controller": "AccountContentController",
+      "method": "GET",
+      "path": "/module/accountContent/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 44
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "GET",
+      "path": "/module/accountContent/listByFollow",
+      "handler": "listByFollow",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 68
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "GET",
+      "path": "/module/accountContent/listByFans",
+      "handler": "listByFans",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 90
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "GET",
+      "path": "/module/accountContent/listByDid",
+      "handler": "listByDid",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 114
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "POST",
+      "path": "/module/accountContent/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 137
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "GET",
+      "path": "/module/accountContent/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 148
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "POST",
+      "path": "/module/accountContent",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 158
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "PUT",
+      "path": "/module/accountContent",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 168
+    },
+    {
+      "controller": "AccountContentController",
+      "method": "DELETE",
+      "path": "/module/accountContent/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/AccountContentController.java",
+      "line": 178
+    },
+    {
+      "controller": "AccountController",
+      "method": "GET",
+      "path": "/module/account/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 43
+    },
+    {
+      "controller": "AccountController",
+      "method": "POST",
+      "path": "/module/account/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 54
+    },
+    {
+      "controller": "AccountController",
+      "method": "GET",
+      "path": "/module/account/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 64
+    },
+    {
+      "controller": "AccountController",
+      "method": "POST",
+      "path": "/module/account",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 73
+    },
+    {
+      "controller": "AccountController",
+      "method": "PUT",
+      "path": "/module/account",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 82
+    },
+    {
+      "controller": "AccountController",
+      "method": "DELETE",
+      "path": "/module/account/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 91
+    },
+    {
+      "controller": "AccountController",
+      "method": "GET",
+      "path": "/module/account/crawl",
+      "handler": "crawlAccount",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 107
+    },
+    {
+      "controller": "AccountController",
+      "method": "GET",
+      "path": "/module/account/crawlVideo",
+      "handler": "crawlVideo",
+      "file": "src/main/java/com/phone/module/controller/AccountController.java",
+      "line": 128
+    },
+    {
+      "controller": "AccountIpController",
+      "method": "GET",
+      "path": "/module/ipAddress/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+      "line": 40
+    },
+    {
+      "controller": "AccountIpController",
+      "method": "POST",
+      "path": "/module/ipAddress/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+      "line": 51
+    },
+    {
+      "controller": "AccountIpController",
+      "method": "GET",
+      "path": "/module/ipAddress/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+      "line": 62
+    },
+    {
+      "controller": "AccountIpController",
+      "method": "POST",
+      "path": "/module/ipAddress",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+      "line": 71
+    },
+    {
+      "controller": "AccountIpController",
+      "method": "PUT",
+      "path": "/module/ipAddress",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+      "line": 80
+    },
+    {
+      "controller": "AccountIpController",
+      "method": "DELETE",
+      "path": "/module/ipAddress/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/AccountIpController.java",
+      "line": 89
+    },
+    {
+      "controller": "AddressAccountContentController",
+      "method": "GET",
+      "path": "/module/addressAccountContent/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+      "line": 45
+    },
+    {
+      "controller": "AddressAccountContentController",
+      "method": "POST",
+      "path": "/module/addressAccountContent/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+      "line": 71
+    },
+    {
+      "controller": "AddressAccountContentController",
+      "method": "GET",
+      "path": "/module/addressAccountContent/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+      "line": 82
+    },
+    {
+      "controller": "AddressAccountContentController",
+      "method": "POST",
+      "path": "/module/addressAccountContent",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+      "line": 92
+    },
+    {
+      "controller": "AddressAccountContentController",
+      "method": "PUT",
+      "path": "/module/addressAccountContent",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+      "line": 102
+    },
+    {
+      "controller": "AddressAccountContentController",
+      "method": "DELETE",
+      "path": "/module/addressAccountContent/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/AddressAccountContentController.java",
+      "line": 112
+    },
+    {
+      "controller": "AddressVideoController",
+      "method": "GET",
+      "path": "/module/AddressVideo/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "line": 53
+    },
+    {
+      "controller": "AddressVideoController",
+      "method": "GET",
+      "path": "/module/AddressVideo/listByIp",
+      "handler": "listByIp",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "line": 108
+    },
+    {
+      "controller": "AddressVideoController",
+      "method": "POST",
+      "path": "/module/AddressVideo/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "line": 120
+    },
+    {
+      "controller": "AddressVideoController",
+      "method": "GET",
+      "path": "/module/AddressVideo/{uid}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "line": 130
+    },
+    {
+      "controller": "AddressVideoController",
+      "method": "POST",
+      "path": "/module/AddressVideo",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "line": 139
+    },
+    {
+      "controller": "AddressVideoController",
+      "method": "PUT",
+      "path": "/module/AddressVideo",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "line": 148
+    },
+    {
+      "controller": "AddressVideoController",
+      "method": "DELETE",
+      "path": "/module/AddressVideo/{uids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/AddressVideoController.java",
+      "line": 157
+    },
+    {
+      "controller": "AnalyticsController",
+      "method": "GET",
+      "path": "/module/analytics/executions",
+      "handler": "executions",
+      "file": "src/main/java/com/phone/module/controller/AnalyticsController.java",
+      "line": 17
+    },
+    {
+      "controller": "AnalyticsController",
+      "method": "GET",
+      "path": "/module/analytics/resources",
+      "handler": "resources",
+      "file": "src/main/java/com/phone/module/controller/AnalyticsController.java",
+      "line": 24
+    },
+    {
+      "controller": "AnalyticsController",
+      "method": "GET",
+      "path": "/module/analytics/content",
+      "handler": "content",
+      "file": "src/main/java/com/phone/module/controller/AnalyticsController.java",
+      "line": 30
+    },
+    {
+      "controller": "CommentController",
+      "method": "GET",
+      "path": "/module/comment/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/CommentController.java",
+      "line": 55
+    },
+    {
+      "controller": "CommentController",
+      "method": "POST",
+      "path": "/module/comment/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/CommentController.java",
+      "line": 103
+    },
+    {
+      "controller": "CommentController",
+      "method": "GET",
+      "path": "/module/comment/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/CommentController.java",
+      "line": 114
+    },
+    {
+      "controller": "CommentController",
+      "method": "POST",
+      "path": "/module/comment",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/CommentController.java",
+      "line": 124
+    },
+    {
+      "controller": "CommentController",
+      "method": "PUT",
+      "path": "/module/comment",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/CommentController.java",
+      "line": 134
+    },
+    {
+      "controller": "CommentController",
+      "method": "DELETE",
+      "path": "/module/comment/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/CommentController.java",
+      "line": 149
+    },
+    {
+      "controller": "DeviceAppController",
+      "method": "GET",
+      "path": "/module/DeviceApp/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+      "line": 41
+    },
+    {
+      "controller": "DeviceAppController",
+      "method": "POST",
+      "path": "/module/DeviceApp/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+      "line": 54
+    },
+    {
+      "controller": "DeviceAppController",
+      "method": "GET",
+      "path": "/module/DeviceApp/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+      "line": 66
+    },
+    {
+      "controller": "DeviceAppController",
+      "method": "POST",
+      "path": "/module/DeviceApp",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+      "line": 77
+    },
+    {
+      "controller": "DeviceAppController",
+      "method": "PUT",
+      "path": "/module/DeviceApp",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+      "line": 88
+    },
+    {
+      "controller": "DeviceAppController",
+      "method": "DELETE",
+      "path": "/module/DeviceApp/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/DeviceAppController.java",
+      "line": 99
+    },
+    {
+      "controller": "DeviceCommandController",
+      "method": "GET",
+      "path": "/module/DeviceCommand/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+      "line": 41
+    },
+    {
+      "controller": "DeviceCommandController",
+      "method": "POST",
+      "path": "/module/DeviceCommand/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+      "line": 54
+    },
+    {
+      "controller": "DeviceCommandController",
+      "method": "GET",
+      "path": "/module/DeviceCommand/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+      "line": 66
+    },
+    {
+      "controller": "DeviceCommandController",
+      "method": "POST",
+      "path": "/module/DeviceCommand",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+      "line": 77
+    },
+    {
+      "controller": "DeviceCommandController",
+      "method": "PUT",
+      "path": "/module/DeviceCommand",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+      "line": 88
+    },
+    {
+      "controller": "DeviceCommandController",
+      "method": "DELETE",
+      "path": "/module/DeviceCommand/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/DeviceCommandController.java",
+      "line": 99
+    },
+    {
+      "controller": "DeviceController",
+      "method": "GET",
+      "path": "/module/device/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+      "line": 51
+    },
+    {
+      "controller": "DeviceController",
+      "method": "POST",
+      "path": "/module/device/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+      "line": 75
+    },
+    {
+      "controller": "DeviceController",
+      "method": "GET",
+      "path": "/module/device/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+      "line": 85
+    },
+    {
+      "controller": "DeviceController",
+      "method": "POST",
+      "path": "/module/device",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+      "line": 94
+    },
+    {
+      "controller": "DeviceController",
+      "method": "PUT",
+      "path": "/module/device/edit",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+      "line": 104
+    },
+    {
+      "controller": "DeviceController",
+      "method": "DELETE",
+      "path": "/module/device/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/DeviceController.java",
+      "line": 230
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "GET",
+      "path": "/module/deviceGroup/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 55
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "GET",
+      "path": "/module/deviceGroup/listUser",
+      "handler": "listUser",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 63
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "POST",
+      "path": "/module/deviceGroup/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 76
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "GET",
+      "path": "/module/deviceGroup/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 87
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "POST",
+      "path": "/module/deviceGroup",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 97
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "PUT",
+      "path": "/module/deviceGroup",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 108
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "DELETE",
+      "path": "/module/deviceGroup/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 117
+    },
+    {
+      "controller": "DeviceGroupController",
+      "method": "GET",
+      "path": "/module/deviceGroup/groupAll",
+      "handler": "groupAll",
+      "file": "src/main/java/com/phone/module/controller/DeviceGroupController.java",
+      "line": 129
+    },
+    {
+      "controller": "DeviceLogController",
+      "method": "GET",
+      "path": "/module/DeviceLog/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+      "line": 41
+    },
+    {
+      "controller": "DeviceLogController",
+      "method": "POST",
+      "path": "/module/DeviceLog/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+      "line": 54
+    },
+    {
+      "controller": "DeviceLogController",
+      "method": "GET",
+      "path": "/module/DeviceLog/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+      "line": 66
+    },
+    {
+      "controller": "DeviceLogController",
+      "method": "POST",
+      "path": "/module/DeviceLog",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+      "line": 77
+    },
+    {
+      "controller": "DeviceLogController",
+      "method": "PUT",
+      "path": "/module/DeviceLog",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+      "line": 88
+    },
+    {
+      "controller": "DeviceLogController",
+      "method": "DELETE",
+      "path": "/module/DeviceLog/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/DeviceLogController.java",
+      "line": 99
+    },
+    {
+      "controller": "RunLogController",
+      "method": "GET",
+      "path": "/module/RunLog/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+      "line": 40
+    },
+    {
+      "controller": "RunLogController",
+      "method": "POST",
+      "path": "/module/RunLog/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+      "line": 52
+    },
+    {
+      "controller": "RunLogController",
+      "method": "GET",
+      "path": "/module/RunLog/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+      "line": 64
+    },
+    {
+      "controller": "RunLogController",
+      "method": "POST",
+      "path": "/module/RunLog",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+      "line": 75
+    },
+    {
+      "controller": "RunLogController",
+      "method": "PUT",
+      "path": "/module/RunLog",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+      "line": 86
+    },
+    {
+      "controller": "RunLogController",
+      "method": "DELETE",
+      "path": "/module/RunLog/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/RunLogController.java",
+      "line": 97
+    },
+    {
+      "controller": "StrategyLogController",
+      "method": "GET",
+      "path": "/module/strategy_log/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+      "line": 40
+    },
+    {
+      "controller": "StrategyLogController",
+      "method": "POST",
+      "path": "/module/strategy_log/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+      "line": 52
+    },
+    {
+      "controller": "StrategyLogController",
+      "method": "GET",
+      "path": "/module/strategy_log/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+      "line": 63
+    },
+    {
+      "controller": "StrategyLogController",
+      "method": "POST",
+      "path": "/module/strategy_log",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+      "line": 73
+    },
+    {
+      "controller": "StrategyLogController",
+      "method": "PUT",
+      "path": "/module/strategy_log",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+      "line": 83
+    },
+    {
+      "controller": "StrategyLogController",
+      "method": "DELETE",
+      "path": "/module/strategy_log/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/StrategyLogController.java",
+      "line": 93
+    },
+    {
+      "controller": "StrategyTemplateController",
+      "method": "GET",
+      "path": "/module/template/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+      "line": 40
+    },
+    {
+      "controller": "StrategyTemplateController",
+      "method": "POST",
+      "path": "/module/template/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+      "line": 52
+    },
+    {
+      "controller": "StrategyTemplateController",
+      "method": "GET",
+      "path": "/module/template/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+      "line": 63
+    },
+    {
+      "controller": "StrategyTemplateController",
+      "method": "POST",
+      "path": "/module/template",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+      "line": 73
+    },
+    {
+      "controller": "StrategyTemplateController",
+      "method": "PUT",
+      "path": "/module/template",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+      "line": 83
+    },
+    {
+      "controller": "StrategyTemplateController",
+      "method": "DELETE",
+      "path": "/module/template/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/StrategyTemplateController.java",
+      "line": 93
+    },
+    {
+      "controller": "TaskLogController",
+      "method": "GET",
+      "path": "/module/taskLog/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+      "line": 40
+    },
+    {
+      "controller": "TaskLogController",
+      "method": "POST",
+      "path": "/module/taskLog/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+      "line": 52
+    },
+    {
+      "controller": "TaskLogController",
+      "method": "GET",
+      "path": "/module/taskLog/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+      "line": 63
+    },
+    {
+      "controller": "TaskLogController",
+      "method": "POST",
+      "path": "/module/taskLog",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+      "line": 73
+    },
+    {
+      "controller": "TaskLogController",
+      "method": "PUT",
+      "path": "/module/taskLog",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+      "line": 83
+    },
+    {
+      "controller": "TaskLogController",
+      "method": "DELETE",
+      "path": "/module/taskLog/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/TaskLogController.java",
+      "line": 93
+    },
+    {
+      "controller": "TaskTemplateController",
+      "method": "GET",
+      "path": "/module/taskTemplate/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "line": 53
+    },
+    {
+      "controller": "TaskTemplateController",
+      "method": "POST",
+      "path": "/module/taskTemplate/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "line": 64
+    },
+    {
+      "controller": "TaskTemplateController",
+      "method": "GET",
+      "path": "/module/taskTemplate/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "line": 74
+    },
+    {
+      "controller": "TaskTemplateController",
+      "method": "POST",
+      "path": "/module/taskTemplate",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "line": 83
+    },
+    {
+      "controller": "TaskTemplateController",
+      "method": "PUT",
+      "path": "/module/taskTemplate",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "line": 92
+    },
+    {
+      "controller": "TaskTemplateController",
+      "method": "DELETE",
+      "path": "/module/taskTemplate/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "line": 101
+    },
+    {
+      "controller": "TaskTemplateController",
+      "method": "GET",
+      "path": "/module/taskTemplate/getToTask",
+      "handler": "getToTask",
+      "file": "src/main/java/com/phone/module/controller/TaskTemplateController.java",
+      "line": 114
+    },
+    {
+      "controller": "VideoController",
+      "method": "GET",
+      "path": "/module/video/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "line": 38
+    },
+    {
+      "controller": "VideoController",
+      "method": "GET",
+      "path": "/module/video/getAccount",
+      "handler": "getAccount",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "line": 79
+    },
+    {
+      "controller": "VideoController",
+      "method": "POST",
+      "path": "/module/video/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "line": 173
+    },
+    {
+      "controller": "VideoController",
+      "method": "GET",
+      "path": "/module/video/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "line": 183
+    },
+    {
+      "controller": "VideoController",
+      "method": "POST",
+      "path": "/module/video",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "line": 192
+    },
+    {
+      "controller": "VideoController",
+      "method": "PUT",
+      "path": "/module/video",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "line": 201
+    },
+    {
+      "controller": "VideoController",
+      "method": "DELETE",
+      "path": "/module/video/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/VideoController.java",
+      "line": 210
+    },
+    {
+      "controller": "VideoTagsController",
+      "method": "GET",
+      "path": "/module/VideoTags/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+      "line": 53
+    },
+    {
+      "controller": "VideoTagsController",
+      "method": "POST",
+      "path": "/module/VideoTags/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+      "line": 83
+    },
+    {
+      "controller": "VideoTagsController",
+      "method": "GET",
+      "path": "/module/VideoTags/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+      "line": 93
+    },
+    {
+      "controller": "VideoTagsController",
+      "method": "POST",
+      "path": "/module/VideoTags",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+      "line": 105
+    },
+    {
+      "controller": "VideoTagsController",
+      "method": "PUT",
+      "path": "/module/VideoTags",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+      "line": 177
+    },
+    {
+      "controller": "VideoTagsController",
+      "method": "DELETE",
+      "path": "/module/VideoTags/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/VideoTagsController.java",
+      "line": 189
+    },
+    {
+      "controller": "VideoTaskController",
+      "method": "GET",
+      "path": "/module/video_task/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+      "line": 46
+    },
+    {
+      "controller": "VideoTaskController",
+      "method": "POST",
+      "path": "/module/video_task/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+      "line": 84
+    },
+    {
+      "controller": "VideoTaskController",
+      "method": "GET",
+      "path": "/module/video_task/{id}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+      "line": 95
+    },
+    {
+      "controller": "VideoTaskController",
+      "method": "POST",
+      "path": "/module/video_task",
+      "handler": "add",
+      "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+      "line": 106
+    },
+    {
+      "controller": "VideoTaskController",
+      "method": "PUT",
+      "path": "/module/video_task",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+      "line": 137
+    },
+    {
+      "controller": "VideoTaskController",
+      "method": "DELETE",
+      "path": "/module/video_task/{ids}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/module/controller/VideoTaskController.java",
+      "line": 207
+    },
+    {
+      "controller": "StatusController",
+      "method": "GET",
+      "path": "/module/status",
+      "handler": "getStatus",
+      "file": "src/main/java/com/phone/module/StatusController.java",
+      "line": 14
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "GET",
+      "path": "/system/dept/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 43
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "GET",
+      "path": "/system/dept/list/exclude/{deptId}",
+      "handler": "excludeChild",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 54
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "GET",
+      "path": "/system/dept/{deptId}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 75
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "GET",
+      "path": "/system/dept/treeselect",
+      "handler": "treeselect",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 84
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "GET",
+      "path": "/system/dept/roleDeptTreeselect/{roleId}",
+      "handler": "roleDeptTreeselect",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 94
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "POST",
+      "path": "/system/dept",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 109
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "PUT",
+      "path": "/system/dept",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 125
+    },
+    {
+      "controller": "SysDeptController",
+      "method": "DELETE",
+      "path": "/system/dept/{deptId}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysDeptController.java",
+      "line": 150
+    },
+    {
+      "controller": "SysDictDataController",
+      "method": "GET",
+      "path": "/system/dict/data/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "line": 44
+    },
+    {
+      "controller": "SysDictDataController",
+      "method": "GET",
+      "path": "/system/dict/data/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "line": 54
+    },
+    {
+      "controller": "SysDictDataController",
+      "method": "GET",
+      "path": "/system/dict/data/{dictCode}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "line": 66
+    },
+    {
+      "controller": "SysDictDataController",
+      "method": "GET",
+      "path": "/system/dict/data/type/{dictType}",
+      "handler": "dictType",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "line": 75
+    },
+    {
+      "controller": "SysDictDataController",
+      "method": "POST",
+      "path": "/system/dict/data",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "line": 91
+    },
+    {
+      "controller": "SysDictDataController",
+      "method": "PUT",
+      "path": "/system/dict/data",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "line": 103
+    },
+    {
+      "controller": "SysDictDataController",
+      "method": "DELETE",
+      "path": "/system/dict/data/{dictCodes}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictDataController.java",
+      "line": 115
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "GET",
+      "path": "/system/dict/type/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 39
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "GET",
+      "path": "/system/dict/type/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 49
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "GET",
+      "path": "/system/dict/type/{dictId}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 61
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "POST",
+      "path": "/system/dict/type",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 72
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "PUT",
+      "path": "/system/dict/type",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 88
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "DELETE",
+      "path": "/system/dict/type/{dictIds}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 104
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "DELETE",
+      "path": "/system/dict/type/refreshCache",
+      "handler": "refreshCache",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 116
+    },
+    {
+      "controller": "SysDictTypeController",
+      "method": "GET",
+      "path": "/system/dict/type/optionselect",
+      "handler": "optionselect",
+      "file": "src/main/java/com/phone/web/controller/system/SysDictTypeController.java",
+      "line": 126
+    },
+    {
+      "controller": "SysIndexController",
+      "method": "ANY",
+      "path": "/",
+      "handler": "index",
+      "file": "src/main/java/com/phone/web/controller/system/SysIndexController.java",
+      "line": 24
+    },
+    {
+      "controller": "SysLoginController",
+      "method": "POST",
+      "path": "/login",
+      "handler": "login",
+      "file": "src/main/java/com/phone/web/controller/system/SysLoginController.java",
+      "line": 50
+    },
+    {
+      "controller": "SysLoginController",
+      "method": "GET",
+      "path": "/getInfo",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysLoginController.java",
+      "line": 66
+    },
+    {
+      "controller": "SysLoginController",
+      "method": "GET",
+      "path": "/getRouters",
+      "handler": "getRouters",
+      "file": "src/main/java/com/phone/web/controller/system/SysLoginController.java",
+      "line": 89
+    },
+    {
+      "controller": "SysMenuController",
+      "method": "GET",
+      "path": "/system/menu/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "line": 47
+    },
+    {
+      "controller": "SysMenuController",
+      "method": "GET",
+      "path": "/system/menu/{menuId}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "line": 60
+    },
+    {
+      "controller": "SysMenuController",
+      "method": "GET",
+      "path": "/system/menu/treeselect",
+      "handler": "treeselect",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "line": 69
+    },
+    {
+      "controller": "SysMenuController",
+      "method": "GET",
+      "path": "/system/menu/roleMenuTreeselect/{roleId}",
+      "handler": "roleMenuTreeselect",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "line": 81
+    },
+    {
+      "controller": "SysMenuController",
+      "method": "POST",
+      "path": "/system/menu",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "line": 97
+    },
+    {
+      "controller": "SysMenuController",
+      "method": "PUT",
+      "path": "/system/menu",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "line": 117
+    },
+    {
+      "controller": "SysMenuController",
+      "method": "DELETE",
+      "path": "/system/menu/{menuId}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysMenuController.java",
+      "line": 141
+    },
+    {
+      "controller": "SysNoticeController",
+      "method": "GET",
+      "path": "/system/notice/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysNoticeController.java",
+      "line": 40
+    },
+    {
+      "controller": "SysNoticeController",
+      "method": "GET",
+      "path": "/system/notice/{noticeId}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysNoticeController.java",
+      "line": 52
+    },
+    {
+      "controller": "SysNoticeController",
+      "method": "POST",
+      "path": "/system/notice",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysNoticeController.java",
+      "line": 63
+    },
+    {
+      "controller": "SysNoticeController",
+      "method": "PUT",
+      "path": "/system/notice",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysNoticeController.java",
+      "line": 75
+    },
+    {
+      "controller": "SysNoticeController",
+      "method": "DELETE",
+      "path": "/system/notice/{noticeIds}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysNoticeController.java",
+      "line": 87
+    },
+    {
+      "controller": "SysPostController",
+      "method": "GET",
+      "path": "/system/post/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "line": 42
+    },
+    {
+      "controller": "SysPostController",
+      "method": "GET",
+      "path": "/system/post/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "line": 52
+    },
+    {
+      "controller": "SysPostController",
+      "method": "GET",
+      "path": "/system/post/{postId}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "line": 64
+    },
+    {
+      "controller": "SysPostController",
+      "method": "POST",
+      "path": "/system/post",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "line": 75
+    },
+    {
+      "controller": "SysPostController",
+      "method": "PUT",
+      "path": "/system/post",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "line": 95
+    },
+    {
+      "controller": "SysPostController",
+      "method": "DELETE",
+      "path": "/system/post/{postIds}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "line": 115
+    },
+    {
+      "controller": "SysPostController",
+      "method": "GET",
+      "path": "/system/post/optionselect",
+      "handler": "optionselect",
+      "file": "src/main/java/com/phone/web/controller/system/SysPostController.java",
+      "line": 124
+    },
+    {
+      "controller": "SysProfileController",
+      "method": "GET",
+      "path": "/system/user/profile",
+      "handler": "profile",
+      "file": "src/main/java/com/phone/web/controller/system/SysProfileController.java",
+      "line": 48
+    },
+    {
+      "controller": "SysProfileController",
+      "method": "PUT",
+      "path": "/system/user/profile",
+      "handler": "updateProfile",
+      "file": "src/main/java/com/phone/web/controller/system/SysProfileController.java",
+      "line": 63
+    },
+    {
+      "controller": "SysProfileController",
+      "method": "PUT",
+      "path": "/system/user/profile/updatePwd",
+      "handler": "updatePwd",
+      "file": "src/main/java/com/phone/web/controller/system/SysProfileController.java",
+      "line": 103
+    },
+    {
+      "controller": "SysProfileController",
+      "method": "POST",
+      "path": "/system/user/profile/avatar",
+      "handler": "avatar",
+      "file": "src/main/java/com/phone/web/controller/system/SysProfileController.java",
+      "line": 131
+    },
+    {
+      "controller": "SysRegisterController",
+      "method": "POST",
+      "path": "/register",
+      "handler": "register",
+      "file": "src/main/java/com/phone/web/controller/system/SysRegisterController.java",
+      "line": 25
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "GET",
+      "path": "/system/role/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 57
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "GET",
+      "path": "/system/role/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 67
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "GET",
+      "path": "/system/role/{roleId}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 79
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "POST",
+      "path": "/system/role",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 90
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "PUT",
+      "path": "/system/role",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 111
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "PUT",
+      "path": "/system/role/dataScope",
+      "handler": "dataScope",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 145
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "PUT",
+      "path": "/system/role/changeStatus",
+      "handler": "changeStatus",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 157
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "DELETE",
+      "path": "/system/role/{roleIds}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 170
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "GET",
+      "path": "/system/role/optionselect",
+      "handler": "optionselect",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 180
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "GET",
+      "path": "/system/role/authUser/allocatedList",
+      "handler": "allocatedList",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 190
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "GET",
+      "path": "/system/role/authUser/unallocatedList",
+      "handler": "unallocatedList",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 202
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "PUT",
+      "path": "/system/role/authUser/cancel",
+      "handler": "cancelAuthUser",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 215
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "PUT",
+      "path": "/system/role/authUser/cancelAll",
+      "handler": "cancelAuthUserAll",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 226
+    },
+    {
+      "controller": "SysRoleController",
+      "method": "PUT",
+      "path": "/system/role/authUser/selectAll",
+      "handler": "selectAuthUserAll",
+      "file": "src/main/java/com/phone/web/controller/system/SysRoleController.java",
+      "line": 237
+    },
+    {
+      "controller": "SysUserController",
+      "method": "GET",
+      "path": "/system/user/list",
+      "handler": "list",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 59
+    },
+    {
+      "controller": "SysUserController",
+      "method": "GET",
+      "path": "/system/user/export",
+      "handler": "export",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 68
+    },
+    {
+      "controller": "SysUserController",
+      "method": "POST",
+      "path": "/system/user/importData",
+      "handler": "importData",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 77
+    },
+    {
+      "controller": "SysUserController",
+      "method": "GET",
+      "path": "/system/user/importTemplate",
+      "handler": "importTemplate",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 88
+    },
+    {
+      "controller": "SysUserController",
+      "method": "GET",
+      "path": "/system/user",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 100
+    },
+    {
+      "controller": "SysUserController",
+      "method": "GET",
+      "path": "/system/user/{userId}",
+      "handler": "getInfo",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 100
+    },
+    {
+      "controller": "SysUserController",
+      "method": "POST",
+      "path": "/system/user",
+      "handler": "add",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 122
+    },
+    {
+      "controller": "SysUserController",
+      "method": "PUT",
+      "path": "/system/user",
+      "handler": "edit",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 149
+    },
+    {
+      "controller": "SysUserController",
+      "method": "DELETE",
+      "path": "/system/user/{userIds}",
+      "handler": "remove",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 172
+    },
+    {
+      "controller": "SysUserController",
+      "method": "PUT",
+      "path": "/system/user/resetPwd",
+      "handler": "resetPwd",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 183
+    },
+    {
+      "controller": "SysUserController",
+      "method": "PUT",
+      "path": "/system/user/changeStatus",
+      "handler": "changeStatus",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 197
+    },
+    {
+      "controller": "SysUserController",
+      "method": "GET",
+      "path": "/system/user/authRole/{userId}",
+      "handler": "authRole",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 210
+    },
+    {
+      "controller": "SysUserController",
+      "method": "PUT",
+      "path": "/system/user/authRole",
+      "handler": "insertAuthRole",
+      "file": "src/main/java/com/phone/web/controller/system/SysUserController.java",
+      "line": 227
+    }
+  ],
+  "wrappers": [
+    {
+      "function": "login",
+      "methods": "post",
+      "paths": "/login",
+      "file": "src/api/login.js",
+      "line": 18
+    },
+    {
+      "function": "ipApplication",
+      "methods": "post",
+      "paths": "/module/WhitelistIp/ipApplication",
+      "file": "src/api/login.js",
+      "line": 26
+    },
+    {
+      "function": "register",
+      "methods": "post",
+      "paths": "/register",
+      "file": "src/api/login.js",
+      "line": 35
+    },
+    {
+      "function": "getInfo",
+      "methods": "get",
+      "paths": "/getInfo",
+      "file": "src/api/login.js",
+      "line": 46
+    },
+    {
+      "function": "logout",
+      "methods": "delete",
+      "paths": "/logout",
+      "file": "src/api/login.js",
+      "line": 56
+    },
+    {
+      "function": "getCodeImg",
+      "methods": "get",
+      "paths": "/captchaImage",
+      "file": "src/api/login.js",
+      "line": 67
+    },
+    {
+      "function": "getUserList",
+      "methods": "get",
+      "paths": "/user",
+      "file": "src/api/manage.js",
+      "line": 14
+    },
+    {
+      "function": "getRoleList",
+      "methods": "get",
+      "paths": "/role",
+      "file": "src/api/manage.js",
+      "line": 22
+    },
+    {
+      "function": "getServiceList",
+      "methods": "get",
+      "paths": "/service",
+      "file": "src/api/manage.js",
+      "line": 30
+    },
+    {
+      "function": "getPermissions",
+      "methods": "get",
+      "paths": "/permission/no-pager",
+      "file": "src/api/manage.js",
+      "line": 38
+    },
+    {
+      "function": "getOrgTree",
+      "methods": "get",
+      "paths": "/org/tree",
+      "file": "src/api/manage.js",
+      "line": 46
+    },
+    {
+      "function": "saveService",
+      "methods": "default",
+      "paths": "/service",
+      "file": "src/api/manage.js",
+      "line": 56
+    },
+    {
+      "function": "saveSub",
+      "methods": "default",
+      "paths": "/sub",
+      "file": "src/api/manage.js",
+      "line": 64
+    },
+    {
+      "function": "getRouters",
+      "methods": "get",
+      "paths": "/getRouters",
+      "file": "src/api/menu.js",
+      "line": 4
+    },
+    {
+      "function": "deviceList",
+      "methods": "get",
+      "paths": "/module/device/list",
+      "file": "src/api/module/Address.js",
+      "line": 9
+    },
+    {
+      "function": "getAccount",
+      "methods": "get",
+      "paths": "/module/video/getAccount",
+      "file": "src/api/module/Address.js",
+      "line": 17
+    },
+    {
+      "function": "videoList",
+      "methods": "get",
+      "paths": "/module/video/list",
+      "file": "src/api/module/Address.js",
+      "line": 25
+    },
+    {
+      "function": "videoTask",
+      "methods": "get",
+      "paths": "/module/video_task/list",
+      "file": "src/api/module/Address.js",
+      "line": 32
+    },
+    {
+      "function": "addTags",
+      "methods": "post",
+      "paths": "/module/video_task",
+      "file": "src/api/module/Address.js",
+      "line": 40
+    },
+    {
+      "function": "VideoTags",
+      "methods": "get",
+      "paths": "/module/VideoTags/list",
+      "file": "src/api/module/Address.js",
+      "line": 48
+    },
+    {
+      "function": "updateVideoTags",
+      "methods": "put",
+      "paths": "/module/VideoTags",
+      "file": "src/api/module/Address.js",
+      "line": 56
+    },
+    {
+      "function": "deviceList",
+      "methods": "get",
+      "paths": "/module/device/list",
+      "file": "src/api/module/Basic.js",
+      "line": 9
+    },
+    {
+      "function": "getAccount",
+      "methods": "get",
+      "paths": "/module/video/getAccount",
+      "file": "src/api/module/Basic.js",
+      "line": 17
+    },
+    {
+      "function": "deleteVideoTag",
+      "methods": "delete",
+      "paths": "/module/VideoTags/…",
+      "file": "src/api/module/Basic.js",
+      "line": 25
+    },
+    {
+      "function": "videoList",
+      "methods": "get",
+      "paths": "/module/video/list",
+      "file": "src/api/module/Basic.js",
+      "line": 32
+    },
+    {
+      "function": "accountContentList",
+      "methods": "get",
+      "paths": "/module/accountContent/list",
+      "file": "src/api/module/Basic.js",
+      "line": 40
+    },
+    {
+      "function": "accountCommentList",
+      "methods": "get",
+      "paths": "/module/comment/list",
+      "file": "src/api/module/Basic.js",
+      "line": 48
+    },
+    {
+      "function": "ipAddressList",
+      "methods": "get",
+      "paths": "/module/ipAddress/list",
+      "file": "src/api/module/Basic.js",
+      "line": 56
+    },
+    {
+      "function": "AddressVideoIp",
+      "methods": "get",
+      "paths": "/module/AddressVideo/listByIp",
+      "file": "src/api/module/Basic.js",
+      "line": 64
+    },
+    {
+      "function": "addressAccountContent",
+      "methods": "get",
+      "paths": "/module/addressAccountContent/list",
+      "file": "src/api/module/Basic.js",
+      "line": 72
+    },
+    {
+      "function": "accountListByDid",
+      "methods": "get",
+      "paths": "/module/accountContent/listByDid",
+      "file": "src/api/module/Basic.js",
+      "line": 80
+    },
+    {
+      "function": "accountListByFollow",
+      "methods": "get",
+      "paths": "/module/accountContent/listByFollow",
+      "file": "src/api/module/Basic.js",
+      "line": 88
+    },
+    {
+      "function": "accountListByFans",
+      "methods": "get",
+      "paths": "/module/accountContent/listByFans",
+      "file": "src/api/module/Basic.js",
+      "line": 95
+    },
+    {
+      "function": "AddressVideo",
+      "methods": "get",
+      "paths": "/module/AddressVideo/list",
+      "file": "src/api/module/Basic.js",
+      "line": 103
+    },
+    {
+      "function": "videoTask",
+      "methods": "get",
+      "paths": "/module/video_task/list",
+      "file": "src/api/module/Basic.js",
+      "line": 110
+    },
+    {
+      "function": "deleteVideoTask",
+      "methods": "delete",
+      "paths": "/module/video_task/…",
+      "file": "src/api/module/Basic.js",
+      "line": 118
+    },
+    {
+      "function": "addTags",
+      "methods": "post",
+      "paths": "/module/video_task",
+      "file": "src/api/module/Basic.js",
+      "line": 125
+    },
+    {
+      "function": "updateTags",
+      "methods": "put",
+      "paths": "/module/video_task",
+      "file": "src/api/module/Basic.js",
+      "line": 132
+    },
+    {
+      "function": "tags",
+      "methods": "post",
+      "paths": "/module/VideoTags",
+      "file": "src/api/module/Basic.js",
+      "line": 140
+    },
+    {
+      "function": "editTags",
+      "methods": "put",
+      "paths": "/module/VideoTags",
+      "file": "src/api/module/Basic.js",
+      "line": 147
+    },
+    {
+      "function": "VideoTags",
+      "methods": "get",
+      "paths": "/module/VideoTags/list",
+      "file": "src/api/module/Basic.js",
+      "line": 155
+    },
+    {
+      "function": "RunLog",
+      "methods": "get",
+      "paths": "/module/RunLog/list",
+      "file": "src/api/module/Basic.js",
+      "line": 162
+    },
+    {
+      "function": "updateVideoTags",
+      "methods": "put",
+      "paths": "/module/VideoTags",
+      "file": "src/api/module/Basic.js",
+      "line": 170
+    },
+    {
+      "function": "updateComment",
+      "methods": "put",
+      "paths": "/module/comment",
+      "file": "src/api/module/Basic.js",
+      "line": 178
+    },
+    {
+      "function": "deviceList",
+      "methods": "get",
+      "paths": "/module/device/list",
+      "file": "src/api/module/DeviceGroup.js",
+      "line": 9
+    },
+    {
+      "function": "listUser",
+      "methods": "get",
+      "paths": "/module/deviceGroup/listUser",
+      "file": "src/api/module/DeviceGroup.js",
+      "line": 22
+    },
+    {
+      "function": "getDeviceGroup",
+      "methods": "get",
+      "paths": "/module/deviceGroup/list",
+      "file": "src/api/module/DeviceGroup.js",
+      "line": 34
+    },
+    {
+      "function": "addGroup",
+      "methods": "post",
+      "paths": "/module/deviceGroup",
+      "file": "src/api/module/DeviceGroup.js",
+      "line": 47
+    },
+    {
+      "function": "updateDeviceGroup",
+      "methods": "put",
+      "paths": "/module/deviceGroup",
+      "file": "src/api/module/DeviceGroup.js",
+      "line": 61
+    },
+    {
+      "function": "deviceList",
+      "methods": "get",
+      "paths": "/module/device/list",
+      "file": "src/api/module/Facility.js",
+      "line": 9
+    },
+    {
+      "function": "listUser",
+      "methods": "get",
+      "paths": "/module/deviceGroup/listUser",
+      "file": "src/api/module/Facility.js",
+      "line": 22
+    },
+    {
+      "function": "deviceLog",
+      "methods": "get",
+      "paths": "/module/DeviceLog/list",
+      "file": "src/api/module/Facility.js",
+      "line": 41
+    },
+    {
+      "function": "deviceApp",
+      "methods": "get",
+      "paths": "/module/DeviceApp/list",
+      "file": "src/api/module/Facility.js",
+      "line": 54
+    },
+    {
+      "function": "updateDevice",
+      "methods": "put",
+      "paths": "/module/device/edit",
+      "file": "src/api/module/Facility.js",
+      "line": 68
+    },
+    {
+      "function": "getDeviceGroup",
+      "methods": "get",
+      "paths": "/module/deviceGroup/list",
+      "file": "src/api/module/Facility.js",
+      "line": 81
+    },
+    {
+      "function": "listWzinfo",
+      "methods": "get",
+      "paths": "/module/wzinfo/list",
+      "file": "src/api/module/Home.js",
+      "line": 3
+    },
+    {
+      "function": "listByReportDept",
+      "methods": "get",
+      "paths": "/module/wzinfo/listByReportDept",
+      "file": "src/api/module/Home.js",
+      "line": 11
+    },
+    {
+      "function": "getWzinfo",
+      "methods": "get",
+      "paths": "/module/wzinfo/…",
+      "file": "src/api/module/Home.js",
+      "line": 20
+    },
+    {
+      "function": "fetchChildren",
+      "methods": "get",
+      "paths": "/module/WzTypeTag/tagsById",
+      "file": "src/api/module/Home.js",
+      "line": 27
+    },
+    {
+      "function": "wzTypeAll",
+      "methods": "get",
+      "paths": "/module/wzinfo/wzTypeAll",
+      "file": "src/api/module/Home.js",
+      "line": 35
+    },
+    {
+      "function": "listOtherDept",
+      "methods": "get",
+      "paths": "/module/wzinfo/listOtherDept",
+      "file": "src/api/module/Home.js",
+      "line": 42
+    },
+    {
+      "function": "wzListDeptByAll",
+      "methods": "get",
+      "paths": "/module/wzinfo/listDeptByAll",
+      "file": "src/api/module/Home.js",
+      "line": 49
+    },
+    {
+      "function": "listDeptByParentId",
+      "methods": "get",
+      "paths": "/module/wzinfo/listDeptByParentId",
+      "file": "src/api/module/Home.js",
+      "line": 56
+    },
+    {
+      "function": "updateEditorial",
+      "methods": "put",
+      "paths": "/module/wzinfo/editorialReport",
+      "file": "src/api/module/Home.js",
+      "line": 63
+    },
+    {
+      "function": "updateRating",
+      "methods": "put",
+      "paths": "/module/wzinfo/rating",
+      "file": "src/api/module/Home.js",
+      "line": 71
+    },
+    {
+      "function": "addWzinfo",
+      "methods": "post",
+      "paths": "/module/wzinfo",
+      "file": "src/api/module/Home.js",
+      "line": 80
+    },
+    {
+      "function": "updateWzinfo",
+      "methods": "put",
+      "paths": "/module/wzinfo",
+      "file": "src/api/module/Home.js",
+      "line": 89
+    },
+    {
+      "function": "updateEvaluation",
+      "methods": "put",
+      "paths": "/module/wzinfo/evaluation",
+      "file": "src/api/module/Home.js",
+      "line": 97
+    },
+    {
+      "function": "updateReport",
+      "methods": "put",
+      "paths": "/module/wzinfo/report",
+      "file": "src/api/module/Home.js",
+      "line": 104
+    },
+    {
+      "function": "updateWithdraw",
+      "methods": "put",
+      "paths": "/module/wzinfo/withdraw",
+      "file": "src/api/module/Home.js",
+      "line": 111
+    },
+    {
+      "function": "updateReject",
+      "methods": "put",
+      "paths": "/module/wzinfo/reject",
+      "file": "src/api/module/Home.js",
+      "line": 118
+    },
+    {
+      "function": "updateIgnore",
+      "methods": "put",
+      "paths": "/module/wzinfo/ignore",
+      "file": "src/api/module/Home.js",
+      "line": 126
+    },
+    {
+      "function": "updateCancelAdopt",
+      "methods": "put",
+      "paths": "/module/wzinfo/cancelAdopt ",
+      "file": "src/api/module/Home.js",
+      "line": 133
+    },
+    {
+      "function": "updateCancelLocalPj",
+      "methods": "put",
+      "paths": "/module/wzinfo/cancelLocalPj",
+      "file": "src/api/module/Home.js",
+      "line": 140
+    },
+    {
+      "function": "updateCancelReport",
+      "methods": "put",
+      "paths": "/module/wzinfo/cancelReport",
+      "file": "src/api/module/Home.js",
+      "line": 147
+    },
+    {
+      "function": "updateCancelRating",
+      "methods": "put",
+      "paths": "/module/wzinfo/cancelRating",
+      "file": "src/api/module/Home.js",
+      "line": 155
+    },
+    {
+      "function": "updateAdopt",
+      "methods": "put",
+      "paths": "/module/wzinfo/adopt",
+      "file": "src/api/module/Home.js",
+      "line": 163
+    },
+    {
+      "function": "updateLocalPj",
+      "methods": "put",
+      "paths": "/module/wzinfo/localPj",
+      "file": "src/api/module/Home.js",
+      "line": 170
+    },
+    {
+      "function": "updateAdopt1",
+      "methods": "put",
+      "paths": "/module/wzinfo/adopt1",
+      "file": "src/api/module/Home.js",
+      "line": 178
+    },
+    {
+      "function": "delWzinfo",
+      "methods": "delete",
+      "paths": "/module/wzinfo/…",
+      "file": "src/api/module/Home.js",
+      "line": 187
+    },
+    {
+      "function": "deviceList",
+      "methods": "get",
+      "paths": "/module/device/list",
+      "file": "src/api/module/Pictures.js",
+      "line": 9
+    },
+    {
+      "function": "getAccount",
+      "methods": "get",
+      "paths": "/module/video/getAccount",
+      "file": "src/api/module/Pictures.js",
+      "line": 17
+    },
+    {
+      "function": "videoList",
+      "methods": "get",
+      "paths": "/module/video/list",
+      "file": "src/api/module/Pictures.js",
+      "line": 25
+    },
+    {
+      "function": "videoTask",
+      "methods": "get",
+      "paths": "/module/video_task/list",
+      "file": "src/api/module/Pictures.js",
+      "line": 32
+    },
+    {
+      "function": "addTags",
+      "methods": "post",
+      "paths": "/module/video_task",
+      "file": "src/api/module/Pictures.js",
+      "line": 40
+    },
+    {
+      "function": "VideoTags",
+      "methods": "get",
+      "paths": "/module/VideoTags/list",
+      "file": "src/api/module/Pictures.js",
+      "line": 48
+    },
+    {
+      "function": "updateVideoTags",
+      "methods": "put",
+      "paths": "/module/VideoTags",
+      "file": "src/api/module/Pictures.js",
+      "line": 56
+    },
+    {
+      "function": "deviceList",
+      "methods": "get",
+      "paths": "/module/device/list",
+      "file": "src/api/module/Strategy.js",
+      "line": 9
+    },
+    {
+      "function": "template",
+      "methods": "get",
+      "paths": "/module/template/list",
+      "file": "src/api/module/Strategy.js",
+      "line": 23
+    },
+    {
+      "function": "updateTemplate",
+      "methods": "put",
+      "paths": "/module/template",
+      "file": "src/api/module/Strategy.js",
+      "line": 37
+    },
+    {
+      "function": "groupAll",
+      "methods": "get",
+      "paths": "/module/deviceGroup/groupAll",
+      "file": "src/api/module/Strategy.js",
+      "line": 52
+    },
+    {
+      "function": "addGroup",
+      "methods": "post",
+      "paths": "/module/deviceGroup",
+      "file": "src/api/module/Strategy.js",
+      "line": 65
+    },
+    {
+      "function": "task",
+      "methods": "get",
+      "paths": "/module/taskTemplate/list",
+      "file": "src/api/module/Strategy.js",
+      "line": 73
+    },
+    {
+      "function": "updateTask",
+      "methods": "put",
+      "paths": "/module/taskTemplate",
+      "file": "src/api/module/Strategy.js",
+      "line": 87
+    },
+    {
+      "function": "goToTask",
+      "methods": "get",
+      "paths": "/module/taskTemplate/getToTask",
+      "file": "src/api/module/Strategy.js",
+      "line": 100
+    },
+    {
+      "function": "addTask",
+      "methods": "post",
+      "paths": "/module/taskTemplate",
+      "file": "src/api/module/Strategy.js",
+      "line": 114
+    },
+    {
+      "function": "getCrawl",
+      "methods": "get",
+      "paths": "/module/account/crawl",
+      "file": "src/api/module/UserSearch.js",
+      "line": 9
+    },
+    {
+      "function": "crawl",
+      "methods": "get",
+      "paths": "/module/account/list",
+      "file": "src/api/module/UserSearch.js",
+      "line": 17
+    },
+    {
+      "function": "getCache",
+      "methods": "get",
+      "paths": "/monitor/cache",
+      "file": "src/api/monitor/cache.js",
+      "line": 4
+    },
+    {
+      "function": "listCacheName",
+      "methods": "get",
+      "paths": "/monitor/cache/getNames",
+      "file": "src/api/monitor/cache.js",
+      "line": 12
+    },
+    {
+      "function": "listCacheKey",
+      "methods": "get",
+      "paths": "/monitor/cache/getKeys/…",
+      "file": "src/api/monitor/cache.js",
+      "line": 20
+    },
+    {
+      "function": "getCacheValue",
+      "methods": "get",
+      "paths": "/monitor/cache/getValue/…",
+      "file": "src/api/monitor/cache.js",
+      "line": 28
+    },
+    {
+      "function": "clearCacheName",
+      "methods": "delete",
+      "paths": "/monitor/cache/clearCacheName/…",
+      "file": "src/api/monitor/cache.js",
+      "line": 36
+    },
+    {
+      "function": "clearCacheKey",
+      "methods": "delete",
+      "paths": "/monitor/cache/clearCacheKey/…",
+      "file": "src/api/monitor/cache.js",
+      "line": 44
+    },
+    {
+      "function": "clearCacheAll",
+      "methods": "delete",
+      "paths": "/monitor/cache/clearCacheAll",
+      "file": "src/api/monitor/cache.js",
+      "line": 52
+    },
+    {
+      "function": "listJob",
+      "methods": "get",
+      "paths": "/monitor/job/list",
+      "file": "src/api/monitor/job.js",
+      "line": 4
+    },
+    {
+      "function": "getJob",
+      "methods": "get",
+      "paths": "/monitor/job/…",
+      "file": "src/api/monitor/job.js",
+      "line": 13
+    },
+    {
+      "function": "addJob",
+      "methods": "post",
+      "paths": "/monitor/job",
+      "file": "src/api/monitor/job.js",
+      "line": 21
+    },
+    {
+      "function": "updateJob",
+      "methods": "put",
+      "paths": "/monitor/job",
+      "file": "src/api/monitor/job.js",
+      "line": 30
+    },
+    {
+      "function": "delJob",
+      "methods": "delete",
+      "paths": "/monitor/job/…",
+      "file": "src/api/monitor/job.js",
+      "line": 39
+    },
+    {
+      "function": "changeJobStatus",
+      "methods": "put",
+      "paths": "/monitor/job/changeStatus",
+      "file": "src/api/monitor/job.js",
+      "line": 47
+    },
+    {
+      "function": "runJob",
+      "methods": "put",
+      "paths": "/monitor/job/run",
+      "file": "src/api/monitor/job.js",
+      "line": 60
+    },
+    {
+      "function": "listJobLog",
+      "methods": "get",
+      "paths": "/monitor/jobLog/list",
+      "file": "src/api/monitor/jobLog.js",
+      "line": 4
+    },
+    {
+      "function": "delJobLog",
+      "methods": "delete",
+      "paths": "/monitor/jobLog/…",
+      "file": "src/api/monitor/jobLog.js",
+      "line": 13
+    },
+    {
+      "function": "cleanJobLog",
+      "methods": "delete",
+      "paths": "/monitor/jobLog/clean",
+      "file": "src/api/monitor/jobLog.js",
+      "line": 21
+    },
+    {
+      "function": "list",
+      "methods": "get",
+      "paths": "/monitor/logininfor/list",
+      "file": "src/api/monitor/logininfor.js",
+      "line": 4
+    },
+    {
+      "function": "delLogininfor",
+      "methods": "delete",
+      "paths": "/monitor/logininfor/…",
+      "file": "src/api/monitor/logininfor.js",
+      "line": 13
+    },
+    {
+      "function": "cleanLogininfor",
+      "methods": "delete",
+      "paths": "/monitor/logininfor/clean",
+      "file": "src/api/monitor/logininfor.js",
+      "line": 21
+    },
+    {
+      "function": "unlockLogininfor",
+      "methods": "get",
+      "paths": "/monitor/logininfor/unlock/…",
+      "file": "src/api/monitor/logininfor.js",
+      "line": 29
+    },
+    {
+      "function": "list",
+      "methods": "get",
+      "paths": "/monitor/online/list",
+      "file": "src/api/monitor/online.js",
+      "line": 4
+    },
+    {
+      "function": "forceLogout",
+      "methods": "delete",
+      "paths": "/monitor/online/…",
+      "file": "src/api/monitor/online.js",
+      "line": 13
+    },
+    {
+      "function": "list",
+      "methods": "get",
+      "paths": "/monitor/operlog/list",
+      "file": "src/api/monitor/operlog.js",
+      "line": 4
+    },
+    {
+      "function": "delOperlog",
+      "methods": "delete",
+      "paths": "/monitor/operlog/…",
+      "file": "src/api/monitor/operlog.js",
+      "line": 13
+    },
+    {
+      "function": "cleanOperlog",
+      "methods": "delete",
+      "paths": "/monitor/operlog/clean",
+      "file": "src/api/monitor/operlog.js",
+      "line": 21
+    },
+    {
+      "function": "getServer",
+      "methods": "get",
+      "paths": "/monitor/server",
+      "file": "src/api/monitor/server.js",
+      "line": 4
+    },
+    {
+      "function": "listConfig",
+      "methods": "get",
+      "paths": "/system/config/list",
+      "file": "src/api/system/config.js",
+      "line": 4
+    },
+    {
+      "function": "getConfig",
+      "methods": "get",
+      "paths": "/system/config/…",
+      "file": "src/api/system/config.js",
+      "line": 13
+    },
+    {
+      "function": "getConfigKey",
+      "methods": "get",
+      "paths": "/system/config/configKey/…",
+      "file": "src/api/system/config.js",
+      "line": 21
+    },
+    {
+      "function": "addConfig",
+      "methods": "post",
+      "paths": "/system/config",
+      "file": "src/api/system/config.js",
+      "line": 29
+    },
+    {
+      "function": "updateConfig",
+      "methods": "put",
+      "paths": "/system/config",
+      "file": "src/api/system/config.js",
+      "line": 38
+    },
+    {
+      "function": "delConfig",
+      "methods": "delete",
+      "paths": "/system/config/…",
+      "file": "src/api/system/config.js",
+      "line": 47
+    },
+    {
+      "function": "refreshCache",
+      "methods": "delete",
+      "paths": "/system/config/refreshCache",
+      "file": "src/api/system/config.js",
+      "line": 55
+    },
+    {
+      "function": "listDept",
+      "methods": "get",
+      "paths": "/system/dept/list",
+      "file": "src/api/system/dept.js",
+      "line": 4
+    },
+    {
+      "function": "listDeptExcludeChild",
+      "methods": "get",
+      "paths": "/system/dept/list/exclude/…",
+      "file": "src/api/system/dept.js",
+      "line": 13
+    },
+    {
+      "function": "getDept",
+      "methods": "get",
+      "paths": "/system/dept/…",
+      "file": "src/api/system/dept.js",
+      "line": 21
+    },
+    {
+      "function": "addDept",
+      "methods": "post",
+      "paths": "/system/dept",
+      "file": "src/api/system/dept.js",
+      "line": 29
+    },
+    {
+      "function": "updateDept",
+      "methods": "put",
+      "paths": "/system/dept",
+      "file": "src/api/system/dept.js",
+      "line": 38
+    },
+    {
+      "function": "delDept",
+      "methods": "delete",
+      "paths": "/system/dept/…",
+      "file": "src/api/system/dept.js",
+      "line": 47
+    },
+    {
+      "function": "listData",
+      "methods": "get",
+      "paths": "/system/dict/data/list",
+      "file": "src/api/system/dict/data.js",
+      "line": 4
+    },
+    {
+      "function": "getData",
+      "methods": "get",
+      "paths": "/system/dict/data/…",
+      "file": "src/api/system/dict/data.js",
+      "line": 13
+    },
+    {
+      "function": "getDicts",
+      "methods": "get",
+      "paths": "/system/dict/data/type/…",
+      "file": "src/api/system/dict/data.js",
+      "line": 21
+    },
+    {
+      "function": "addData",
+      "methods": "post",
+      "paths": "/system/dict/data",
+      "file": "src/api/system/dict/data.js",
+      "line": 29
+    },
+    {
+      "function": "updateData",
+      "methods": "put",
+      "paths": "/system/dict/data",
+      "file": "src/api/system/dict/data.js",
+      "line": 38
+    },
+    {
+      "function": "delData",
+      "methods": "delete",
+      "paths": "/system/dict/data/…",
+      "file": "src/api/system/dict/data.js",
+      "line": 47
+    },
+    {
+      "function": "listType",
+      "methods": "get",
+      "paths": "/system/dict/type/list",
+      "file": "src/api/system/dict/type.js",
+      "line": 4
+    },
+    {
+      "function": "getType",
+      "methods": "get",
+      "paths": "/system/dict/type/…",
+      "file": "src/api/system/dict/type.js",
+      "line": 13
+    },
+    {
+      "function": "addType",
+      "methods": "post",
+      "paths": "/system/dict/type",
+      "file": "src/api/system/dict/type.js",
+      "line": 21
+    },
+    {
+      "function": "updateType",
+      "methods": "put",
+      "paths": "/system/dict/type",
+      "file": "src/api/system/dict/type.js",
+      "line": 30
+    },
+    {
+      "function": "delType",
+      "methods": "delete",
+      "paths": "/system/dict/type/…",
+      "file": "src/api/system/dict/type.js",
+      "line": 39
+    },
+    {
+      "function": "refreshCache",
+      "methods": "delete",
+      "paths": "/system/dict/type/refreshCache",
+      "file": "src/api/system/dict/type.js",
+      "line": 47
+    },
+    {
+      "function": "optionselect",
+      "methods": "get",
+      "paths": "/system/dict/type/optionselect",
+      "file": "src/api/system/dict/type.js",
+      "line": 55
+    },
+    {
+      "function": "listMenu",
+      "methods": "get",
+      "paths": "/system/menu/list",
+      "file": "src/api/system/menu.js",
+      "line": 4
+    },
+    {
+      "function": "getMenu",
+      "methods": "get",
+      "paths": "/system/menu/…",
+      "file": "src/api/system/menu.js",
+      "line": 13
+    },
+    {
+      "function": "treeselect",
+      "methods": "get",
+      "paths": "/system/menu/treeselect",
+      "file": "src/api/system/menu.js",
+      "line": 21
+    },
+    {
+      "function": "roleMenuTreeselect",
+      "methods": "get",
+      "paths": "/system/menu/roleMenuTreeselect/…",
+      "file": "src/api/system/menu.js",
+      "line": 29
+    },
+    {
+      "function": "addMenu",
+      "methods": "post",
+      "paths": "/system/menu",
+      "file": "src/api/system/menu.js",
+      "line": 37
+    },
+    {
+      "function": "updateMenu",
+      "methods": "put",
+      "paths": "/system/menu",
+      "file": "src/api/system/menu.js",
+      "line": 46
+    },
+    {
+      "function": "delMenu",
+      "methods": "delete",
+      "paths": "/system/menu/…",
+      "file": "src/api/system/menu.js",
+      "line": 55
+    },
+    {
+      "function": "listNotice",
+      "methods": "get",
+      "paths": "/module/message/list",
+      "file": "src/api/system/notice.js",
+      "line": 4
+    },
+    {
+      "function": "readId",
+      "methods": "get",
+      "paths": "`/module/message/read/${id}`",
+      "file": "src/api/system/notice.js",
+      "line": 13
+    },
+    {
+      "function": "getNotice",
+      "methods": "get",
+      "paths": "/system/notice/…",
+      "file": "src/api/system/notice.js",
+      "line": 21
+    },
+    {
+      "function": "addNotice",
+      "methods": "post",
+      "paths": "/system/notice",
+      "file": "src/api/system/notice.js",
+      "line": 29
+    },
+    {
+      "function": "updateNotice",
+      "methods": "put",
+      "paths": "/system/notice",
+      "file": "src/api/system/notice.js",
+      "line": 38
+    },
+    {
+      "function": "delNotice",
+      "methods": "delete",
+      "paths": "/system/notice/…",
+      "file": "src/api/system/notice.js",
+      "line": 47
+    },
+    {
+      "function": "listPost",
+      "methods": "get",
+      "paths": "/system/post/list",
+      "file": "src/api/system/post.js",
+      "line": 4
+    },
+    {
+      "function": "getPost",
+      "methods": "get",
+      "paths": "/system/post/…",
+      "file": "src/api/system/post.js",
+      "line": 13
+    },
+    {
+      "function": "addPost",
+      "methods": "post",
+      "paths": "/system/post",
+      "file": "src/api/system/post.js",
+      "line": 21
+    },
+    {
+      "function": "updatePost",
+      "methods": "put",
+      "paths": "/system/post",
+      "file": "src/api/system/post.js",
+      "line": 30
+    },
+    {
+      "function": "delPost",
+      "methods": "delete",
+      "paths": "/system/post/…",
+      "file": "src/api/system/post.js",
+      "line": 39
+    },
+    {
+      "function": "listRole",
+      "methods": "get",
+      "paths": "/system/role/list",
+      "file": "src/api/system/role.js",
+      "line": 4
+    },
+    {
+      "function": "getRole",
+      "methods": "get",
+      "paths": "/system/role/…",
+      "file": "src/api/system/role.js",
+      "line": 13
+    },
+    {
+      "function": "addRole",
+      "methods": "post",
+      "paths": "/system/role",
+      "file": "src/api/system/role.js",
+      "line": 21
+    },
+    {
+      "function": "updateRole",
+      "methods": "put",
+      "paths": "/system/role",
+      "file": "src/api/system/role.js",
+      "line": 30
+    },
+    {
+      "function": "dataScope",
+      "methods": "put",
+      "paths": "/system/role/dataScope",
+      "file": "src/api/system/role.js",
+      "line": 39
+    },
+    {
+      "function": "changeRoleStatus",
+      "methods": "put",
+      "paths": "/system/role/changeStatus",
+      "file": "src/api/system/role.js",
+      "line": 48
+    },
+    {
+      "function": "delRole",
+      "methods": "delete",
+      "paths": "/system/role/…",
+      "file": "src/api/system/role.js",
+      "line": 61
+    },
+    {
+      "function": "allocatedUserList",
+      "methods": "get",
+      "paths": "/system/role/authUser/allocatedList",
+      "file": "src/api/system/role.js",
+      "line": 69
+    },
+    {
+      "function": "unallocatedUserList",
+      "methods": "get",
+      "paths": "/system/role/authUser/unallocatedList",
+      "file": "src/api/system/role.js",
+      "line": 78
+    },
+    {
+      "function": "authUserCancel",
+      "methods": "put",
+      "paths": "/system/role/authUser/cancel",
+      "file": "src/api/system/role.js",
+      "line": 87
+    },
+    {
+      "function": "authUserCancelAll",
+      "methods": "put",
+      "paths": "/system/role/authUser/cancelAll",
+      "file": "src/api/system/role.js",
+      "line": 96
+    },
+    {
+      "function": "authUserSelectAll",
+      "methods": "put",
+      "paths": "/system/role/authUser/selectAll",
+      "file": "src/api/system/role.js",
+      "line": 105
+    },
+    {
+      "function": "deptTreeSelect",
+      "methods": "get",
+      "paths": "/system/role/deptTree/…",
+      "file": "src/api/system/role.js",
+      "line": 114
+    },
+    {
+      "function": "listUser",
+      "methods": "get",
+      "paths": "/system/user/list",
+      "file": "src/api/system/user.js",
+      "line": 5
+    },
+    {
+      "function": "listCity",
+      "methods": "get",
+      "paths": "/module/statistics_city/list",
+      "file": "src/api/system/user.js",
+      "line": 13
+    },
+    {
+      "function": "listStatistics",
+      "methods": "get",
+      "paths": "/module/statistics/list",
+      "file": "src/api/system/user.js",
+      "line": 21
+    },
+    {
+      "function": "getUser",
+      "methods": "get",
+      "paths": "/system/user/…",
+      "file": "src/api/system/user.js",
+      "line": 30
+    },
+    {
+      "function": "addUser",
+      "methods": "post",
+      "paths": "/system/user",
+      "file": "src/api/system/user.js",
+      "line": 38
+    },
+    {
+      "function": "updateUser",
+      "methods": "put",
+      "paths": "/system/user",
+      "file": "src/api/system/user.js",
+      "line": 47
+    },
+    {
+      "function": "delUser",
+      "methods": "delete",
+      "paths": "/system/user/…",
+      "file": "src/api/system/user.js",
+      "line": 56
+    },
+    {
+      "function": "resetUserPwd",
+      "methods": "put",
+      "paths": "/system/user/resetPwd",
+      "file": "src/api/system/user.js",
+      "line": 64
+    },
+    {
+      "function": "changeUserStatus",
+      "methods": "put",
+      "paths": "/system/user/changeStatus",
+      "file": "src/api/system/user.js",
+      "line": 78
+    },
+    {
+      "function": "changeLoginStatus",
+      "methods": "put",
+      "paths": "/system/user/changeLoginStatus",
+      "file": "src/api/system/user.js",
+      "line": 90
+    },
+    {
+      "function": "getUserProfile",
+      "methods": "get",
+      "paths": "/system/user/profile",
+      "file": "src/api/system/user.js",
+      "line": 103
+    },
+    {
+      "function": "updateUserProfile",
+      "methods": "put",
+      "paths": "/system/user/profile",
+      "file": "src/api/system/user.js",
+      "line": 111
+    },
+    {
+      "function": "updateUserPwd",
+      "methods": "put",
+      "paths": "/system/user/profile/updatePwd",
+      "file": "src/api/system/user.js",
+      "line": 120
+    },
+    {
+      "function": "vaildTcode",
+      "methods": "put",
+      "paths": "/system/user/profile/tcodecheck",
+      "file": "src/api/system/user.js",
+      "line": 144
+    },
+    {
+      "function": "resetUserTcode",
+      "methods": "get",
+      "paths": "/system/user/profile/resetUserTcode",
+      "file": "src/api/system/user.js",
+      "line": 156
+    },
+    {
+      "function": "tcodeStatus",
+      "methods": "get",
+      "paths": "/system/user/profile/tcodestatus",
+      "file": "src/api/system/user.js",
+      "line": 165
+    },
+    {
+      "function": "uploadAvatar",
+      "methods": "post",
+      "paths": "/system/user/profile/avatar",
+      "file": "src/api/system/user.js",
+      "line": 173
+    },
+    {
+      "function": "importData",
+      "methods": "post",
+      "paths": "/system/user/importData",
+      "file": "src/api/system/user.js",
+      "line": 182
+    },
+    {
+      "function": "deptData",
+      "methods": "post",
+      "paths": "/system/dept/importData",
+      "file": "src/api/system/user.js",
+      "line": 190
+    },
+    {
+      "function": "getListAllCommonUser",
+      "methods": "get",
+      "paths": "/system/user/listAllCommonUser",
+      "file": "src/api/system/user.js",
+      "line": 198
+    },
+    {
+      "function": "getAuthRole",
+      "methods": "get",
+      "paths": "/system/user/authRole/…",
+      "file": "src/api/system/user.js",
+      "line": 206
+    },
+    {
+      "function": "updateAuthRole",
+      "methods": "put",
+      "paths": "/system/user/authRole",
+      "file": "src/api/system/user.js",
+      "line": 214
+    },
+    {
+      "function": "deptTreeSelect",
+      "methods": "get",
+      "paths": "/system/user/deptTreeProject",
+      "file": "src/api/system/user.js",
+      "line": 223
+    },
+    {
+      "function": "listStatistical",
+      "methods": "get",
+      "paths": "/module/statistical/list",
+      "file": "src/api/system/user.js",
+      "line": 231
+    },
+    {
+      "function": "selectSumList",
+      "methods": "get",
+      "paths": "/module/statistical/selectSumList",
+      "file": "src/api/system/user.js",
+      "line": 240
+    },
+    {
+      "function": "listTemplate",
+      "methods": "get",
+      "paths": "/module/template/list",
+      "file": "src/api/template.js",
+      "line": 4
+    },
+    {
+      "function": "getTemplate",
+      "methods": "get",
+      "paths": "/module/template/…",
+      "file": "src/api/template.js",
+      "line": 13
+    },
+    {
+      "function": "addTemplate",
+      "methods": "post",
+      "paths": "/module/template",
+      "file": "src/api/template.js",
+      "line": 21
+    },
+    {
+      "function": "updateTemplate",
+      "methods": "put",
+      "paths": "/module/template",
+      "file": "src/api/template.js",
+      "line": 30
+    },
+    {
+      "function": "delTemplate",
+      "methods": "delete",
+      "paths": "/module/template/…",
+      "file": "src/api/template.js",
+      "line": 39
+    },
+    {
+      "function": "listTable",
+      "methods": "get",
+      "paths": "/tool/gen/list",
+      "file": "src/api/tool/gen.js",
+      "line": 4
+    },
+    {
+      "function": "listDbTable",
+      "methods": "get",
+      "paths": "/tool/gen/db/list",
+      "file": "src/api/tool/gen.js",
+      "line": 12
+    },
+    {
+      "function": "getGenTable",
+      "methods": "get",
+      "paths": "/tool/gen/…",
+      "file": "src/api/tool/gen.js",
+      "line": 21
+    },
+    {
+      "function": "updateGenTable",
+      "methods": "put",
+      "paths": "/tool/gen",
+      "file": "src/api/tool/gen.js",
+      "line": 29
+    },
+    {
+      "function": "importTable",
+      "methods": "post",
+      "paths": "/tool/gen/importTable",
+      "file": "src/api/tool/gen.js",
+      "line": 38
+    },
+    {
+      "function": "previewTable",
+      "methods": "get",
+      "paths": "/tool/gen/preview/…",
+      "file": "src/api/tool/gen.js",
+      "line": 47
+    },
+    {
+      "function": "delTable",
+      "methods": "delete",
+      "paths": "/tool/gen/…",
+      "file": "src/api/tool/gen.js",
+      "line": 55
+    },
+    {
+      "function": "genCode",
+      "methods": "get",
+      "paths": "/tool/gen/genCode/…",
+      "file": "src/api/tool/gen.js",
+      "line": 63
+    },
+    {
+      "function": "synchDb",
+      "methods": "get",
+      "paths": "/tool/gen/synchDb/…",
+      "file": "src/api/tool/gen.js",
+      "line": 71
+    }
+  ],
+  "direct": [
+    {
+      "pathPrefix": "/module/VideoTags/list",
+      "file": "src/features/analytics/use-analytics.ts",
+      "line": 29
+    },
+    {
+      "pathPrefix": "/module/video_task/list",
+      "file": "src/features/analytics/use-analytics.ts",
+      "line": 36
+    },
+    {
+      "pathPrefix": "/module/video_task/list",
+      "file": "src/features/analytics/use-analytics.ts",
+      "line": 43
+    },
+    {
+      "pathPrefix": "/module/device/list",
+      "file": "src/features/analytics/use-analytics.ts",
+      "line": 50
+    },
+    {
+      "pathPrefix": "/module/deviceGroup/list",
+      "file": "src/features/analytics/use-analytics.ts",
+      "line": 56
+    },
+    {
+      "pathPrefix": "/system/user/list",
+      "file": "src/features/analytics/use-analytics.ts",
+      "line": 58
+    },
+    {
+      "pathPrefix": "/getInfo",
+      "file": "src/features/auth/AuthProvider.tsx",
+      "line": 79
+    },
+    {
+      "pathPrefix": "/getRouters",
+      "file": "src/features/auth/AuthProvider.tsx",
+      "line": 80
+    },
+    {
+      "pathPrefix": "/login",
+      "file": "src/features/auth/AuthProvider.tsx",
+      "line": 184
+    },
+    {
+      "pathPrefix": "/logout",
+      "file": "src/features/auth/AuthProvider.tsx",
+      "line": 210
+    },
+    {
+      "pathPrefix": "/captchaImage",
+      "file": "src/features/auth/LoginPage.tsx",
+      "line": 47
+    },
+    {
+      "pathPrefix": "/module/WhitelistIp/ipApplication",
+      "file": "src/features/auth/LoginPage.tsx",
+      "line": 294
+    },
+    {
+      "pathPrefix": "/captchaImage",
+      "file": "src/features/auth/RegisterPage.tsx",
+      "line": 45
+    },
+    {
+      "pathPrefix": "/register",
+      "file": "src/features/auth/RegisterPage.tsx",
+      "line": 132
+    },
+    {
+      "pathPrefix": "/system/user/profile",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 37
+    },
+    {
+      "pathPrefix": "/system/user/profile",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 94
+    },
+    {
+      "pathPrefix": "/system/user/profile/avatar",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 188
+    },
+    {
+      "pathPrefix": "/system/user/profile/tcodestatus",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 313
+    },
+    {
+      "pathPrefix": "/system/user/profile/tcodesetup",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 338
+    },
+    {
+      "pathPrefix": "/system/user/profile/resetUserTcode",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 361
+    },
+    {
+      "pathPrefix": "/system/user/profile/tcodecheck",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 403
+    },
+    {
+      "pathPrefix": "/system/user/profile",
+      "file": "src/features/system/AccountPages.tsx",
+      "line": 442
+    },
+    {
+      "pathPrefix": "/",
+      "file": "src/features/system/common.tsx",
+      "line": 705
+    },
+    {
+      "pathPrefix": "/monitor/job/run",
+      "file": "src/features/system/CrudPage.tsx",
+      "line": 340
+    },
+    {
+      "pathPrefix": "/monitor/job/",
+      "file": "src/features/system/CrudPage.tsx",
+      "line": 357
+    },
+    {
+      "pathPrefix": "/tool/gen/list",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 46
+    },
+    {
+      "pathPrefix": "/tool/gen/genCode/",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 67
+    },
+    {
+      "pathPrefix": "/tool/gen/batchGenCode",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 72
+    },
+    {
+      "pathPrefix": "/tool/gen/preview/",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 88
+    },
+    {
+      "pathPrefix": "/tool/gen/",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 99
+    },
+    {
+      "pathPrefix": "/tool/gen/synchDb/",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 150
+    },
+    {
+      "pathPrefix": "/tool/gen/importTable",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 410
+    },
+    {
+      "pathPrefix": "/tool/gen",
+      "file": "src/features/system/GeneratorPages.tsx",
+      "line": 854
+    },
+    {
+      "pathPrefix": "/monitor/",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 45
+    },
+    {
+      "pathPrefix": "/monitor/online/",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 166
+    },
+    {
+      "pathPrefix": "/monitor/jobLog/",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 278
+    },
+    {
+      "pathPrefix": "/monitor/",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 299
+    },
+    {
+      "pathPrefix": "/monitor/server",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 393
+    },
+    {
+      "pathPrefix": "/monitor/cache/clearCacheAll",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 563
+    },
+    {
+      "pathPrefix": "/monitor/cache/clearCacheName/",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 594
+    },
+    {
+      "pathPrefix": "/monitor/cache/clearCacheKey/",
+      "file": "src/features/system/MonitorPages.tsx",
+      "line": 623
+    },
+    {
+      "pathPrefix": "/module/message/list",
+      "file": "src/features/system/NoticePages.tsx",
+      "line": 42
+    },
+    {
+      "pathPrefix": "/system/notice/",
+      "file": "src/features/system/NoticePages.tsx",
+      "line": 56
+    },
+    {
+      "pathPrefix": "/module/message/read/",
+      "file": "src/features/system/NoticePages.tsx",
+      "line": 63
+    },
+    {
+      "pathPrefix": "/system/notice/",
+      "file": "src/features/system/NoticePages.tsx",
+      "line": 271
+    },
+    {
+      "pathPrefix": "/system/notice",
+      "file": "src/features/system/NoticePages.tsx",
+      "line": 402
+    },
+    {
+      "pathPrefix": "/module/VideoTags/list",
+      "file": "src/features/system/ProbeRecordsPage.tsx",
+      "line": 101
+    },
+    {
+      "pathPrefix": "/system/role/",
+      "file": "src/features/system/RolePages.tsx",
+      "line": 49
+    },
+    {
+      "pathPrefix": "/system/role/deptTree/",
+      "file": "src/features/system/RolePages.tsx",
+      "line": 50
+    },
+    {
+      "pathPrefix": "/system/role/dataScope",
+      "file": "src/features/system/RolePages.tsx",
+      "line": 102
+    },
+    {
+      "pathPrefix": "/system/role/authUser/cancel",
+      "file": "src/features/system/RolePages.tsx",
+      "line": 316
+    },
+    {
+      "pathPrefix": "/system/role/authUser/cancelAll",
+      "file": "src/features/system/RolePages.tsx",
+      "line": 321
+    },
+    {
+      "pathPrefix": "/system/role/authUser/selectAll",
+      "file": "src/features/system/RolePages.tsx",
+      "line": 380
+    },
+    {
+      "pathPrefix": "/system/user/authRole",
+      "file": "src/features/system/RolePages.tsx",
+      "line": 504
+    },
+    {
+      "pathPrefix": "/system/role",
+      "file": "src/features/system/schemas.ts",
+      "line": 42
+    },
+    {
+      "pathPrefix": "/system/dept",
+      "file": "src/features/system/schemas.ts",
+      "line": 77
+    },
+    {
+      "pathPrefix": "/system/menu",
+      "file": "src/features/system/schemas.ts",
+      "line": 103
+    },
+    {
+      "pathPrefix": "/system/post",
+      "file": "src/features/system/schemas.ts",
+      "line": 196
+    },
+    {
+      "pathPrefix": "/system/dict/type",
+      "file": "src/features/system/schemas.ts",
+      "line": 225
+    },
+    {
+      "pathPrefix": "/system/dict/data",
+      "file": "src/features/system/schemas.ts",
+      "line": 255
+    },
+    {
+      "pathPrefix": "/system/config",
+      "file": "src/features/system/schemas.ts",
+      "line": 281
+    },
+    {
+      "pathPrefix": "/monitor/job",
+      "file": "src/features/system/schemas.ts",
+      "line": 313
+    },
+    {
+      "pathPrefix": "/system/user/list",
+      "file": "src/features/system/UsersPage.tsx",
+      "line": 40
+    }
+  ]
+}

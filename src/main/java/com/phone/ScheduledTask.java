@@ -44,6 +44,8 @@ public class ScheduledTask {
     @Autowired
     private RedisTemplate redisTemplate;
     @Autowired
+    private DeviceLeaseService deviceLeases;
+    @Autowired
     private IAccountService accountService;
     @Autowired
     private IVideoService videoService;
@@ -51,6 +53,8 @@ public class ScheduledTask {
     private IRunLogService runLogService;
     @Autowired
     private ICommentService commentService;
+    @Autowired
+    private CommentArchiveService commentArchiveService;
     @Autowired
     private IAddressVideoService addressVideoService;
 
@@ -97,6 +101,7 @@ public class ScheduledTask {
      */
     @Scheduled(cron = "0 */1 * * * ?")
     private void douyinTasks() throws JsonProcessingException {
+        recoverAbnormalTasks();
         VideoTags videoTags = new VideoTags();
         videoTags.setStatus("0");
         List<VideoTags> list = videoTagsService.selectVideoTagsListASC(videoTags);
@@ -105,23 +110,20 @@ public class ScheduledTask {
             if (!"0".equals(tags.getStatus())) {
                 continue;
             }
-            if (tags.getRunNum() >= 30) {
-                // 标记为完成状态
-                tags.setStatus("2");
+            if (tags.getRunNum() != null && tags.getRunNum() >= 30) {
+                // Retry exhaustion is a failure, not successful completion.
+                tags.setStatus("3");
                 videoTagsService.updateVideoTags(tags);
                 continue;
             }
 
             String devId = tags.getDevId();
             String lockKey = "douyin:device:lock:" + devId;
-            String lockValue = UUID.randomUUID().toString();
-
-            Boolean locked = false;
+            String lockValue;
 
             try {
                 // 🔒 只做一次 Redis 原子操作
-                locked = redisTemplate.opsForValue()
-                        .setIfAbsent(lockKey, lockValue, 2, TimeUnit.HOURS);
+                lockValue = deviceLeases.acquire(lockKey);
 
             } catch (Exception e) {
                 // Redis 异常不能影响调度线程
@@ -129,7 +131,7 @@ public class ScheduledTask {
                 continue;
             }
 
-            if (!Boolean.TRUE.equals(locked)) {
+            if (lockValue == null) {
                 System.out.println("⛔ 设备占用中: " + devId);
                 continue;   // ❗ 不能 return
             }
@@ -138,26 +140,36 @@ public class ScheduledTask {
             System.out.println("🔒 已使用 RedisTemplate 对设备加锁：" + devId);
 
 
-            RunLog runLog = new RunLog();
-            runLog.setDevId(devId);
-            runLog.setDouyinId(tags.getDouyinId());
-            runLog.setType("启动抖音获取数据");
-            runLog.setRuningDetail("启动抖音获取" + tags.getDouyinId() + "数据");
-            runLogService.insertRunLog(runLog);
-
-            // 异步执行
-            douyinVideoService.asyncCrawlTask(devId, tags.getDouyinId(), tags, lockKey, locked);
-
-            // 标记执行中（先改状态，防止并发）
-            tags.setStatus("1");
-            tags.setRunNum(tags.getRunNum() + 1);
-            if (StringUtils.isNull(tags.getTaskId())) {
-                tags.setTaskId(3L);
+            try {
+                // Persist before dispatch: a fast worker must not be overwritten as running.
+                tags.setStatus("1");
+                tags.setRunNum((tags.getRunNum() == null ? 0L : tags.getRunNum()) + 1);
+                if (tags.getTaskId() == null) tags.setTaskId(3L);
+                videoTagsService.updateVideoTags(tags);
+                RunLog runLog = new RunLog();
+                runLog.setDevId(devId);
+                runLog.setDouyinId(tags.getDouyinId());
+                runLog.setType("启动抖音获取数据");
+                runLog.setRuningDetail("启动抖音获取" + tags.getDouyinId() + "数据");
+                runLogService.insertRunLog(runLog);
+                douyinVideoService.asyncCrawlTask(devId, tags.getDouyinId(), tags, lockKey, lockValue);
+            } catch (Exception e) {
+                try {
+                    tags.setStatus("3");
+                    videoTagsService.updateVideoTags(tags);
+                } finally {
+                    deviceLeases.release(lockKey, lockValue);
+                }
+                continue;
             }
-            videoTagsService.updateVideoTags(tags);
+            // Cache refresh must not release a lease already handed to a worker.
+            try {
+                updateAccountCache(tags.getDevId(), tags.getDouyinId());
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(ScheduledTask.class.getName()).log(
+                        java.util.logging.Level.WARNING, "更新账号缓存失败 task=" + tags.getId(), e);
+            }
 
-
-            updateAccountCache(tags.getDevId(), tags.getDouyinId());
         }
 
         // =============================
@@ -173,18 +185,22 @@ public class ScheduledTask {
 
         List<VideoTags> listStatus = videoTagsService.selectVideoTagsList(new VideoTags());
 
-        boolean hasRunnable = listStatus.stream()
-                .anyMatch(v -> "0".equals(v.getStatus()) || "1".equals(v.getStatus()));
-
-        if (!hasRunnable) {
-            System.out.println("♻ 无可执行任务，恢复异常任务为待执行");
-
-            listStatus.stream()
-                    .filter(v -> "3".equals(v.getStatus()))
-                    .forEach(v -> {
-                        v.setStatus("0");
-                        videoTagsService.updateVideoTags(v);
-                    });
+        // A stopped JVM cannot update status; reclaim only after its device lease expires.
+        for (VideoTags task : listStatus) {
+            if ("1".equals(task.getStatus())
+                    && Boolean.FALSE.equals(redisTemplate.hasKey(DeviceLeaseService.key(task.getDevId())))) {
+                task.setStatus(task.getRunNum() != null && task.getRunNum() >= 30 ? "3" : "0");
+                videoTagsService.updateVideoTags(task);
+            }
+        }
+        // Other long-running address tasks must not permanently starve a failed publisher.
+        long retryBefore = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5);
+        for (VideoTags task : listStatus) {
+            if ("3".equals(task.getStatus()) && (task.getRunNum() == null || task.getRunNum() < 30)
+                    && (task.getUpdateTime() == null || task.getUpdateTime().getTime() <= retryBefore)) {
+                task.setStatus("0");
+                videoTagsService.updateVideoTags(task);
+            }
         }
     }
 
@@ -202,16 +218,14 @@ public class ScheduledTask {
         if (listAcc.size() > 0) {
             account = listAcc.get(0);
             ObjectMapper mapper = new ObjectMapper();
-            Video video = new Video();
-            video.setDouyinId(douyinId);
-            List<Video> listVoids = videoService.selectVideoList(video);
+
             Map<String, Object> map = mapper.readValue(
                     account.getJsonString(),
                     new TypeReference<Map<String, Object>>() {
                     }
             );
 // 把视频数量放进去
-            map.put("video_count", listVoids.size());
+            map.put("video_count", videoService.countVideos(douyinId));
 // Map → JSON 字符串
             String newJson = mapper.writeValueAsString(map);
 // 如果需要回存
@@ -222,8 +236,8 @@ public class ScheduledTask {
     }
 
 
-    // 开机执行一次
-    @PostConstruct
+    // Defer repair until the application is ready; never block web/server startup.
+    @Scheduled(initialDelay = 30000, fixedDelay = 1800000)
     public void runOnStartup() throws JsonProcessingException {
         getDouyinidToComment();
     }
@@ -238,15 +252,18 @@ public class ScheduledTask {
      * 视频执行表
      */
     private void getDouyinidToComment() throws JsonProcessingException {
-        while (true) {
-
-            List<Comment> list = commentService.selectCommentList200(new Comment());
+        long cursor = 0;
+        for (int batch = 0; batch < 100; batch++) {
+            Comment query = new Comment();
+            query.setId(cursor);
+            List<Comment> list = commentService.selectCommentList200(query);
 
             if (list == null || list.size() == 0) {
                 break;
             }
 
             for (Comment c : list) {
+                cursor = Math.max(cursor, c.getId());
                 Video v = videoService.selectVideoByUId(c.getUid());
 
                 if (StringUtils.isNotNull(v)) {
@@ -257,138 +274,38 @@ public class ScheduledTask {
                         c.setUserDouyin(av.getDouyinId());
                     }
                 }
-                commentService.updateComment(c);
+                if (StringUtils.isNotEmpty(c.getUserDouyin())) commentService.updateComment(c);
             }
         }
 
-        System.out.println("结束了");
     }
 
-    private void getJsonToMysql() throws JsonProcessingException {
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        while (true) {
-
+    private void getJsonToMysql() {
+        // Bound each maintenance pass; failures keep their original raw JSON for retry.
+        for (int batch = 0; batch < 100; batch++) {
             List<Video> list = videoService.selectVideoList200(new Video());
-
-            if (list == null || list.size() == 0) {
-                break;
+            if (list == null || list.isEmpty()) break;
+            boolean progress = false;
+            for (Video video : list) {
+                try { progress |= commentArchiveService.archive(video); }
+                catch (Exception e) { archiveFailure(video.getUid(), e); }
             }
-
-            for (Video v : list) {
-
-                String content = v.getContent();
-                if (content == null || content.equals("") || content.equals("[]")) {
-                    continue;
-                }
-
-                JsonNode array = mapper.readTree(content);
-
-                for (JsonNode node : array) {
-
-                    Comment c = new Comment();
-
-                    c.setUid(v.getUid());
-                    c.setUserDouyin(v.getDouyinId());
-
-                    c.setUserUid(node.path("user_uid").asText());
-                    c.setNickname(node.path("nickname").asText());
-                    c.setGender(node.path("gender").asText());
-                    c.setAge(node.path("age").asText());
-
-                    c.setRealName(node.path("real_name").asText());
-                    c.setSignature(node.path("signature").asText());
-
-                    c.setFansCount(node.path("fans_count").asText());
-                    c.setFollowCount(node.path("follow_count").asText());
-                    c.setLikesCount(node.path("likes_count").asText());
-                    c.setWorksCount(node.path("works_count").asText());
-
-                    c.setProfileText(node.path("profile_text").asText());
-
-                    c.setIpLocation(node.path("ip_location").asText());
-                    c.setRegion(node.path("region").asText());
-
-                    c.setTouxiang(node.path("touxiang").asText());
-                    c.setZhuye(node.path("zhuye").asText());
-
-                    c.setCommentText(node.path("text").asText());
-                    c.setReplyTo(node.path("replyTo").asText());
-                    c.setCommentTime(node.path("time").asText());
-
-                    c.setStatus("0");
-
-                    commentService.insertComment(c);
-                }
-
-                // 清空content避免重复解析
-                v.setContent("");
-                videoService.updateVideo(v);
-            }
+            if (!progress) break;
         }
-
-
-        // 第二个表
-        while (true) {
-
-            List<AddressVideo> list1 = addressVideoService.selectAddressVideoList200(new AddressVideo());
-
-            if (list1 == null || list1.size() == 0) {
-                break;
+        for (int batch = 0; batch < 100; batch++) {
+            List<AddressVideo> list = addressVideoService.selectAddressVideoList200(new AddressVideo());
+            if (list == null || list.isEmpty()) break;
+            boolean progress = false;
+            for (AddressVideo video : list) {
+                try { progress |= commentArchiveService.archive(video); }
+                catch (Exception e) { archiveFailure(video.getUid(), e); }
             }
-
-            for (AddressVideo v : list1) {
-
-                String content = v.getContent();
-                if (content == null || content.equals("") || content.equals("[]")) {
-                    continue;
-                }
-
-                JsonNode array = mapper.readTree(content);
-
-                for (JsonNode node : array) {
-
-                    Comment c = new Comment();
-
-                    c.setUid(v.getUid());
-                    c.setUserDouyin(v.getDouyinId());
-                    c.setUserUid(node.path("user_uid").asText());
-                    c.setNickname(node.path("nickname").asText());
-                    c.setGender(node.path("gender").asText());
-                    c.setAge(node.path("age").asText());
-
-                    c.setRealName(node.path("real_name").asText());
-                    c.setSignature(node.path("signature").asText());
-
-                    c.setFansCount(node.path("fans_count").asText());
-                    c.setFollowCount(node.path("follow_count").asText());
-                    c.setLikesCount(node.path("likes_count").asText());
-                    c.setWorksCount(node.path("works_count").asText());
-
-                    c.setProfileText(node.path("profile_text").asText());
-
-                    c.setIpLocation(node.path("ip_location").asText());
-                    c.setRegion(node.path("region").asText());
-
-                    c.setTouxiang(node.path("touxiang").asText());
-                    c.setZhuye(node.path("zhuye").asText());
-
-                    c.setCommentText(node.path("text").asText());
-                    c.setReplyTo(node.path("replyTo").asText());
-                    c.setCommentTime(node.path("time").asText());
-
-                    c.setStatus("0");
-
-                    commentService.insertComment(c);
-                }
-
-                v.setContent("");
-                addressVideoService.updateAddressVideo(v);
-            }
+            if (!progress) break;
         }
+    }
 
-
-        System.out.println("结束了");
+    private void archiveFailure(String uid, Exception e) {
+        java.util.logging.Logger.getLogger(ScheduledTask.class.getName()).log(
+                java.util.logging.Level.WARNING, "评论转存失败，原数据已保留 uid=" + uid, e);
     }
 }

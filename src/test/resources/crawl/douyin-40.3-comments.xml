@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Anonymized minimal structure from the running 40.3.0 session on 2026-10-16. -->
+<hierarchy>
+  <android.widget.TextView resource-id="com.ss.android.ugc.aweme:id/e4l" text="评论 124"/>
+  <androidx.recyclerview.widget.RecyclerView resource-id="com.ss.android.ugc.aweme:id/rkp">
+    <android.widget.FrameLayout resource-id="com.ss.android.ugc.aweme:id/flq">
+      <android.view.ViewGroup resource-id="com.ss.android.ugc.aweme:id/k4j">
+        <按钮 resource-id="com.ss.android.ugc.aweme:id/avatar" content-desc="用户甲的头像"/>
+        <android.widget.TextView resource-id="com.ss.android.ugc.aweme:id/title" text="用户甲"/>
+        <android.widget.TextView resource-id="com.ss.android.ugc.aweme:id/content" text="评论甲"/>
+        <android.widget.LinearLayout resource-id="com.ss.android.ugc.aweme:id/exi">
+          <android.widget.TextView resource-id="com.ss.android.ugc.aweme:id/e4t" text="09-02"/>
+        </android.widget.LinearLayout>
+      </android.view.ViewGroup>
+    </android.widget.FrameLayout>
+    <android.widget.FrameLayout resource-id="com.ss.android.ugc.aweme:id/flq">
+      <android.view.ViewGroup resource-id="com.ss.android.ugc.aweme:id/k4j">
+        <按钮 resource-id="com.ss.android.ugc.aweme:id/avatar" content-desc="用户乙的头像"/>
+        <android.widget.TextView resource-id="com.ss.android.ugc.aweme:id/title" text="用户乙"/>
+        <android.widget.TextView resource-id="com.ss.android.ugc.aweme:id/content" text="回复乙"/>
+      </android.view.ViewGroup>
+    </android.widget.FrameLayout>
+  </androidx.recyclerview.widget.RecyclerView>
+</hierarchy>

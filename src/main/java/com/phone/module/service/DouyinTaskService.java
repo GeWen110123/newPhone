@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,11 +25,16 @@ import java.util.logging.Logger;
 
 @Service
 public class DouyinTaskService {
+    public static class ProfileStorageException extends RuntimeException {
+        public ProfileStorageException(String message, Throwable cause) { super(message, cause); }
+    }
 
     private static final Logger logger = Logger.getLogger(DouyinTaskService.class.getName());
 
     @Autowired
     private IAccountService accountService;
+    @Autowired
+    private DeviceLeaseService deviceLeases;
     @Autowired
     @Lazy
     private DouyinTaskService douyinTaskService;
@@ -57,10 +63,16 @@ public class DouyinTaskService {
             return;
         }
 
+        String lockKey = DeviceLeaseService.key(devId);
+        String token = deviceLeases.acquire(lockKey);
+        if (token == null) {
+            logger.warning("设备占用中: " + devId);
+            return;
+        }
         Map<String, Object> result = new HashMap<>();
         AndroidDriver<MobileElement> driver = null;
 
-        try {
+        try (AutoCloseable lease = deviceLeases.keepAlive(lockKey, token)) {
             DesiredCapabilities capabilities = new DesiredCapabilities();
             capabilities.setCapability("platformName", "Android");
             capabilities.setCapability("deviceName", "Android Device");
@@ -87,9 +99,10 @@ public class DouyinTaskService {
             storeAccountAsync(devId, accountName, result, "");
 
         } catch (Exception e) {
-            logger.severe("爬取账号信息异常: " + e.getMessage());
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            logger.log(java.util.logging.Level.SEVERE, "爬取账号信息失败 device=" + devId, e);
         } finally {
-            closeDriverQuietly(driver);
+            try { closeDriverQuietly(driver); } finally { deviceLeases.release(lockKey, token); }
         }
 
 
@@ -132,13 +145,21 @@ public class DouyinTaskService {
     // =====================================================
     // 抖音账号信息对象 数据库写入（异步）
     // =====================================================
+    @Transactional(rollbackFor = Exception.class)
     public void storeAccountAsync(String devId, String accountName, Map<String, Object> resultMap, String tags) {
+        if (resultMap == null || resultMap.isEmpty() || StringUtils.isBlank(accountName)) {
+            throw new IllegalArgumentException("未读取到有效账号信息，不能写入或创建任务");
+        }
+        String options = tags == null ? "" : tags;
+        if (options.contains("基本信息") && !options.contains("地址") && !options.contains("附近")
+                && !options.contains("综合视频") && !accountName.equalsIgnoreCase(String.valueOf(resultMap.get("id")))) {
+            throw new IllegalArgumentException("页面抖音号与任务账号不一致: " + accountName);
+        }
         try {
             ObjectMapper mapper = new ObjectMapper();
             String json = mapper.writeValueAsString(resultMap);
 
             Account account = new Account();
-            account.setDevId(devId);
             account.setDouyinId(accountName);
             List<Account> list = accountService.selectAccountList(account);
 
@@ -149,15 +170,14 @@ public class DouyinTaskService {
                 accountService.updateAccount(account);
 
             } else {
+                account.setDevId(devId);
                 account.setJsonString(json);
                 account.setCreateTime(new Date());
 
 
-                Video video = new Video();
-                video.setDouyinId(accountName);
-                List<Video> listVoids = videoService.selectVideoList(video);
 // ⭐ 把视频数量放进去（字段名你自己定）
-                resultMap.put("video_count", listVoids.size());
+                resultMap = new HashMap<>(resultMap);
+                resultMap.put("video_count", videoService.countVideos(accountName));
 // Map → JSON 字符串
                 String newJson = mapper.writeValueAsString(resultMap);
 // 如果需要回存
@@ -169,44 +189,7 @@ public class DouyinTaskService {
 
             }
 
-            if (StringUtils.isNotEmpty((String) resultMap.get("id"))) {
-
-                if (tags.contains("单用户前六条视频") || tags.contains("单用户所有视频")) {
-
-                    VideoTags query = new VideoTags();
-                    query.setDouyinId(accountName);
-                    query.setTaskId(3L);
-
-                    List<VideoTags> existList = videoTagsService.selectVideoTagsList(query);
-
-                    // 已存在任务
-                    if (!existList.isEmpty()) {
-
-                        // 如果现在是“所有视频”，需要升级任务
-                        if (tags.contains("单用户所有视频")) {
-                            VideoTags exist = existList.get(0);
-                            exist.setTags("单用户所有视频");
-                            videoTagsService.updateVideoTags(exist);
-                        }
-
-                        return;
-                    }
-
-                    // 不存在任务才新增
-                    VideoTags t = new VideoTags();
-                    t.setDouyinId(accountName);
-                    t.setDevId(devId);
-                    t.setTaskId(3L);
-                    t.setCreateTime(new Date());
-
-                    if (tags.contains("单用户前六条视频")) {
-                        t.setTags("视频,基本信息,评论,前六条");
-                    } else if (tags.contains("单用户所有视频")) {
-                        t.setTags("视频,基本信息,评论");
-                    }
-                    videoTagsService.insertVideoTags(t);
-                }
-            }
+            enqueuePublisher(devId, accountName, resultMap, tags);
 
 
 
@@ -221,13 +204,62 @@ public class DouyinTaskService {
             }
 
             ip.setIpAddress(region);
-            accountIpService.insertAccountIp(ip);
+            if (!region.isEmpty() && accountIpService.selectAccountIpList(ip).isEmpty()) {
+                accountIpService.insertAccountIp(ip);
+            }
 
             logger.info("账号数据写入成功: " + accountName);
 
         } catch (Exception ex) {
-            logger.severe("DB 写入失败: " + ex.getMessage());
+            throw new IllegalStateException("账号及发布者任务写入失败: " + accountName, ex);
         }
+    }
+
+    void enqueuePublisher(String devId, String accountName, Map<String, Object> info, String tags) {
+        String options = tags == null ? "" : tags;
+        if (!options.contains("单用户前六条视频") && !options.contains("单用户所有视频")) return;
+        String id = String.valueOf(info.getOrDefault("id", ""));
+        if (!id.equals(accountName) || !com.phone.adb.AccountInfoFetcher.isRealDouyinId(id)) {
+            throw new IllegalArgumentException("发布者抖音号未确认: " + id);
+        }
+        VideoTags query = new VideoTags();
+        query.setDevId(devId);
+        query.setDouyinId(id);
+        query.setTaskId(3L);
+        List<VideoTags> existing = videoTagsService.selectVideoTagsList(query);
+        VideoTags task = existing.isEmpty() ? new VideoTags() : existing.get(0);
+        // A six-video request must not downgrade an existing all-video task.
+        boolean all = options.contains("单用户所有视频") || (!existing.isEmpty()
+                && task.getTags() != null && !task.getTags().contains("前六条"));
+        String desired = "视频,基本信息,评论" + (all ? "" : ",前六条");
+        boolean upgraded = !desired.equals(task.getTags());
+        int expected = DouyinVideoService.getUserWorksCount(com.alibaba.fastjson.JSON.toJSONString(info));
+        if (!all && expected > 0) expected = Math.min(expected, 6);
+        boolean incomplete = expected <= 0 || videoService.countVideos(id) < expected;
+        if (existing.isEmpty()) {
+            task.setDevId(devId);
+            task.setDouyinId(id);
+            task.setTaskId(3L);
+            task.setTags(desired);
+            task.setStatus("0");
+            task.setRunNum(0L);
+            task.setUpdateTime(new Date());
+            videoTagsService.insertVideoTags(task);
+            logger.info("发布者任务已入队: " + id);
+        } else if (!"1".equals(task.getStatus()) && (upgraded || (incomplete && "2".equals(task.getStatus())))) {
+            task.setTags(desired);
+            task.setStatus("0");
+            task.setRunNum(0L);
+            videoTagsService.updateVideoTags(task);
+            logger.info("发布者历史任务缺少数据，已重新入队: " + id);
+        }
+    }
+
+    public boolean hasWaitingTasks(String devId) {
+        VideoTags query = new VideoTags();
+        query.setDevId(devId);
+        query.setStatus("0");
+        return !videoTagsService.selectVideoTagsList(query).isEmpty();
     }
 
 
@@ -249,8 +281,8 @@ public class DouyinTaskService {
 
             if (list.size() > 0) {
                 account = list.get(0);
-//                account.setJsonString(json);
-                account.setCount(account.getCount() + 1);
+                account.setJsonString(json);
+                account.setCount((account.getCount() == null ? 0L : account.getCount()) + 1);
                 account.setUpdateTime(new Date());
                 accountContentService.updateAccountContent(account);
             } else {
@@ -264,7 +296,7 @@ public class DouyinTaskService {
             logger.info("账号数据写入成功: " + accountName);
 
         } catch (Exception ex) {
-            logger.severe("DB 写入失败: " + ex.getMessage());
+            throw new ProfileStorageException("评论者资料写入失败: " + douyinId, ex);
         }
     }
 
@@ -286,7 +318,8 @@ public class DouyinTaskService {
 
             if (list.size() > 0) {
                 account = list.get(0);
-                account.setCount(account.getCount() + 1);
+                account.setJsonString(json);
+                account.setCount((account.getCount() == null ? 0L : account.getCount()) + 1);
                 account.setUpdateTime(new Date());
                 addressAccountContentService.updateAddressAccountContent(account);
             } else {
@@ -300,7 +333,7 @@ public class DouyinTaskService {
             logger.info("账号数据写入成功: " + accountName);
 
         } catch (Exception ex) {
-            logger.severe("DB 写入失败: " + ex.getMessage());
+            throw new ProfileStorageException("评论者资料写入失败: " + douyinId, ex);
         }
     }
 

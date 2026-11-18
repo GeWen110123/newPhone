@@ -4,10 +4,12 @@ package com.phone.adb;
 public class XPathRegistry {
 
     public static final String[] NICKNAME_XPATHS = {
+            "//*[@resource-id='com.ss.android.ugc.aweme:id/ttw']",
             "//*[@resource-id='com.ss.android.ugc.aweme:id/sga']"
     };
 
     public static final String[] DOUYIN_ID_XPATHS = {
+            "//*[@resource-id='com.ss.android.ugc.aweme:id/5-n']",
             "//*[@resource-id='com.ss.android.ugc.aweme:id/4bn']"
     };
 

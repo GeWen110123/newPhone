@@ -20,6 +20,16 @@ public class AddressVideoServiceImpl implements IAddressVideoService {
     @Autowired
     private AddressVideoMapper addressVideoMapper;
 
+    @Override
+    public int updateCrawledAddressVideo(AddressVideo video) {
+        return addressVideoMapper.updateCrawledAddressVideo(video);
+    }
+
+    @Override
+    public long countAddressVideos(String address) {
+        return addressVideoMapper.countAddressVideos(address);
+    }
+
     /**
      * 查询地址视频总
      *

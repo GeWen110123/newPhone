@@ -18,10 +18,12 @@ import com.phone.common.core.domain.AjaxResult;
 import com.phone.common.core.domain.entity.SysUser;
 import com.phone.common.core.domain.model.LoginUser;
 import com.phone.common.enums.BusinessType;
+import com.phone.common.exception.file.InvalidExtensionException;
 import com.phone.common.utils.SecurityUtils;
 import com.phone.common.utils.ServletUtils;
 import com.phone.common.utils.StringUtils;
 import com.phone.common.utils.file.FileUploadUtils;
+import com.phone.common.utils.file.MimeTypeUtils;
 import com.phone.framework.web.service.TokenService;
 import com.phone.system.service.ISysUserService;
 
@@ -59,22 +61,28 @@ public class SysProfileController extends BaseController
      */
     @Log(title = "个人信息", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult updateProfile(@RequestBody SysUser user)
+    public AjaxResult updateProfile(@RequestBody SysUser submitted)
     {
+        LoginUser loginUser = tokenService.getLoginUser(ServletUtils.getRequest());
+        SysUser sysUser = loginUser.getUser();
+        // The generic mapper also writes account status, department and login
+        // metadata. Only copy fields editable through the personal profile.
+        SysUser user = new SysUser();
+        user.setUserId(sysUser.getUserId());
+        user.setNickName(submitted.getNickName());
+        user.setPhonenumber(submitted.getPhonenumber());
+        user.setEmail(submitted.getEmail());
+        user.setSex(submitted.getSex());
         if (StringUtils.isNotEmpty(user.getPhonenumber())
                 && UserConstants.NOT_UNIQUE.equals(userService.checkPhoneUnique(user)))
         {
-            return AjaxResult.error("修改用户'" + user.getUserName() + "'失败，手机号码已存在");
+            return AjaxResult.error("修改用户'" + sysUser.getUserName() + "'失败，手机号码已存在");
         }
         if (StringUtils.isNotEmpty(user.getEmail())
                 && UserConstants.NOT_UNIQUE.equals(userService.checkEmailUnique(user)))
         {
-            return AjaxResult.error("修改用户'" + user.getUserName() + "'失败，邮箱账号已存在");
+            return AjaxResult.error("修改用户'" + sysUser.getUserName() + "'失败，邮箱账号已存在");
         }
-        LoginUser loginUser = tokenService.getLoginUser(ServletUtils.getRequest());
-        SysUser sysUser = loginUser.getUser();
-        user.setUserId(sysUser.getUserId());
-        user.setPassword(null);
         if (userService.updateUserProfile(user) > 0)
         {
             // 更新缓存用户信息
@@ -121,12 +129,12 @@ public class SysProfileController extends BaseController
      */
     @Log(title = "用户头像", businessType = BusinessType.UPDATE)
     @PostMapping("/avatar")
-    public AjaxResult avatar(@RequestParam("avatarfile") MultipartFile file) throws IOException
+    public AjaxResult avatar(@RequestParam("avatarfile") MultipartFile file) throws IOException, InvalidExtensionException
     {
         if (!file.isEmpty())
         {
             LoginUser loginUser = tokenService.getLoginUser(ServletUtils.getRequest());
-            String avatar = FileUploadUtils.upload(RuoYiConfig.getAvatarPath(), file);
+            String avatar = FileUploadUtils.upload(RuoYiConfig.getAvatarPath(), file, MimeTypeUtils.IMAGE_EXTENSION);
             if (userService.updateUserAvatar(loginUser.getUsername(), avatar))
             {
                 AjaxResult ajax = AjaxResult.success();
