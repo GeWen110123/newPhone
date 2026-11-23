@@ -8,7 +8,17 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$lab = 'F:\D3SereinLab'
+# 一键部署包默认使用 F:\D3SereinLab；本机若部署在 D 盘则自动回退。
+$lab = $env:D3_LAB_ROOT
+if (!$lab) {
+    foreach ($candidate in @('F:\D3SereinLab', 'D:\D3SereinLab')) {
+        if (Test-Path -LiteralPath (Join-Path $candidate 'deployment\one-click\Deploy-D3CollectorVm.ps1')) {
+            $lab = $candidate
+            break
+        }
+    }
+}
+if (!$lab) { throw 'D3 lab root not found. Set D3_LAB_ROOT to the D3SereinLab directory.' }
 $deploy = Join-Path $lab 'deployment\one-click\Deploy-D3CollectorVm.ps1'
 if (!(Test-Path -LiteralPath $deploy)) { throw "D3 installer is missing: $deploy" }
 $null = & (Join-Path $PSScriptRoot 'scripts\Configure-D3Launcher.ps1')
@@ -48,6 +58,19 @@ $env:SERVER_ADDRESS = '127.0.0.1'
 $env:DOUYIN_APP_PACKAGE = 'com.ss.android.ugc.aweme'
 $env:DOUYIN_APP_ACTIVITY = '.main.MainActivity'
 $env:JAVA_HOME = [Environment]::GetEnvironmentVariable('JAVA_HOME', 'User')
+if (!$env:JAVA_HOME -or !(Test-Path -LiteralPath (Join-Path $env:JAVA_HOME 'bin\java.exe'))) {
+    foreach ($candidate in @('C:\Program Files\Java\jdk-21',
+                             'C:\Program Files\Eclipse Adoptium\jdk-21',
+                             'C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot')) {
+        if (Test-Path -LiteralPath (Join-Path $candidate 'bin\java.exe')) {
+            $env:JAVA_HOME = $candidate
+            break
+        }
+    }
+}
+if (!$env:JAVA_HOME -or !(Test-Path -LiteralPath (Join-Path $env:JAVA_HOME 'bin\java.exe'))) {
+    throw 'JDK 17 or newer is required (checked JAVA_HOME, JDK 21 and JDK 17).'
+}
 $env:Path = (Join-Path $env:JAVA_HOME 'bin') + ';' +
     [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $env:Path
 

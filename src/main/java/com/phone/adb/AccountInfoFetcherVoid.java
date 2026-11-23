@@ -391,6 +391,38 @@ public class AccountInfoFetcherVoid {
             }
         }
 
+        // 新版地点内容页（40.9.0）卡片用混淆 resource-id 且无 content-desc，
+        // 上面的 XPath 全部落空。兜底：取 RecyclerView 内可见的、尺寸足够大的
+        // 图片/卡片节点（第一行），按坐标点击。
+        if (candidates.isEmpty()) {
+            logger.info("常规视频卡片XPath落空，尝试RecyclerView卡片兜底定位");
+            List<MobileElement> rvCards = new ArrayList<>();
+            rvCards.addAll(findAll("//androidx.recyclerview.widget.RecyclerView//android.widget.ImageView"));
+            rvCards.addAll(findAll("//androidx.recyclerview.widget.RecyclerView//android.view.ViewGroup[@clickable='true']"));
+            int screenH = driver.manage().window().getSize().getHeight();
+            for (MobileElement el : rvCards) {
+                try {
+                    Rectangle rect = el.getRect();
+                    if (rect.getWidth() >= 120 && rect.getHeight() >= 120
+                            && rect.getY() >= 200 && rect.getY() < screenH - 80
+                            && el.isDisplayed()) {
+                        candidates.add(el);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            if (!candidates.isEmpty()) {
+                candidates.sort((a, b) -> {
+                    try {
+                        int cmp = Integer.compare(a.getRect().getY(), b.getRect().getY());
+                        return cmp != 0 ? cmp : Integer.compare(a.getRect().getX(), b.getRect().getX());
+                    } catch (Exception e) {
+                        return 0;
+                    }
+                });
+            }
+        }
+
         logger.info("地址视频页找到 " + candidates.size() + " 个视频候选");
         // 以“第一行最左侧”为第一条，而不是简单按 y 排序。
         // 双列卡片的标题 y 坐标可能相差几十像素。
@@ -451,6 +483,22 @@ public class AccountInfoFetcherVoid {
     }
 
     private boolean isOnVideoDetailPage() {
+        // 团购/商品列表页也含 root+返回+RecyclerView，但绝不能当作视频详情页，
+        // 否则会把"去抢购"卡片当视频采集，UID 全空。优先排除。
+        if (exists("//*[@content-desc='去抢购']")
+                || exists("//*[contains(@text,'团购') and contains(@text,'搜索')]")) {
+            return false;
+        }
+
+        // 40.9.0 新版详情页：root 容器 + "收藏"/"返回" content-desc，视频描述直接挂在
+        // content-desc 上（无 desc resource-id）。这类页面必须识别为详情页，否则会
+        // 误走"寻找双列视频卡片"分支而卡死。
+        if (exists("//*[@resource-id='com.ss.android.ugc.aweme:id/root']")
+                && (exists("//*[@content-desc='收藏']") || exists("//*[@content-desc='返回']"))
+                && exists("//androidx.recyclerview.widget.RecyclerView")) {
+            return true;
+        }
+
         // 新版详情页仍然保留顶部搜索入口 et_search_kw，不能把它作为单独的否定条件。
         // root_layout/guy 是详情页自身的稳定标识，优先级最高。
         if (exists("//*[@resource-id='com.ss.android.ugc.aweme:id/root_layout']")
@@ -1021,10 +1069,13 @@ public class AccountInfoFetcherVoid {
         if (tags.contains("前六条")){
             maxVideos=Math.min(maxVideos, 6);
         }
+        // 防护：连续取不到 UID 判定落地页异常，中止本轮（见下方 UID 判断）。
+        int emptyUidStreak = 0;
 
         while (index < maxVideos) {
             try {
                 ensureCrawlActive();
+                AnrGuard.recover(driver);
                 // 确保最新 PageSource
                 driver.getPageSource();
                 logger.info("处理第 " + (index + 1) + " 个视频");
@@ -1056,11 +1107,17 @@ public class AccountInfoFetcherVoid {
 
 // UID 为空，直接跳过（非常重要）
                 if (uid == null || uid.isEmpty()) {
-                    logger.info("未获取到视频 UID，跳过");
+                    emptyUidStreak++;
+                    if (emptyUidStreak >= 8) {
+                        logger.warning("连续 " + emptyUidStreak + " 次未获取到视频 UID，判定落地页非视频页（团购/搜索页？），中止本轮等待重试");
+                        throw new IllegalStateException("落地页非视频页，连续取不到 UID，停止本轮等待重试");
+                    }
+                    logger.info("未获取到视频 UID，跳过（连续 " + emptyUidStreak + " 次）");
                     if (!swipeToNextVideo()) break;
                     index++;
                     continue;
                 }
+                emptyUidStreak = 0;
 // 内存去重
                 if (processed.contains(uid)) {
                     logger.info("视频已在本轮处理过，跳过");
@@ -1544,6 +1601,20 @@ public class AccountInfoFetcherVoid {
         } finally {
             driver.navigate().back();
             Thread.sleep(1000);
+            // ✅ 关键校验：必须回到视频详情页，否则后续录屏会录到作者主页（时长解析全失败）
+            boolean backToVideo = false;
+            for (int retry = 0; retry < 3 && !backToVideo; retry++) {
+                if (isOnVideoDetailPage()) {
+                    backToVideo = true;
+                    break;
+                }
+                logger.warning("发布者主页返回后未回到视频详情页，再次返回（" + (retry + 1) + "/3）");
+                driver.navigate().back();
+                Thread.sleep(1500);
+            }
+            if (!backToVideo) {
+                throw new IllegalStateException("无法从发布者主页返回视频详情页，停止本轮避免录屏内容错误");
+            }
         }
     }
 
@@ -1570,16 +1641,38 @@ public class AccountInfoFetcherVoid {
 
 //        点击进入第一条视频
 
-        if (!isOnVideoDetailPage() && !goVideoList()) {
-            logger.warning("无法进入作品区");
-            throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
+        // 地点名容易被抖音解析为"XX团购"搜索页，必须在此拦截，避免把团购卡片当视频采集。
+        if (exists("//*[@content-desc='去抢购']")
+                || exists("//*[contains(@text,'团购') and contains(@text,'搜索')]")) {
+            logger.warning("当前落在团购页而非地点视频页，中止本轮等待重试");
+            throw new IllegalStateException("落地页为团购页，停止本轮等待重试");
+        }
+
+        if (!isOnVideoDetailPage()) {
+            // 地点页 RecyclerView 渲染慢（代理网络/模拟器性能），找不到卡片时等待重试
+            boolean entered = false;
+            for (int retry = 0; retry < 3 && !entered; retry++) {
+                if (retry > 0) {
+                    logger.warning("地点视频卡片未就绪，等待重试 " + retry + "/3");
+                    try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+                }
+                entered = goVideoList();
+            }
+            if (!entered) {
+                logger.warning("无法进入作品区");
+                throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
+            }
         }
         String uidByCopy = null;
         int sameUidCount = 0;
+        // 防护：落地页不是视频页（如误入团购/搜索页）时 UID 会一直为空。
+        // 连续多次取不到即中止本轮，避免空跑上千次并长期占用设备。
+        int emptyUidStreak = 0;
 
         while (index < maxVideos) {
             try {
                 ensureCrawlActive();
+                AnrGuard.recover(driver);
                 // 确保最新 PageSource
                 driver.getPageSource();
                 logger.info("处理第 " + (index + 1) + " 个视频");
@@ -1611,11 +1704,17 @@ public class AccountInfoFetcherVoid {
 
 // UID 为空，直接跳过（非常重要）
                 if (uid == null || uid.isEmpty()) {
-                    logger.info("未获取到视频 UID，跳过");
+                    emptyUidStreak++;
+                    if (emptyUidStreak >= 8) {
+                        logger.warning("连续 " + emptyUidStreak + " 次未获取到视频 UID，判定落地页非视频页（团购/搜索页？），中止本轮等待重试");
+                        throw new IllegalStateException("落地页非视频页，连续取不到 UID，停止本轮等待重试");
+                    }
+                    logger.info("未获取到视频 UID，跳过（连续 " + emptyUidStreak + " 次）");
                     if (!swipeToNextVideo()) break;
                     index++;
                     continue;
                 }
+                emptyUidStreak = 0;
 
                 // ✅ UI 是否变化（必须无条件执行）
                 if (uid.equals(uidByCopy)) {
@@ -1709,6 +1808,29 @@ public class AccountInfoFetcherVoid {
                     logger.info("评论采集开关已开启，当前视频评论数: " + commentsCount);
 
                     if (!"0".equals(commentsCount)) {
+                        // ✅ 此刻 getVideoStat 刚在视频详情页读到"评论N，按钮"，页面状态可靠；
+                        //    立即点击评论入口打开面板，避免等待/录屏间隙页面漂移后找不到入口
+                        boolean panelReady = false;
+                        for (int i = 0; i < 3 && !panelReady; i++) {
+                            try {
+                                List<MobileElement> btns = driver.findElements(By.xpath(
+                                        "//*[starts-with(@content-desc,'评论') and not(contains(@content-desc,'放大'))]"));
+                                if (btns.isEmpty()) {
+                                    Thread.sleep(1500);
+                                    continue;
+                                }
+                                btns.get(0).click();
+                                Thread.sleep(2000);
+                                panelReady = true;
+                                logger.info("已预点击评论入口");
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            } catch (Exception e) {
+                                logger.warning("预点击评论入口失败: " + e.getMessage());
+                            }
+                        }
+
                         // 指定保存评论的目录
                         String videosDir = DouyinPathUtils.resolve("videosDir");
 
@@ -1806,16 +1928,38 @@ public class AccountInfoFetcherVoid {
 
 //        点击进入第一条视频
 
-        if (!isOnVideoDetailPage() && !goVideoList()) {
-            logger.warning("无法进入作品区");
-            throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
+        // 地点名容易被抖音解析为"XX团购"搜索页，必须在此拦截，避免把团购卡片当视频采集。
+        if (exists("//*[@content-desc='去抢购']")
+                || exists("//*[contains(@text,'团购') and contains(@text,'搜索')]")) {
+            logger.warning("当前落在团购页而非地点视频页，中止本轮等待重试");
+            throw new IllegalStateException("落地页为团购页，停止本轮等待重试");
+        }
+
+        if (!isOnVideoDetailPage()) {
+            // 地点页 RecyclerView 渲染慢（代理网络/模拟器性能），找不到卡片时等待重试
+            boolean entered = false;
+            for (int retry = 0; retry < 3 && !entered; retry++) {
+                if (retry > 0) {
+                    logger.warning("地点视频卡片未就绪，等待重试 " + retry + "/3");
+                    try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+                }
+                entered = goVideoList();
+            }
+            if (!entered) {
+                logger.warning("无法进入作品区");
+                throw new IllegalStateException("未能进入预期采集页面，停止本轮等待重试");
+            }
         }
         String uidByCopy = null;
         int sameUidCount = 0;
+        // 防护：落地页不是视频页（如误入团购/搜索页）时 UID 会一直为空。
+        // 连续多次取不到即中止本轮，避免空跑上千次并长期占用设备。
+        int emptyUidStreak = 0;
 
         while (index < maxVideos) {
             try {
                 ensureCrawlActive();
+                AnrGuard.recover(driver);
                 // 确保最新 PageSource
                 driver.getPageSource();
                 logger.info("处理第 " + (index + 1) + " 个视频");
@@ -1847,11 +1991,17 @@ public class AccountInfoFetcherVoid {
 
 // UID 为空，直接跳过（非常重要）
                 if (uid == null || uid.isEmpty()) {
-                    logger.info("未获取到视频 UID，跳过");
+                    emptyUidStreak++;
+                    if (emptyUidStreak >= 8) {
+                        logger.warning("连续 " + emptyUidStreak + " 次未获取到视频 UID，判定落地页非视频页（团购/搜索页？），中止本轮等待重试");
+                        throw new IllegalStateException("落地页非视频页，连续取不到 UID，停止本轮等待重试");
+                    }
+                    logger.info("未获取到视频 UID，跳过（连续 " + emptyUidStreak + " 次）");
                     if (!swipeToNextVideo()) break;
                     index++;
                     continue;
                 }
+                emptyUidStreak = 0;
 
                 // ✅ UI 是否变化（必须无条件执行）
                 if (uid.equals(uidByCopy)) {

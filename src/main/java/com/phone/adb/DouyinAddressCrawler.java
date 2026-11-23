@@ -13,8 +13,12 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class DouyinAddressCrawler {
+    // 新版抖音搜索入口 content-desc 带后缀（如 "搜索，[unsupported type]"），desc 必须模糊匹配；
+    // text 属性则用精确匹配，避免误点"搜索推荐"/"搜索历史"等文本；
+    // 且必须限定在抖音包内，否则桌面的 Google 搜索栏（content-desc="搜索"）会被误点。
     static final String SEARCH_CONTROL = "//*[@clickable='true' and not(self::android.widget.EditText)"
-            + " and (@text='搜索' or @content-desc='搜索' or @content-desc='搜索，按钮' or @content-desc='搜索按钮')]";
+            + " and @package='com.ss.android.ugc.aweme'"
+            + " and (@text = '搜索' or contains(@content-desc, '搜索'))]";
 
     private static final Logger logger = Logger.getLogger(DouyinAddressCrawler.class.getName());
     private AndroidDriver<MobileElement> driver;
@@ -34,17 +38,51 @@ public class DouyinAddressCrawler {
     public boolean startDouyin() {
         try {
             logger.info("启动抖音应用...");
-            if (!"com.ss.android.ugc.aweme".equals(driver.getCurrentPackage())) {
+            // activateApp 只把进程切到前台，App 若在后台被回收后会先落到桌面（Launcher），
+            // 此时 getCurrentPackage() 可能是桌面。必须确认真正回到抖音主页再继续。
+            if (!isDouyinHomeVisible()) {
                 driver.activateApp("com.ss.android.ugc.aweme");
-                Thread.sleep(5000);
+                Thread.sleep(6000);
+            }
+            if (!isDouyinHomeVisible()) {
+                // 主页仍未出现（可能停在 Splash/详情页），强制回到主 Activity。
+                driver.startActivity(new io.appium.java_client.android.Activity(
+                        "com.ss.android.ugc.aweme",
+                        "com.ss.android.ugc.aweme.splash.SplashActivity"));
+                Thread.sleep(8000);
             }
 
-            boolean success = "com.ss.android.ugc.aweme".equals(driver.getCurrentPackage());
-            logger.info(success ? "抖音启动成功" : "抖音启动失败");
+            boolean success = isDouyinHomeVisible();
+            logger.info(success ? "抖音启动成功" : "抖音启动失败：未回到主页");
             return success;
         } catch (Exception e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             logger.severe("启动抖音失败: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** 团购/商品列表页标志：出现"去抢购"按钮或团购搜索框，说明点错了地点词条。 */
+    private boolean isOnGroupBuyPage() {
+        try {
+            return !driver.findElementsByXPath(
+                    "//*[@text='去抢购' or @content-desc='去抢购']").isEmpty()
+                    || !driver.findElementsByXPath(
+                    "//*[contains(@text,'团购') and @resource-id='com.ss.android.ugc.aweme:id/et_search_kw']").isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** 抖音主页标志：底部"首页"tab 或顶部搜索按钮，且当前包就是抖音。 */
+    private boolean isDouyinHomeVisible() {
+        try {
+            if (!"com.ss.android.ugc.aweme".equals(driver.getCurrentPackage())) return false;
+            return !driver.findElementsByXPath(
+                    "//*[@package='com.ss.android.ugc.aweme' and contains(@content-desc,'搜索') and @clickable='true' and not(self::android.widget.EditText)]").isEmpty()
+                    || !driver.findElementsByXPath(
+                    "//*[@package='com.ss.android.ugc.aweme' and contains(@text,'首页')]").isEmpty();
+        } catch (Exception e) {
             return false;
         }
     }
@@ -106,8 +144,20 @@ public class DouyinAddressCrawler {
         while (swipeCount <= maxSwipe) {
 
             logger.info("第 " + (swipeCount + 1) + " 次尝试匹配地址");
+            // 抖音搜索结果页在模拟器上偶发 ANR 冻结 UI，检测到弹窗先点"等待"恢复
+            AnrGuard.recover(driver);
 
             if (findAndClickAddress(accountName)) {
+                // 校验落地页：新版搜索结果里"XX团购"词条也含地点名，点进去是团购列表，
+                // 不是地点视频页。若误入团购页则回退，继续寻找真正的地点标签。
+                if (isOnGroupBuyPage()) {
+                    logger.warning("误入团购页，返回继续寻找地点视频标签");
+                    backToSearchResults();
+                    swipeUp();
+                    sleep(800);
+                    swipeCount++;
+                    continue;
+                }
                 logger.info("成功进入地址视频页: " + accountName);
                 swipeUp();
                 sleep(800);
@@ -188,46 +238,55 @@ public class DouyinAddressCrawler {
             place = accountName.trim();
             logger.info("匹配地址(仅地点) -> " + place);
         }
-        List<MobileElement> parents;
-
-        try {
-            String parentXpath;
-
-            // ✅ 有区域时 → 双条件匹配（最精准）
-            if (region != null) {
-                parentXpath =
-                        "//android.widget.LinearLayout" +
-                                "[.//android.widget.TextView[@text='" + region + "']" +
-                                " and .//android.widget.TextView[@text='" + place + "']]";
-            }
-            // ✅ 没区域 → 只匹配 place
-            else {
-                parentXpath =
-                        "//android.widget.LinearLayout" +
-                                "[.//android.widget.TextView[contains(@text,'" + place + "')]]";
-            }
-
-            parents = driver.findElements(By.xpath(parentXpath));
-
-        } catch (Exception e) {
-            logger.warning("地址父节点查找异常: " + e.getMessage());
-            return false;
+        // 抖音视频里的地点标签常用简称（如"#圆山大饭店"、"圆山"），
+        // 不含城市前缀。构造从完整到宽松的候选词，提高命中率。
+        List<String> placeTokens = new ArrayList<>();
+        placeTokens.add(place);
+        String core = place;
+        // 去掉常见城市/地区前缀：台北、北京市、上海 等
+        String stripped = place.replaceAll("(?i)^(台北市?|北京市?|上海市?|广州市?|深圳市?|高雄市?|香港|澳门)", "");
+        if (!stripped.isEmpty() && !stripped.equals(place)) {
+            core = stripped;
+            placeTokens.add(core);
+        }
+        // 再取核心词前4字（如"圆山大饭店"→"圆山大饭"）作为兜底
+        if (core.length() > 4) {
+            placeTokens.add(core.substring(0, 4));
         }
 
-        if (parents == null || parents.isEmpty()) {
+        MobileElement placeTv = null;
+        for (String token : placeTokens) {
+            try {
+                // 直接找含地点词的 TextView（不限父节点，视频标签可能是 #话题 或 POI 文字）
+                List<MobileElement> hits = driver.findElements(By.xpath(
+                        "//android.widget.TextView[contains(@text,'" + token + "')"
+                                + " or contains(@content-desc,'" + token + "')]"));
+                if (!hits.isEmpty()) {
+                    placeTv = hits.get(0);
+                    logger.info("按地点词命中: " + token);
+                    break;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (placeTv == null) {
             logger.info("页面中未找到匹配地址");
             return false;
         }
 
-        MobileElement parent = parents.get(0);
-
         try {
-            // ⭐ 永远点击 place（真正可点的是地点）
-            MobileElement placeTv = parent.findElement(
-                    By.xpath(".//android.widget.TextView[@text='" + place + "']")
-            );
-
-            placeTv.click();
+            MobileElement clickTarget = placeTv;
+            // 若命中的是 #话题 文字，点击其可点击父节点更可靠
+            try {
+                List<MobileElement> clickableParents = clickTarget.findElements(
+                        By.xpath("./ancestor::*[@clickable='true'][1]"));
+                if (!clickableParents.isEmpty()) {
+                    clickTarget = clickableParents.get(0);
+                }
+            } catch (Exception ignored) {
+            }
+            clickTarget.click();
             logger.info("已点击地址字段: " + place);
             sleep(800);
             return true;

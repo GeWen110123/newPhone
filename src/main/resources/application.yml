@@ -31,7 +31,7 @@ phone:
   version: 1.0.0
   copyrightYear: 2026
   demoEnabled: false
-  profile: "${DOUYIN_OUTPUT:F:/douyin_output}"
+  profile: "${DOUYIN_OUTPUT:D:/douyin_output}"
   addressEnabled: false
   captchaType: math
   register-enabled: false

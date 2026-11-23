@@ -151,7 +151,7 @@ public class EmulatorRuntime {
         }
         // 一键部署包在 F:\D3SereinLab 下带便携 PowerShell，优先使用它。
         String powershell = "pwsh";
-        Path portable = Path.of(labRoot, "tools", "powershell", "7.6.9", "pwsh.exe");
+        Path portable = Path.of(labRoot(), "tools", "powershell", "7.6.9", "pwsh.exe");
         if (Files.isRegularFile(portable)) powershell = portable.toString();
         ProcessBuilder builder = new ProcessBuilder(
                 powershell, "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass",
@@ -193,7 +193,7 @@ public class EmulatorRuntime {
                         ? receipt.serial
                         : configuredSerial;
         int adbPort = receipt != null && receipt.adbPort > 0 ? receipt.adbPort : configuredAdbPort;
-        Path scrcpy = Path.of(labRoot, "tools", "scrcpy", "4.1", "scrcpy.exe");
+        Path scrcpy = Path.of(labRoot(), "tools", "scrcpy", "4.1", "scrcpy.exe");
         String executable = Files.isRegularFile(scrcpy) ? scrcpy.toString() : "scrcpy";
         return String.join("\n",
                 "$env:ADB_SERVER_SOCKET = \"tcp:127.0.0.1:" + adbPort + "\"",
@@ -212,6 +212,14 @@ public class EmulatorRuntime {
                 message);
     }
 
+    /** 一键部署包默认在 F 盘；本机部署在 D 盘时自动回退。 */
+    private String labRoot() {
+        Path configured = Path.of(labRoot);
+        if (Files.isDirectory(configured)) return labRoot;
+        Path fallback = Path.of("D:/D3SereinLab");
+        return Files.isDirectory(fallback) ? fallback.toString() : labRoot;
+    }
+
     private Path resolveStartScript() {
         Path path = Path.of(startScript);
         if (path.isAbsolute()) return path;
@@ -219,7 +227,7 @@ public class EmulatorRuntime {
     }
 
     private Receipt readReceipt() {
-        Path evidence = Path.of(labRoot, "instances", instanceName, "evidence");
+        Path evidence = Path.of(labRoot(), "instances", instanceName, "evidence");
         if (!Files.isDirectory(evidence)) return null;
         Path latest;
         try (Stream<Path> files = Files.list(evidence)) {

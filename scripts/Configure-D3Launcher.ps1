@@ -1,10 +1,21 @@
 #requires -Version 7.4
 [CmdletBinding()]
-param([string]$DeploymentRoot = 'F:\D3SereinLab\deployment\one-click')
+param([string]$DeploymentRoot = '')
 
 $ErrorActionPreference = 'Stop'
+if (-not $DeploymentRoot) {
+    foreach ($candidate in @('F:\D3SereinLab\deployment\one-click', 'D:\D3SereinLab\deployment\one-click')) {
+        if (Test-Path -LiteralPath (Join-Path $candidate 'Deploy-D3CollectorVm.ps1')) {
+            $DeploymentRoot = $candidate
+            break
+        }
+    }
+}
+if (-not $DeploymentRoot) { throw 'D3 deployment directory not found. Pass -DeploymentRoot.' }
 $root = [IO.Path]::GetFullPath($DeploymentRoot).TrimEnd('\')
-if ($root -ine 'F:\D3SereinLab\deployment\one-click') { throw 'This release uses the fixed D3 deployment directory.' }
+if ($root -notmatch '(?i)^[A-Z]:\\D3SereinLab\\deployment\\one-click$') {
+    throw "Unexpected D3 deployment directory: $root"
+}
 $launcher = Join-Path $root 'Deploy-D3CollectorVm.ps1'
 $original = "$launcher.original"
 $approvedSourceHash = '21d02fb15e603f1bad0ac7b8910ed04b915b69bc84d130362d5fd072f765b956'

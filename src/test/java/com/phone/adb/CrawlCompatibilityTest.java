@@ -37,10 +37,10 @@ class CrawlCompatibilityTest {
     }
 
     @Test void searchControlSupportsImageAndTextRolesWithoutSelectingTheInputOrSuggestions() throws Exception {
-        String xml = "<hierarchy><android.widget.ImageView clickable=\"true\" content-desc=\"搜索\"/>"
-                + "<android.widget.TextView clickable=\"true\" text=\"搜索\"/>"
-                + "<android.widget.EditText clickable=\"true\" content-desc=\"搜索\"/>"
-                + "<android.widget.TextView clickable=\"true\" text=\"搜索推荐\"/></hierarchy>";
+        String xml = "<hierarchy><android.widget.ImageView clickable=\"true\" content-desc=\"搜索\" package=\"com.ss.android.ugc.aweme\"/>"
+                + "<android.widget.TextView clickable=\"true\" text=\"搜索\" package=\"com.ss.android.ugc.aweme\"/>"
+                + "<android.widget.EditText clickable=\"true\" content-desc=\"搜索\" package=\"com.ss.android.ugc.aweme\"/>"
+                + "<android.widget.TextView clickable=\"true\" text=\"搜索推荐\" package=\"com.ss.android.ugc.aweme\"/></hierarchy>";
         assertEquals(2, matches(xml, DouyinAddressCrawler.SEARCH_CONTROL));
     }
 

@@ -75,10 +75,14 @@ public class DouyinCrawler {
         logger.info("开始搜索账号: " + accountName);
 
         if (!isDeviceConnected()) return false;
+        // 抖音在模拟器上偶发 ANR 冻结 UI（"应用没有响应"弹窗），每步前检测恢复
+        AnrGuard.recover(driver);
         if (!clickSearchButton()) return false;
         if (!inputSearchText(accountName)) return false;
+        AnrGuard.recover(driver);
         if (!clickSearchSubmit()) return false;
         if (!selectUserTab()) return false;
+        AnrGuard.recover(driver);
         if (!clickFirstUser(accountName)) return false;
         return verifyProfilePage();
     }
@@ -106,9 +110,12 @@ public class DouyinCrawler {
     }
 
     private boolean clickSearchButton() {
+        // ✅ 新版40.9.0适配：desc 带后缀（"搜索，[unsupported type]"），精确匹配失效；
+        //    与 DouyinAddressCrawler.SEARCH_CONTROL 对齐：模糊 contains + 限定抖音包名（避免误点桌面搜索）
         String[] searchButtonXpaths = {
+                "//*[@clickable='true' and @package='com.ss.android.ugc.aweme' and not(self::android.widget.EditText)"
+                        + " and (contains(@text,'搜索') or contains(@content-desc,'搜索'))]",
                 "//*[@content-desc='搜索' and @clickable='true']",
-                "//android.widget.Button[@content-desc='搜索' and @clickable='true']",
                 "//android.widget.ImageView[contains(@resource-id, 'search')]"
         };
         for (String xp : searchButtonXpaths) {
@@ -120,19 +127,32 @@ public class DouyinCrawler {
     }
 
     private boolean inputSearchText(String accountName) {
-        String[] inputXpaths = {
-                "//*[contains(@resource-id, 'search_edit_text')]",
-                "//android.widget.EditText"
-        };
-        for (String xp : inputXpaths) {
+        // 等待搜索页加载，EditText 是通用语义控件，新旧版均可命中；
+        // 先清空历史文本再输入，失败时重试一次（点首页搜索入口后重找）
+        for (int attempt = 0; attempt < 2; attempt++) {
             try {
-                List<MobileElement> elements = driver.findElementsByXPath(xp);
-                if (!elements.isEmpty()) {
-                    elements.get(0).clear();
-                    elements.get(0).sendKeys(accountName);
-                    return true;
-                }
+                Thread.sleep(2500);
             } catch (Exception ignored) {
+            }
+            String[] inputXpaths = {
+                    "//*[@package='com.ss.android.ugc.aweme' and contains(@resource-id, 'search_edit_text')]",
+                    "//android.widget.EditText"
+            };
+            for (String xp : inputXpaths) {
+                try {
+                    List<MobileElement> elements = driver.findElementsByXPath(xp);
+                    if (!elements.isEmpty()) {
+                        elements.get(0).clear();
+                        elements.get(0).sendKeys(accountName);
+                        return true;
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            // 第二次尝试前，重新点一次搜索入口（可能停留在首页而非搜索页）
+            if (attempt == 0) {
+                logger.warning("搜索输入框未找到，尝试重新点击搜索入口");
+                clickSearchButton();
             }
         }
         logger.severe("搜索输入框未找到");

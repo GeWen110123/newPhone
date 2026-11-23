@@ -5,7 +5,16 @@ param([switch]$Enable, [switch]$Disable, [switch]$HostOnly)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 if ($Enable -and $Disable) { throw 'Choose Enable or Disable.' }
-$lab = 'F:\D3SereinLab'
+$lab = $env:D3_LAB_ROOT
+if (-not $lab) {
+    foreach ($candidate in @('F:\D3SereinLab', 'D:\D3SereinLab')) {
+        if (Test-Path -LiteralPath (Join-Path $candidate 'instances\collector-new')) {
+            $lab = $candidate
+            break
+        }
+    }
+}
+if (-not $lab) { throw 'D3 lab root not found. Set D3_LAB_ROOT.' }
 $statePath = Join-Path $lab 'instances\collector-new\evidence\network-direct-proxy.json'
 $state = if (Test-Path -LiteralPath $statePath) { Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json }
 if (!$Enable -and !$Disable -and (!$state -or !$state.Enabled)) { return }
@@ -23,7 +32,7 @@ function Stop-OwnedProxy($Listener) {
     $process = Get-CimInstance Win32_Process -Filter "ProcessId=$($Listener.OwningProcess)"
     $allowed = @(
         'D:\IdeaProjects\newPhone\scripts\d3-cdn-proxy.py',
-        'F:\D3SereinLab\deployment\one-click\d3-cdn-proxy.py'
+        (Join-Path $lab 'deployment\one-click\d3-cdn-proxy.py')
     ) | Where-Object { $process.CommandLine -and $process.CommandLine.Contains($_) }
     if (!$allowed -or $process.Name -notmatch '^python(?:w)?\.exe$') {
         throw 'Port 18868 is not owned by the D3 helper; no process was stopped.'

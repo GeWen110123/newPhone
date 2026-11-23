@@ -20,10 +20,23 @@ import java.util.*;
 
 public class VideoCommentsFetcher {
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(VideoCommentsFetcher.class.getName());
-    static final String COMMENT_ROWS = "//*[@resource-id='com.ss.android.ugc.aweme:id/flq']";
+    // ✅ 新版40.9.0适配（实测2026-11-23评论区dump）：列表 RecyclerView id=rj9，
+    //    主评论行 FrameLayout id=fpk（desc="昵称,内容,时间,·地区"），子回复行 FrameLayout id=k39
+    //    （内部再嵌 ViewGroup id=fpk，两者缓存复用会互换）；
+    //    统一按"rj9 直接子级 FrameLayout 且后代含 content"匹配，主/子行一并命中，
+    //    子回复重复抓取由 existingComments 查重兜底。
+    static final String COMMENT_ROWS =
+            "//androidx.recyclerview.widget.RecyclerView[@resource-id='com.ss.android.ugc.aweme:id/rj9']"
+            + "/android.widget.FrameLayout[.//*[@resource-id='com.ss.android.ugc.aweme:id/content']]"
+            + " | //*[@resource-id='com.ss.android.ugc.aweme:id/flq']";
     // Fallback uses the semantic avatar/content structure, independent of obfuscated row IDs.
     static final String COMMENT_ROWS_FALLBACK = "//androidx.recyclerview.widget.RecyclerView//*[@resource-id='com.ss.android.ugc.aweme:id/content']/parent::*[.//*[@resource-id='com.ss.android.ugc.aweme:id/avatar' or contains(@content-desc,'头像')]]";
-    static final String COMMENT_PANEL = "//*[@resource-id='com.ss.android.ugc.aweme:id/e4l' and contains(@text,'评论')] | //*[contains(@text,'暂无评论') or contains(@text,'还没有评论')] | " + COMMENT_ROWS;
+    // ✅ 新版适配：面板标题"评论 8111"的 id 由 e4l(含文本) 变为 e8h；e4l 现在是纯容器无文本，仍保留兼容
+    static final String COMMENT_PANEL = "//*[@resource-id='com.ss.android.ugc.aweme:id/e8h' and contains(@text,'评论')]"
+            + " | //*[@resource-id='com.ss.android.ugc.aweme:id/e4l' and contains(@text,'评论')]"
+            + " | //*[contains(@text,'暂无评论') or contains(@text,'还没有评论')] | " + COMMENT_ROWS;
+    // ✅ 新版适配：时间节点 id 由 e4t 变为 e8p（"10-24"/"5小时前"）
+    static final String TIME_NODE = ".//*[@resource-id='com.ss.android.ugc.aweme:id/e8p' or @resource-id='com.ss.android.ugc.aweme:id/e4t']";
 
     private List<MobileElement> commentRows() {
         List<MobileElement> rows = driver.findElements(By.xpath(COMMENT_ROWS));
@@ -105,9 +118,21 @@ public class VideoCommentsFetcher {
         } finally {
             if (entered) {
                 // A DB/profile exception must not leave subsequent scrolls on the user's profile.
+                // ✅ 返回评论区可能因页面加载慢/资料页多跳一层而一次 back 不够，带重试恢复
                 driver.navigate().back();
-                try { Thread.sleep(800); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-                if (!onCommentPanel()) throw new IllegalStateException("未能恢复评论区，停止本轮避免误采");
+                boolean restored = false;
+                for (int retry = 0; retry < 4 && !restored; retry++) {
+                    try { Thread.sleep(retry == 0 ? 1200 : 2000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+                    if (onCommentPanel()) {
+                        restored = true;
+                    } else {
+                        // 仍停在作者主页或资料子页，再返回一层
+                        driver.navigate().back();
+                    }
+                }
+                if (!restored && !onCommentPanel()) {
+                    throw new IllegalStateException("未能恢复评论区，停止本轮避免误采");
+                }
             }
         }
         return userInfo;
@@ -178,24 +203,58 @@ public class VideoCommentsFetcher {
                 }
             }
             //          打开评论区
+            // ✅ 调用方（addressVideosAndComments）可能在页面尚在视频详情页时已预点击评论入口，
+            //    先检测面板是否已打开，避免重复查找入口
+            opened = onCommentPanel();
+            if (opened) {
+                System.out.println("评论区面板已打开（调用方预点击）");
+            }
             // ✅ 新增兜底 XPath：content-desc 含"评论"的入口（排除"放大评论区"）
             String[] commentsBtnXpaths = {
                     "//*[starts-with(@content-desc,'评论') and not(contains(@content-desc,'放大'))]",
                     "//*[@resource-id='com.ss.android.ugc.aweme:id/d+_']",
                     "//*[contains(@resource-id,'comment') and @clickable='true']"};
-            for (String xpath : commentsBtnXpaths) {
-                List<MobileElement> btns = driver.findElements(By.xpath(xpath));
-                if (!btns.isEmpty()) {
-                    btns.get(0).click();
-                    Thread.sleep(2000);
-                    opened = onCommentPanel();
-                    if (!opened) continue;
-                    System.out.println("成功打开视频 " + (videoCount + 1) + " 的评论区");
-                    break;
+            // ✅ 录屏后页面可能漂移（视频播完自动切换/采集流程停在作者主页），按钮查找加等待重试；
+            //    重试时若检测到作者主页（抖音号/粉丝/获赞）则 back 返回视频详情页；
+            //    多次找不到时留存页面源码便于离线诊断
+            for (int attempt = 0; attempt < 4 && !opened; attempt++) {
+                AnrGuard.recover(driver);
+                if (attempt > 0) {
+                    // 作者主页特征：同时存在"抖音号：xxx"和"粉丝/获赞"；在此页面点击只会进作品，先返回上一页
+                    boolean hasDouyinId = !driver.findElements(By.xpath(
+                            "//*[contains(@text,'抖音号：') or contains(@text,'抖音号:')]")).isEmpty();
+                    boolean hasFans = !driver.findElements(By.xpath(
+                            "//*[@text='粉丝' or @text='获赞']")).isEmpty();
+                    if (hasDouyinId && hasFans) {
+                        System.out.println("检测到停留在作者主页，返回视频详情页再找评论入口");
+                        driver.navigate().back();
+                        Thread.sleep(2000);
+                    } else {
+                        Thread.sleep(2500);
+                    }
+                }
+                for (String xpath : commentsBtnXpaths) {
+                    List<MobileElement> btns = driver.findElements(By.xpath(xpath));
+                    if (!btns.isEmpty()) {
+                        btns.get(0).click();
+                        Thread.sleep(2000);
+                        opened = onCommentPanel();
+                        if (!opened) continue;
+                        System.out.println("成功打开视频 " + (videoCount + 1) + " 的评论区");
+                        break;
+                    }
                 }
             }
             if (!opened) {
                 System.err.println("无法打开视频 " + (videoCount + 1) + " 的评论区");
+                try {
+                    String src = driver.getPageSource();
+                    java.nio.file.Path diag = java.nio.file.Paths.get(videosDir, "no_comment_entry_"
+                            + (devId + "_" + uid).replaceAll("[^a-zA-Z0-9_-]", "_") + ".xml");
+                    java.nio.file.Files.writeString(diag, src);
+                    System.err.println("评论入口未识别，页面源码已留存: " + diag);
+                } catch (Exception ignore) {
+                }
                 throw new IllegalStateException("评论入口或面板未识别，不能当作零评论");
             }
             try {
@@ -203,12 +262,12 @@ public class VideoCommentsFetcher {
                 if (totalComments < 0) throw new IllegalArgumentException("未知评论数量");
                 System.out.println("视频总评论数: " + totalComments);
             } catch (Exception e) {
-                try {
-                    // ✅ 新版适配：评论总数节点由 title 改为 e4l（文本如"评论 11"）。
-                    //    注意：新版 title 已被评论者昵称占用，不能再用来取总数
-                    MobileElement totalCommentsEl = driver.findElement(By.xpath(
-                            "//android.widget.TextView[@resource-id='com.ss.android.ugc.aweme:id/e4l']"
-                    ));
+                    try {
+                        // ✅ 新版适配：评论总数节点 e8h（文本如"评论 8111"），旧版 e4l 保留兼容
+                        MobileElement totalCommentsEl = driver.findElement(By.xpath(
+                                "//*[@resource-id='com.ss.android.ugc.aweme:id/e8h' and contains(@text,'评论')]"
+                                + " | //*[@resource-id='com.ss.android.ugc.aweme:id/e4l' and contains(@text,'评论')]"
+                        ));
                     String totalText = totalCommentsEl.getText().trim();
 
                     totalComments = parseDouyinCount(totalText);
@@ -232,6 +291,7 @@ public class VideoCommentsFetcher {
             while (scrollCount < maxScrolls && commentsList.size() < commentLimit) {
                 ensureActive();
                 yieldIfWaiting(devId, started);
+                AnrGuard.recover(driver);
                 boolean hasNewThisScroll = false;
                 Set<String> seenRepliesThisScroll = new HashSet<>();
 
@@ -267,7 +327,7 @@ public class VideoCommentsFetcher {
                     }
                     try {
                         // ✅ 新版适配：时间 id 由 egj 改为 e4t
-                        time = el.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
+                        time = el.findElement(By.xpath(TIME_NODE)).getText().trim();
                     } catch (Exception ignored) {
                     }
 
@@ -476,7 +536,7 @@ public class VideoCommentsFetcher {
 
                             try {
                                 // ✅ 新版适配：时间 id 由 egj 改为 e4t
-                                rTime = replyEl.findElement(By.xpath(".//*[@resource-id='com.ss.android.ugc.aweme:id/e4t']")).getText().trim();
+                                rTime = replyEl.findElement(By.xpath(TIME_NODE)).getText().trim();
                             } catch (Exception ignored) {
                             }
 
@@ -568,7 +628,7 @@ public class VideoCommentsFetcher {
                 // ---------------------------------------------------
                 try {
                     List<MobileElement> endTips = driver.findElements(
-                            By.xpath("//*[@text='没有更多了' or @text='暂时没有更多了'][not(@resource-id='com.ss.android.ugc.aweme:id/content')][not(ancestor::*[@resource-id='com.ss.android.ugc.aweme:id/flq'])]")
+                            By.xpath("//*[@text='没有更多了' or @text='暂时没有更多了'][not(@resource-id='com.ss.android.ugc.aweme:id/content')][not(ancestor::*[@resource-id='com.ss.android.ugc.aweme:id/flq' or @resource-id='com.ss.android.ugc.aweme:id/fpk' or @resource-id='com.ss.android.ugc.aweme:id/k39'])]")
                     );
 
                     if (!endTips.isEmpty()) {
@@ -581,10 +641,14 @@ public class VideoCommentsFetcher {
 
                 // ======================
                 // 4. 滑动加载更多
+                // ✅ 新版40.9.0：评论面板只占下半屏（约从 y=45% 起），滑动必须完全在面板区域内，
+                //    且距离要够长，否则列表不滚动、viewport 永远不变
                 // ======================
-                int startX = driver.manage().window().getSize().width / 2;
-                int startY = (int) (driver.manage().window().getSize().height * 0.55);
-                int endY = (int) (driver.manage().window().getSize().height * 0.45);
+                int screenW = driver.manage().window().getSize().width;
+                int screenH = driver.manage().window().getSize().height;
+                int startX = screenW / 2;
+                int startY = (int) (screenH * 0.88);
+                int endY = (int) (screenH * 0.55);
 
                 new TouchAction<>(driver)
                         .press(PointOption.point(startX, startY))
