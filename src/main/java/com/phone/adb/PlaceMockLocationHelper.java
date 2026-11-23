@@ -1,9 +1,13 @@
 package com.phone.adb;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +20,7 @@ public class PlaceMockLocationHelper {
 
     public static final String PACKAGE_NAME = "com.ikun.placemock";
     public static final String MAIN_ACTIVITY = "com.ikun.placemock.MainActivity";
-    public static final String APK_PATH = "D:\\IdeaProjects\\phone0521\\admin\\src\\main\\resources\\PlaceMockLocation-debug.apk";
+    private static final String BUNDLED_APK = "/PlaceMockLocation-debug.apk";
 
 
     private PlaceMockLocationHelper() {
@@ -40,21 +44,38 @@ public class PlaceMockLocationHelper {
             return true;
         }
 
-        File apk = new File(APK_PATH);
-        if (!apk.exists()) {
-            logger.severe("全国模拟定位 APK 不存在: " + APK_PATH);
+        Path extractedApk = null;
+        try {
+            String override = System.getProperty("MOCK_LOCATION_APK", System.getenv("MOCK_LOCATION_APK"));
+            Path apk;
+            if (override != null && !override.isBlank()) {
+                apk = Path.of(override.trim());
+                if (!Files.isRegularFile(apk)) throw new IOException("全国模拟定位 APK 不存在: " + apk);
+            } else {
+                try (InputStream resource = PlaceMockLocationHelper.class.getResourceAsStream(BUNDLED_APK)) {
+                    if (resource == null) throw new IOException("程序未包含全国模拟定位 APK: " + BUNDLED_APK);
+                    extractedApk = Files.createTempFile("phone-placemock-", ".apk");
+                    Files.copy(resource, extractedApk, StandardCopyOption.REPLACE_EXISTING);
+                    apk = extractedApk;
+                }
+            }
+            logger.info("设备 " + devId + " 未安装全国模拟定位，开始安装项目辅助应用");
+            CommandResult result = runCommand(120, "-s", devId, "install", "-r", "-g", apk.toString());
+            if (result.success() && isInstalled(devId)) {
+                logger.info("设备 " + devId + " 全国模拟定位安装成功");
+                return true;
+            }
+            logger.severe("设备 " + devId + " 全国模拟定位安装失败: " + result.output);
             return false;
+        } catch (IOException e) {
+            logger.severe(e.getMessage());
+            return false;
+        } finally {
+            if (extractedApk != null) {
+                try { Files.deleteIfExists(extractedApk); }
+                catch (IOException e) { logger.warning("无法删除辅助应用临时安装包: " + e.getMessage()); }
+            }
         }
-
-        logger.info("设备 " + devId + " 未安装全国模拟定位，开始安装: " + APK_PATH);
-        CommandResult result = runCommand(120, "-s", devId, "install", "-r", "-g", APK_PATH);
-        if (result.success() && isInstalled(devId)) {
-            logger.info("设备 " + devId + " 全国模拟定位安装成功");
-            return true;
-        }
-
-        logger.severe("设备 " + devId + " 全国模拟定位安装失败: " + result.output);
-        return false;
     }
 
     public static boolean configureMockLocationApp(String devId) {

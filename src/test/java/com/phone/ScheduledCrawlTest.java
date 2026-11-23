@@ -11,6 +11,34 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class ScheduledCrawlTest {
+    @Test void deviceScopeCannotChangeOrDispatchOtherDevices() {
+        ScheduledTask scheduler = new ScheduledTask();
+        IVideoTagsService tasks = mock(IVideoTagsService.class);
+        VideoTags other = new VideoTags(); other.setDevId("old-phone"); other.setStatus("0"); other.setRunNum(30L);
+        VideoTags orphan = new VideoTags(); orphan.setDevId("old-phone"); orphan.setStatus("1");
+        when(tasks.selectVideoTagsListASC(any())).thenReturn(List.of(other));
+        when(tasks.selectVideoTagsList(any())).thenReturn(List.of(orphan));
+        ReflectionTestUtils.setField(scheduler, "schedulerDeviceId", "emulator-5554");
+        ReflectionTestUtils.setField(scheduler, "videoTagsService", tasks);
+        ReflectionTestUtils.invokeMethod(scheduler, "douyinTasks");
+        verify(tasks, never()).updateVideoTags(any());
+        verify(tasks).selectVideoTagsListASC(argThat(q -> "emulator-5554".equals(q.getDevId())));
+        assertEquals("0", other.getStatus());
+        assertEquals("1", orphan.getStatus());
+    }
+
+    @Test void scopedQueueDoesNotRunGlobalMaintenance() throws Exception {
+        ScheduledTask scheduler = new ScheduledTask();
+        ReflectionTestUtils.setField(scheduler, "schedulerDeviceId", "emulator-5554");
+        ICommentService comments = mock(ICommentService.class);
+        CommentArchiveService archive = mock(CommentArchiveService.class);
+        ReflectionTestUtils.setField(scheduler, "commentService", comments);
+        ReflectionTestUtils.setField(scheduler, "commentArchiveService", archive);
+        scheduler.runOnStartup();
+        scheduler.getJson();
+        ReflectionTestUtils.invokeMethod(scheduler, "configureTasks");
+        verifyNoInteractions(comments, archive);
+    }
     @Test void stoppedWorkerIsRequeuedWhenItsShortLeaseExpires() {
         ScheduledTask scheduler = new ScheduledTask();
         IVideoTagsService tasks = mock(IVideoTagsService.class);

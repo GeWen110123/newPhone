@@ -18,6 +18,7 @@ import com.phone.common.utils.StringUtils;
 import com.phone.module.domain.*;
 import com.phone.module.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -31,6 +32,13 @@ import javax.annotation.PostConstruct;
 @Configuration
 @ConditionalOnProperty(prefix = "phone", name = "scheduler-enabled", havingValue = "true")
 public class ScheduledTask {
+    @Value("${phone.scheduler-device-id:}")
+    private String schedulerDeviceId;
+
+    private boolean includesDevice(VideoTags task) {
+        return StringUtils.isBlank(schedulerDeviceId) || schedulerDeviceId.equals(task.getDevId());
+    }
+
     @Autowired
     private IStrategyTemplateService strategyTemplateService;
     @Autowired
@@ -63,6 +71,7 @@ public class ScheduledTask {
      */
     @Scheduled(cron = "0 0 0 * * ?")
     private void configureTasks() {
+        if (StringUtils.isNotBlank(schedulerDeviceId)) return;
         StrategyTemplate strategyTemplate = strategyTemplateService.selectStrategyTemplateById(1l);
         Set<String> devIdList = new HashSet<>();
         if (StringUtils.isNotEmpty(strategyTemplate.getAllDevIds())) {
@@ -104,9 +113,11 @@ public class ScheduledTask {
         recoverAbnormalTasks();
         VideoTags videoTags = new VideoTags();
         videoTags.setStatus("0");
+        if (StringUtils.isNotBlank(schedulerDeviceId)) videoTags.setDevId(schedulerDeviceId);
         List<VideoTags> list = videoTagsService.selectVideoTagsListASC(videoTags);
 
         for (VideoTags tags : list) {
+            if (!includesDevice(tags)) continue;
             if (!"0".equals(tags.getStatus())) {
                 continue;
             }
@@ -183,7 +194,10 @@ public class ScheduledTask {
      */
     private void recoverAbnormalTasks() {
 
-        List<VideoTags> listStatus = videoTagsService.selectVideoTagsList(new VideoTags());
+        VideoTags query = new VideoTags();
+        if (StringUtils.isNotBlank(schedulerDeviceId)) query.setDevId(schedulerDeviceId);
+        List<VideoTags> listStatus = videoTagsService.selectVideoTagsList(query).stream()
+                .filter(this::includesDevice).collect(Collectors.toList());
 
         // A stopped JVM cannot update status; reclaim only after its device lease expires.
         for (VideoTags task : listStatus) {
@@ -239,12 +253,14 @@ public class ScheduledTask {
     // Defer repair until the application is ready; never block web/server startup.
     @Scheduled(initialDelay = 30000, fixedDelay = 1800000)
     public void runOnStartup() throws JsonProcessingException {
+        if (StringUtils.isNotBlank(schedulerDeviceId)) return;
         getDouyinidToComment();
     }
 
     // 30分钟执行一次
     @Scheduled(cron = "0 */30 * * * ?")
     public void getJson() throws JsonProcessingException {
+        if (StringUtils.isNotBlank(schedulerDeviceId)) return;
         getJsonToMysql();
     }
 

@@ -23,98 +23,35 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="91603825-72bf-4802-ae2d-763b1daebf3e" name="Default Changelist" comment="跟新后的评论信息获取">
-      <change afterPath="$PROJECT_DIR$/docs/analytics-api.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/crawl-audit-2026-10-16.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/dependency-availability.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/build_focused_map.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/function-map.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/source-evidence.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/viewer-check.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能大纲.opml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能导图资料包.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能思维导图.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能思维导图.mm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/手机抖音获取功能说明.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/douyin-acquisition-map-2026-10-20/阅读说明.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/backend-index.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/build_map.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/direct-index.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/function-map.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/map_content.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/source-evidence.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/source-inventory.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/verify_and_package.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/viewer-check.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/viewer-template.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/wrappers-index.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/功能导图总览.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/完整功能思维导图.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/完整功能说明.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/手机监测平台-功能大纲.opml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/手机监测平台-完整功能导图资料包.zip" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/手机监测平台-完整功能思维导图.mm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/校验记录.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/function-map-2026-10-20/阅读说明.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/AdbVideoRecorder.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/CrawlBatch.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/AnalyticsController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/domain/analytics/AnalyticsQuery.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/domain/analytics/AnalyticsResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/AnalyticsMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/AnalyticsService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/AnalyticsUserService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/CommentArchiveService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DeviceLeaseService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/AnalyticsMapper.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/ScheduledCrawlTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/AdbVideoRecorderTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/CrawlCompatibilityTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/FakeAdbProcess.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/VideoMergeSafetyTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/framework/web/exception/GlobalExceptionHandlerTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/controller/VideoTagsListTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/AddressCrawlCountTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/AddressVideoListTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/AnalyticsMapperTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/VideoCrawlCountTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/mapper/VideoTagsPaginationTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/AnalyticsServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/CommentArchiveTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/DouyinCrawlLifecycleTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/service/PublisherTaskTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/web/controller/system/SysProfileSecurityTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/resources/crawl/douyin-40.3-comments.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/resources/logback-test.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Start-BlueStacksDouyin.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/bluestacks-stability-2026-11-20.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/d3-clean-reinstall-2026-11-20.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/d3-network-recovery-2026-11-20.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/d3-runtime-observations-2026-11-19.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/douyin-emulator.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run-d3.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run-local.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/Configure-D3JniGuard.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/Configure-D3Launcher.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/Configure-D3Llkd.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/Configure-D3Network.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/Watch-BlueStacksDouyinNetwork.ps1" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/d3-cdn-proxy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/diagnose-d3-network.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/AndroidCollector.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/AndroidCollectorTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/phone/module/controller/VideoTagsCreateTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ruoyi.ipr" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ruoyi.iws" beforeDir="false" afterPath="$PROJECT_DIR$/ruoyi.iws" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/ScheduledTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/ScheduledTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcherVoid.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/AccountInfoFetcherVoid.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/DouyinCrawler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/DouyinCrawler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoCommentsFetcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoCommentsFetcher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoMergeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/VideoMergeTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/XPathRegistry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/XPathRegistry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/framework/web/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/framework/web/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/AccountController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/AccountController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/DouyinAddressCrawler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/DouyinAddressCrawler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/adb/PlaceMockLocationHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/adb/PlaceMockLocationHelper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/VideoTagsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/controller/VideoTagsController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/AddressVideoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/AddressVideoMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/VideoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/mapper/VideoMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinTaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinTaskService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinVideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/DouyinVideoService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IAddressVideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IAddressVideoService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IVideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/IVideoService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/AddressVideoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/AddressVideoServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoTagsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/module/service/impl/VideoTagsServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/test.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/phone/web/controller/system/SysProfileController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/phone/web/controller/system/SysProfileController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logback.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/AddressVideoMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/AddressVideoMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/CommentMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/CommentMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoTagsMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/mapper/module/VideoTagsMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/phone/ScheduledCrawlTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/phone/ScheduledCrawlTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/phone/adb/CrawlCompatibilityTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/phone/adb/CrawlCompatibilityTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -336,12 +273,12 @@
     </option>
     <option name="importingSettings">
       <MavenImportingSettings>
-        <option name="jdkForImporter" value="17" />
+        <option name="jdkForImporter" value="21" />
       </MavenImportingSettings>
     </option>
   </component>
   <component name="MavenRunner">
-    <option name="jreName" value="17" />
+    <option name="jreName" value="21" />
   </component>
   <component name="PerforceConfiguration">
     <option name="PORT" value="magic:1666" />
@@ -397,7 +334,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Spring Boot.PhoneApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.PhoneApplication.executor&quot;: &quot;Debug&quot;,
     &quot;Spring Boot.RuoYiApplication .executor&quot;: &quot;Debug&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
@@ -408,7 +345,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.repository.indices&quot;,
@@ -925,7 +862,7 @@
       <option name="project" value="LOCAL" />
       <updated>1770603640671</updated>
     </task>
-    <option name="localTasksCounter" value="108" />
+    <option name="localTasksCounter" value="109" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -27,6 +27,47 @@ import static org.mockito.Mockito.*;
 class CrawlCompatibilityTest {
     @TempDir Path temp;
 
+    @Test void aRejectedSwipeMustNotBeReportedAsSuccessful() {
+        AndroidDriver<MobileElement> driver = mock(AndroidDriver.class, RETURNS_DEEP_STUBS);
+        when(driver.manage().window().getSize()).thenReturn(new org.openqa.selenium.Dimension(720, 1280));
+        doThrow(new org.openqa.selenium.WebDriverException("device disconnected"))
+                .when(driver).perform(anyCollection());
+        assertFalse(new DouyinAddressCrawler(driver).swipeUp());
+        verify(driver).perform(anyCollection());
+    }
+
+    @Test void searchControlSupportsImageAndTextRolesWithoutSelectingTheInputOrSuggestions() throws Exception {
+        String xml = "<hierarchy><android.widget.ImageView clickable=\"true\" content-desc=\"搜索\"/>"
+                + "<android.widget.TextView clickable=\"true\" text=\"搜索\"/>"
+                + "<android.widget.EditText clickable=\"true\" content-desc=\"搜索\"/>"
+                + "<android.widget.TextView clickable=\"true\" text=\"搜索推荐\"/></hierarchy>";
+        assertEquals(2, matches(xml, DouyinAddressCrawler.SEARCH_CONTROL));
+    }
+
+    @Test void addressSearchReplacesThePreviousKeyword() {
+        AndroidDriver<MobileElement> driver = mock(AndroidDriver.class, RETURNS_DEEP_STUBS);
+        when(driver.manage().window().getSize()).thenReturn(new org.openqa.selenium.Dimension(1080, 2340));
+        MobileElement input = mock(MobileElement.class);
+        when(driver.findElementsByXPath("//android.widget.EditText")).thenReturn(List.of(input));
+        DouyinAddressCrawler crawler = new DouyinAddressCrawler(driver);
+        assertEquals(true, ReflectionTestUtils.invokeMethod(crawler, "inputSearchText", "台北圆山大饭店"));
+        var order = inOrder(input);
+        order.verify(input).clear();
+        order.verify(input).sendKeys("台北圆山大饭店");
+    }
+
+    @Test void searchWaitsForResultsInsteadOfFailingWhileTabsAreStillLoading() {
+        AndroidDriver<MobileElement> driver = mock(AndroidDriver.class, RETURNS_DEEP_STUBS);
+        when(driver.manage().window().getSize()).thenReturn(new org.openqa.selenium.Dimension(1080, 2340));
+        MobileElement tab = mock(MobileElement.class);
+        String xpath = "//*[@text='综合']";
+        when(driver.findElementsByXPath(xpath)).thenReturn(Collections.emptyList(), List.of(tab));
+        DouyinAddressCrawler crawler = new DouyinAddressCrawler(driver);
+        assertEquals(true, ReflectionTestUtils.invokeMethod(crawler, "waitAndClickTab", (Object) new String[]{xpath}));
+        verify(tab).click();
+        verify(driver, atLeast(2)).findElementsByXPath(xpath);
+    }
+
     @Test void countsHandleVersionChangedAccessibilityLabelsAndUnknownValues() {
         assertEquals(12000, VideoCommentsFetcher.parseDouyinCount("评论1.2万，按钮"));
         assertEquals(15000, VideoCommentsFetcher.parseDouyinCount("1.5w+条评论"));

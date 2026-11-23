@@ -8,6 +8,7 @@
     <java.version>21</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <phone.build.directory>${project.basedir}/target</phone.build.directory>
   </properties>
   <dependencies>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
@@ -57,7 +58,7 @@
     <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId><scope>test</scope></dependency>
     <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
   </dependencies>
-  <build><finalName>phone</finalName><plugins>
+  <build><directory>${phone.build.directory}</directory><finalName>phone</finalName><plugins>
     <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><configuration><mainClass>com.phone.PhoneApplication</mainClass></configuration></plugin>
   </plugins></build>
 </project>

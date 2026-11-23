@@ -11,6 +11,7 @@ import com.phone.module.service.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -103,7 +104,15 @@ public class VideoTagsController extends BaseController {
      */
     @Log(title = "VideoTags", businessType = BusinessType.INSERT)
     @PostMapping
+    @Transactional
     public AjaxResult add(@RequestBody VideoTags videoTags) {
+        if (StringUtils.isBlank(videoTags.getDevId())) {
+            return AjaxResult.error("请选择执行设备");
+        }
+        if (StringUtils.isBlank(videoTags.getTags())) {
+            return AjaxResult.error("请选择任务类型");
+        }
+        videoTags.setDevId(videoTags.getDevId().trim());
         // 1. 安全获取 抖音ID字符串（优先douyinId，没有则用userId）
         String douyinIdStr = StringUtils.isNotBlank(videoTags.getDouyinId())
                 ? videoTags.getDouyinId()
@@ -130,14 +139,23 @@ public class VideoTagsController extends BaseController {
             // 组装查询条件
             VideoTags queryTag = new VideoTags();
             queryTag.setDouyinId(id);
+            queryTag.setDevId(videoTags.getDevId());
+            queryTag.setTags(videoTags.getTags());
+            queryTag.setTaskId(videoTags.getTaskId() == null ? 3L : videoTags.getTaskId());
 
             // 查询是否已存在
             List<VideoTags> existList = videoTagsService.selectVideoTagsList(queryTag);
             if (StringUtils.isNotEmpty(existList)) {
                 // 存在 → 更新
                 VideoTags updateTag = existList.get(0);
-                updateTag.setDevId(videoTags.getDevId());
-                updateTag.setTags(videoTags.getTags());
+                if ("1".equals(updateTag.getStatus())) {
+                    // Do not requeue a task whose worker still owns the device.
+                    continue;
+                }
+                updateTag.setTaskName(videoTags.getTaskName());
+                updateTag.setAddress(videoTags.getAddress());
+                updateTag.setRemark(videoTags.getRemark());
+                updateTag.setRunNum(0L);
                 updateTag.setStatus("0");
                 videoTagsService.updateVideoTags(updateTag);
             } else {
@@ -147,7 +165,11 @@ public class VideoTagsController extends BaseController {
                 insertTag.setDevId(videoTags.getDevId());
                 insertTag.setTags(videoTags.getTags());
                 insertTag.setStatus("0");
-                insertTag.setTaskId(3L);
+                insertTag.setTaskId(queryTag.getTaskId());
+                insertTag.setTaskName(videoTags.getTaskName());
+                insertTag.setAddress(videoTags.getAddress());
+                insertTag.setRemark(videoTags.getRemark());
+                insertTag.setRunNum(0L);
                 videoTagsService.insertVideoTags(insertTag);
             }
 

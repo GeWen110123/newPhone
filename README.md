@@ -52,6 +52,16 @@ DOUYIN_SCHEDULER_ENABLED=false
 
 Windows 上接入独立 Android 模拟器及复现模拟评论测试，见 [模拟器采集接入](docs/douyin-emulator.md)。
 
+2026-11-20 登录资源 0% 的 VPN 路径排查、已验证的模拟器 CDN 分流与恢复方法，见
+[网络恢复记录](docs/d3-network-recovery-2026-11-20.md)。登录次数限制及视频稳定性需分别处理。
+同日 17:50 后已按要求清除旧 D3 实例及引擎并重新安装，当前状态见
+[清理重装记录](docs/d3-clean-reinstall-2026-11-20.md)。
+
+当前本地模拟器为 D3 Android 11 模板及抖音 40.9.0。PowerShell 7 中运行
+`./run-d3.ps1` 可启动或复用该实例及 Appium，默认停在独立登录页；`-StartBackend` 启动关闭采集调度的后端。
+实例设备号为 `emulator-5668`，独立 ADB 端口为 5068。普通视频模式发现原生崩溃，
+`-Collect` 仅用于登录后的进一步验证，当前持续采集尚未验收，详情见 [运行记录](docs/d3-runtime-observations-2026-11-19.md)。
+
 ## 本次剥离
 
 已移除前端、代码生成、系统监控、Swagger、Druid 双数据源、旧的多模块 Maven 壳、无引用的 Flask/IP 地理库工具和启动时强制设备处理逻辑。旧工程完整内容保存在工作区同级的 `phone-legacy-backup-20260920` 目录中，便于回溯。

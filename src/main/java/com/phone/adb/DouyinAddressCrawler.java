@@ -7,11 +7,14 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.interactions.PointerInput;
 import org.openqa.selenium.interactions.Sequence;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.*;
 import java.util.logging.Logger;
 
 public class DouyinAddressCrawler {
+    static final String SEARCH_CONTROL = "//*[@clickable='true' and not(self::android.widget.EditText)"
+            + " and (@text='搜索' or @content-desc='搜索' or @content-desc='搜索，按钮' or @content-desc='搜索按钮')]";
 
     private static final Logger logger = Logger.getLogger(DouyinAddressCrawler.class.getName());
     private AndroidDriver<MobileElement> driver;
@@ -92,7 +95,8 @@ public class DouyinAddressCrawler {
         if (!inputSearchText(accountName)) return false;
         if (!clickSearchSubmit()) return false;
         sleep(2000);
-        if (!selectZongHeTab()) return false;
+        // 综合结果会混入图文，地点任务从视频分类进入带地点标签的视频。
+        if (!selectVideoTab()) return false;
         if (!clickFirstAddress()) return false;
 
 
@@ -129,6 +133,7 @@ public class DouyinAddressCrawler {
             swipe(w / 2, (int) (h * 0.75), w / 2, (int) (h * 0.25), 500);
             return true;
         } catch (Exception e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
             logger.fine("swipeUp error: " + e.getMessage());
             return false;
         }
@@ -137,21 +142,17 @@ public class DouyinAddressCrawler {
     // ---------------------------------------------------------
     // 滑动逻辑 (Appium 滑动 + 统一坐标)
     // ---------------------------------------------------------
-    private void swipe(int startX, int startY, int endX, int endY, int durationMs) {
-        try {
-            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger1");
-            Sequence swipe = new Sequence(finger, 1);
+    private void swipe(int startX, int startY, int endX, int endY, int durationMs) throws InterruptedException {
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger1");
+        Sequence swipe = new Sequence(finger, 1);
 
-            swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
-            swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-            swipe.addAction(finger.createPointerMove(Duration.ofMillis(durationMs), PointerInput.Origin.viewport(), endX, endY));
-            swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), startX, startY));
+        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        swipe.addAction(finger.createPointerMove(Duration.ofMillis(durationMs), PointerInput.Origin.viewport(), endX, endY));
+        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
 
-            driver.perform(Collections.singletonList(swipe));
-            Thread.sleep(200);
-        } catch (Exception e) {
-            logger.fine("swipe failed: " + e.getMessage());
-        }
+        driver.perform(Collections.singletonList(swipe));
+        Thread.sleep(200);
     }
 
     /**
@@ -262,15 +263,15 @@ public class DouyinAddressCrawler {
 
     private boolean clickSearchButton() {
         String[] searchButtonXpaths = {
+                SEARCH_CONTROL,
                 "//android.widget.Button[@content-desc='搜索' and @clickable='true']",
                 "//android.widget.ImageView[contains(@resource-id, 'search')]"
         };
         for (String xp : searchButtonXpaths) {
             if (clickIfExists(xp)) return true;
         }
-        clickByCoordinates((int) (screenWidth * 0.9), (int) (screenHeight * 0.05));
-        sleep(2000);
-        return true;
+        logger.warning("未识别到搜索入口，保留当前页面");
+        return false;
     }
 
     private boolean inputSearchText(String accountName) {
@@ -282,6 +283,7 @@ public class DouyinAddressCrawler {
             try {
                 List<MobileElement> elements = driver.findElementsByXPath(xp);
                 if (!elements.isEmpty()) {
+                    elements.get(0).clear();
                     elements.get(0).sendKeys(accountName);
                     return true;
                 }
@@ -293,6 +295,7 @@ public class DouyinAddressCrawler {
     }
 
     private boolean clickSearchSubmit() {
+        if (clickIfExists(SEARCH_CONTROL)) return true;
         try {
             driver.findElement(By.id("com.ss.android.ugc.aweme:id/3i9")).click();
             return true;
@@ -313,11 +316,9 @@ public class DouyinAddressCrawler {
                 "//*[contains(@text,'用户')]",
                 "//android.widget.TextView[@clickable='true' and contains(@text,'用户')]"
         };
-        for (String xp : tabXpaths) {
-            if (clickIfExists(xp)) {
-                sleep(2000);
-                return true;
-            }
+        if (waitAndClickTab(tabXpaths)) {
+            sleep(2000);
+            return true;
         }
         logger.warning("用户分类Tab未找到");
         return false;
@@ -329,11 +330,9 @@ public class DouyinAddressCrawler {
                 "//*[contains(@content-desc,'视频')]",
                 "//android.widget.TextView[@clickable='true' and contains(@text,'视频')]"
         };
-        for (String xp : tabXpaths) {
-            if (clickIfExists(xp)) {
-                sleep(2000);
-                return true;
-            }
+        if (waitAndClickTab(tabXpaths)) {
+            sleep(2000);
+            return true;
         }
         logger.warning("视频分类Tab未找到");
         return false;
@@ -342,17 +341,28 @@ public class DouyinAddressCrawler {
     private boolean selectZongHeTab() {
         String[] tabXpaths = {
 
-                "//*[contains(@text,'综合')]",
+                "//*[@text='综合' or @content-desc='综合' or starts-with(@content-desc,'综合，')]",
                 "//android.widget.TextView[@clickable='true' and contains(@text,'综合')]"
         };
-        for (String xp : tabXpaths) {
-            if (clickIfExists(xp)) {
-                sleep(2000);
-                return true;
-            }
+        if (waitAndClickTab(tabXpaths)) {
+            sleep(2000);
+            return true;
         }
         logger.warning("综合分类Tab未找到");
         return false;
+    }
+
+    private boolean waitAndClickTab(String[] xpaths) {
+        try {
+            return new WebDriverWait(driver, 20, 250).until(ignored -> {
+                for (String xpath : xpaths) {
+                    if (clickIfExists(xpath)) return true;
+                }
+                return false;
+            });
+        } catch (org.openqa.selenium.TimeoutException e) {
+            return false;
+        }
     }
 
     private boolean clickFirstUser() {
@@ -411,23 +421,26 @@ public class DouyinAddressCrawler {
                     "//android.widget.ImageView[@resource-id='com.ss.android.ugc.aweme:id/cover']"
             };
 
-            List<MobileElement> candidates = new ArrayList<>();
-            Set<String> seen = new HashSet<>();
-            for (String xpath : videoXpaths) {
-                try {
-                    for (MobileElement element : driver.findElements(By.xpath(xpath))) {
-                        if (element == null || !isVisibleVideoCandidate(element)) {
-                            continue;
+            List<MobileElement> candidates = new WebDriverWait(driver, 20, 500).until(ignored -> {
+                List<MobileElement> visible = new ArrayList<>();
+                Set<String> seen = new HashSet<>();
+                for (String xpath : videoXpaths) {
+                    try {
+                        for (MobileElement element : driver.findElements(By.xpath(xpath))) {
+                            if (element == null || !isVisibleVideoCandidate(element)) {
+                                continue;
+                            }
+                            String key = elementKey(element);
+                            if (seen.add(key)) {
+                                visible.add(element);
+                            }
                         }
-                        String key = elementKey(element);
-                        if (seen.add(key)) {
-                            candidates.add(element);
-                        }
+                    } catch (Exception e) {
+                        logger.fine("查找视频候选失败: " + xpath + ", " + e.getMessage());
                     }
-                } catch (Exception e) {
-                    logger.fine("查找视频候选失败: " + xpath + ", " + e.getMessage());
                 }
-            }
+                return visible.isEmpty() ? null : visible;
+            });
 
             if (candidates.isEmpty()) {
                 logger.warning("当前页面未找到可点击的视频卡片（已兼容 p=1、rej、dp7、cover）");

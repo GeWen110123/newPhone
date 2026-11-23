@@ -36,6 +36,7 @@ phone:
   captchaType: math
   register-enabled: false
   scheduler-enabled: ${DOUYIN_SCHEDULER_ENABLED:true}
+  scheduler-device-id: "${DOUYIN_SCHEDULER_DEVICE_ID:}"
   maintenance-enabled: ${DOUYIN_MAINTENANCE_ENABLED:false}
   cors-origins: ${CORS_ORIGINS:http://localhost:5555}
 token:
