@@ -8,6 +8,7 @@ import com.phone.adb.AndroidCollector;
 import com.phone.adb.CrawlBatch;
 import com.phone.adb.DouyinAddressCrawler;
 import com.phone.adb.DouyinCrawler;
+import com.phone.adb.EmulatorRuntime;
 import com.phone.adb.PlaceMockLocationHelper;
 import com.phone.adb.XPathRegistry;
 import com.phone.common.utils.StringUtils;
@@ -149,7 +150,11 @@ public class DouyinVideoService {
 
         try {
             AndroidCollector collector = AndroidCollector.current();
-            if (!collector.isOnline(devId)) throw new IllegalStateException("设备未在线或未授权: " + devId);
+            if (!collector.isOnline(devId)) {
+                throw new IllegalStateException(EmulatorRuntime.isEmulatorSerial(devId)
+                        ? "模拟器未在线或未授权，请先运行 ./run-d3.ps1 启动 D3 实例: " + devId
+                        : "设备未在线或未授权: " + devId);
+            }
             int retryCount = 0;
             while (retryCount < 3) { // 最多重试3次
                 try {

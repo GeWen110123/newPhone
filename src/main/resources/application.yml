@@ -39,6 +39,17 @@ phone:
   scheduler-device-id: "${DOUYIN_SCHEDULER_DEVICE_ID:}"
   maintenance-enabled: ${DOUYIN_MAINTENANCE_ENABLED:false}
   cors-origins: ${CORS_ORIGINS:http://localhost:5555}
+  # D3 采集端虚拟机模板：任务只在模拟器实例上执行，不再连接真机 ADB。
+  # Serial/ADB 端口优先从一键部署回执读取，下面的值仅作为回执缺失时的兜底。
+  emulator:
+    enabled: ${DOUYIN_EMULATOR_ENABLED:true}
+    instance-name: "${D3_INSTANCE_NAME:collector-new}"
+    serial: "${D3_DEVICE_SERIAL:emulator-5668}"
+    adb-server-port: ${D3_ADB_SERVER_PORT:5068}
+    appium-url: "${D3_APPIUM_URL:http://127.0.0.1:4725/wd/hub}"
+    lab-root: "${D3_LAB_ROOT:F:/D3SereinLab}"
+    start-script: "${D3_START_SCRIPT:run-d3.ps1}"
+    auto-start: ${D3_EMULATOR_AUTO_START:false}
 token:
   header: Authorization
   secret: "${TOKEN_SECRET:replace-with-a-long-random-secret}"

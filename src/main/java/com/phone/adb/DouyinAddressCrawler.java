@@ -708,7 +708,7 @@ public class DouyinAddressCrawler {
     }
 
 //    public static void main(String[] args) {
-//        String devId = "ec86e946";
+//        String devId = "emulator-5668";
 //        String accountName = "Becarefulleea";
 //
 //        Map<String,Object> info = crawlAccount(devId, accountName);
@@ -716,7 +716,7 @@ public class DouyinAddressCrawler {
 //    }
 //
 //    public static void main(String[] args) {
-//        String devId = "ec86e946";
+//        String devId = "emulator-5668";
 //
 //        // 想抓多个账号，填在这里
 //        String[] accountNames = new String[]{

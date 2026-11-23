@@ -1,5 +1,11 @@
 #requires -Version 7.4
-param([switch]$Build, [switch]$StartBackend, [switch]$Collect, [switch]$NoPreview)
+param(
+    [switch]$Build,
+    [switch]$StartBackend,
+    [switch]$Collect,
+    [switch]$NoPreview,
+    [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9_-]{0,59}$')][string]$InstanceName = 'collector-new'
+)
 
 $ErrorActionPreference = 'Stop'
 $lab = 'F:\D3SereinLab'
@@ -11,20 +17,32 @@ if ($Build -and (Get-NetTCPConnection -State Listen -LocalPort 8099 -ErrorAction
 }
 
 # Always use the template entry point: its compatibility layer must be restored after a cold boot.
+# Serial/ports come from the one-click receipt so a renamed instance or changed port keeps working.
+$evidence = Join-Path $lab "instances\$InstanceName\evidence"
+$prior = Get-ChildItem -LiteralPath $evidence -Filter 'one-click-*.json' -File -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+$priorReceipt = if ($prior) { Get-Content -LiteralPath $prior.FullName -Raw | ConvertFrom-Json } else { $null }
+$serial = if ($priorReceipt -and $priorReceipt.Serial) { $priorReceipt.Serial } else { 'emulator-5668' }
+$adbPort = if ($priorReceipt -and $priorReceipt.AdbServerPort) { [int]$priorReceipt.AdbServerPort } else { 5068 }
+$emulatorPort = if ($serial -match '^emulator-(\d+)$') { [int]$Matches[1] } else { 5668 }
+
 $previewPath = Join-Path $lab 'tools\scrcpy\4.1\scrcpy.exe'
 $previewRunning = @(Get-CimInstance Win32_Process -Filter "Name='scrcpy.exe'" | Where-Object {
-    $_.ExecutablePath -eq $previewPath -and $_.CommandLine -like '*--serial=emulator-5668*'
+    $_.ExecutablePath -eq $previewPath -and $_.CommandLine -like "*--serial=$serial*"
 }).Count -gt 0
-$receipt = & $deploy -NoPreview:($NoPreview -or $previewRunning) -LoginOnly:(!$Collect)
-if (!$receipt.RuntimeReady -or !$receipt.AppLaunchVerified -or $receipt.Serial -ne 'emulator-5668' -or
-    $receipt.AdbServerPort -ne 5068) { throw 'The expected D3 instance is not ready.' }
+$receipt = & $deploy -InstanceName $InstanceName -EmulatorPort $emulatorPort -AdbServerPort $adbPort `
+    -NoPreview:($NoPreview -or $previewRunning) -LoginOnly:(!$Collect)
+if (!$receipt.RuntimeReady -or !$receipt.AppLaunchVerified -or
+    $receipt.Serial -ne $serial -or $receipt.AdbServerPort -ne $adbPort) {
+    throw "The D3 instance $InstanceName ($serial / ADB $adbPort) is not ready."
+}
 
 $env:ANDROID_HOME = Join-Path $lab 'sdk-win'
 $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
 $env:ADB_PATH = Join-Path $env:ANDROID_HOME 'platform-tools\adb.exe'
-$env:ADB_SERVER_PORT = '5068'
-$env:ANDROID_ADB_SERVER_PORT = '5068'
-$env:ADB_SERVER_SOCKET = 'tcp:127.0.0.1:5068'
+$env:ADB_SERVER_PORT = "$adbPort"
+$env:ANDROID_ADB_SERVER_PORT = "$adbPort"
+$env:ADB_SERVER_SOCKET = "tcp:127.0.0.1:$adbPort"
 $env:APPIUM_URL = 'http://127.0.0.1:4725/wd/hub'
 $env:SERVER_ADDRESS = '127.0.0.1'
 $env:DOUYIN_APP_PACKAGE = 'com.ss.android.ugc.aweme'
@@ -74,9 +92,9 @@ if ($Build) {
         if ($LASTEXITCODE -ne 0) { throw 'Maven build failed.' }
     } finally { Pop-Location }
 }
-Write-Host 'D3 is ready: emulator-5668, private ADB 5068, Appium 4725.'
+Write-Host "D3 is ready: $serial, private ADB $adbPort, Appium 4725."
 if ($Collect) {
-    & "$PSScriptRoot\run-local.ps1" -Device $receipt.Serial
+    & "$PSScriptRoot\run-local.ps1" -Device $serial
 } elseif ($StartBackend) {
     & "$PSScriptRoot\run-local.ps1"
 } else {

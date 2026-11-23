@@ -50,6 +50,20 @@ DOUYIN_SCHEDULER_ENABLED=false
 
 正常主服务应保留业务需要的调度配置；启动维护程序默认关闭，不能为重启服务随意启用。采集实现集中在 `com.phone.adb` 与 `com.phone.module.service`，原有接口路径和 Mapper 命名保持不变。Windows上不要覆盖正在运行的jar或IDE使用的classes，先独立构建、测试，再停止旧实例并切换，避免文件锁和版本混用。
 
+## 模拟器执行（默认采集目标）
+
+采集任务现在只绑定 D3 模拟器实例，不再使用 ADB 连接真机。一键部署包把 SDK、AVD、抖音 40.9.0 和回执写入 `F:\D3SereinLab`，后端优先读取
+`F:\D3SereinLab\instances\collector-new\evidence\one-click-*.json` 中的 `Serial` / `AdbServerPort`，回执缺失时才回退到 `application.yml` 的基线值
+`emulator-5668` / `5068` / Appium `4725`。任务下发时 `devId` 必须是该序列号。
+
+- `GET /module/emulator/status?deviceCode=`：返回实例、序列号、ADB 端口、在线状态、兼容层与校准状态。
+- `POST /module/emulator/start`：启动/复用实例并恢复 Serein 兼容层，已就绪时直接返回状态。
+- `GET /module/emulator/mirror?deviceCode=`：返回绑定到该实例私有 ADB 服务的 scrcpy 命令。
+
+后端与 Appium 必须使用同一个 `adb.exe` 和服务端口；独立 ADB 服务禁止 Appium 重建。可用环境变量 `D3_INSTANCE_NAME`、`D3_DEVICE_SERIAL`、
+`D3_ADB_SERVER_PORT`、`D3_APPIUM_URL`、`D3_LAB_ROOT` 覆盖默认值。手动启动时仍需先执行 `./run-d3.ps1`（或调用上面的 start 接口），
+因为 Android 冷启动后兼容层不会随 userdata 保存。
+
 Windows 上接入独立 Android 模拟器及复现模拟评论测试，见 [模拟器采集接入](docs/douyin-emulator.md)。
 
 2026-11-20 登录资源 0% 的 VPN 路径排查、已验证的模拟器 CDN 分流与恢复方法，见

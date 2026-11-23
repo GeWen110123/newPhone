@@ -14,7 +14,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/** Shared ADB and Appium connection settings for physical devices and emulators. */
+/**
+ * 采集端连接中枢：ADB 与 Appium 会话共用同一服务端口。
+ * 默认目标为 D3 模板模拟器实例（见 {@link EmulatorRuntime}），不再连接真机 ADB。
+ */
 public final class AndroidCollector {
     private static final AndroidCollector INSTANCE = new AndroidCollector();
     private final List<String> adbCommand;
@@ -137,7 +140,7 @@ public final class AndroidCollector {
         if (deviceId == null || deviceId.isBlank()) throw new IllegalArgumentException("Device ID is required");
     }
 
-    private static String setting(String name, String fallback) {
+    public static String setting(String name, String fallback) {
         String value = System.getProperty(name);
         if (value == null || value.isBlank()) value = System.getenv(name);
         return value == null || value.isBlank() ? fallback : value.trim();
