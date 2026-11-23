@@ -226,7 +226,14 @@ public class AccountInfoFetcherVoid {
                 "//*[contains(@text, '关注') and contains(@text, '粉丝')]",
                 "//*[contains(@text, '获赞')]"
         };
-        return anyExists(xps);
+        if (anyExists(xps)) return true;
+        // 兜底：新版主页 UI 混淆/时序问题导致 XPath 未命中时，用页面源码文本判断
+        try {
+            String src = driver.getPageSource();
+            return src != null && src.contains("粉丝") && src.contains("作品");
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 
@@ -304,12 +311,85 @@ public class AccountInfoFetcherVoid {
                 .waitAction(WaitOptions.waitOptions(Duration.ofMillis(150)))
                 .perform();
     }
+
+    private void tapCenterByCoordinate(int x, int y) {
+        new TouchAction<>(driver)
+                .tap(PointOption.point(x, y))
+                .waitAction(WaitOptions.waitOptions(Duration.ofMillis(150)))
+                .perform();
+    }
     static final String PROFILE_VIDEO_CARDS = "//*[@resource-id='com.ss.android.ugc.aweme:id/qbt']/parent::*[@resource-id='com.ss.android.ugc.aweme:id/container']";
 
     private boolean clickFirstVideo() {
         try {
-            List<MobileElement> elements = findAll(PROFILE_VIDEO_CARDS);
-            if (elements.isEmpty()) elements = findAll("//*[@resource-id='com.ss.android.ugc.aweme:id/container' and @clickable='true']");
+            // 主页作品区加载慢（尤其模拟器），未找到卡片时先等待重试，再尝试点击"作品"tab 刷新列表
+            List<MobileElement> elements = new ArrayList<>();
+            boolean sortPopupHandled = false;
+            for (int wait = 0; wait < 10; wait++) {
+                elements = findAll(PROFILE_VIDEO_CARDS);
+                if (elements.isEmpty()) elements = findAll("//*[@resource-id='com.ss.android.ugc.aweme:id/container' and @clickable='true']");
+                if (!elements.isEmpty()) break;
+                if (wait >= 2 && !sortPopupHandled) {
+                    // 新版主页会自动弹出"最新/最热"作品排序模态弹窗：占据窗口焦点后
+                    // PageSource/findElements 只返回弹窗内容，作品卡片完全不可见。
+                    // 处理：点"最热"应用排序 → 若弹窗仍在按 back → 仍有点击外部空白。
+                    try {
+                        List<MobileElement> sortPop = driver.findElementsByXPath(
+                                "//*[@text='最热' or @text='最新']");
+                        if (!sortPop.isEmpty()) {
+                            logger.info("检测到\"最新/最热\"排序弹窗，尝试关闭（点最热→back→点外部）");
+                            sortPop.get(0).click();
+                            Thread.sleep(1500);
+                            if (!driver.findElementsByXPath("//*[@text='最热' or @text='最新']").isEmpty()) {
+                                driver.navigate().back();
+                                Thread.sleep(1200);
+                            }
+                            if (!driver.findElementsByXPath("//*[@text='最热' or @text='最新']").isEmpty()) {
+                                int w2 = driver.manage().window().getSize().width;
+                                int h2 = driver.manage().window().getSize().height;
+                                new TouchAction<>(driver)
+                                        .tap(PointOption.point(w2 / 2, (int) (h2 * 0.12)))
+                                        .perform();
+                                Thread.sleep(1200);
+                            }
+                            sortPopupHandled = true;
+                            continue;
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (wait == 4) {
+                    // 第 5 次仍无卡片：尝试点击"作品"tab 强制加载作品区
+                    try {
+                        List<MobileElement> tabs = driver.findElementsByXPath(
+                                "//*[@package='com.ss.android.ugc.aweme' and @text='作品']");
+                        if (!tabs.isEmpty()) {
+                            tabs.get(0).click();
+                            logger.info("已点击\"作品\"tab 等待作品区加载");
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
+                Thread.sleep(1200);
+            }
+            // 兜底：若弹窗/窗口焦点导致卡片始终不可见，按主页作品网格固定坐标点击第一格
+            if (elements.isEmpty()) {
+                int width2 = driver.manage().window().getSize().width;
+                int height2 = driver.manage().window().getSize().height;
+                logger.info("作品卡片仍不可见，使用固定坐标点击作品区第一格 ("
+                        + (int) (width2 * 0.25) + "," + (int) (height2 * 0.62) + ")");
+                tapCenterByCoordinate((int) (width2 * 0.25), (int) (height2 * 0.62));
+                for (int attempt = 0; attempt < 8; attempt++) {
+                    ensureCrawlActive();
+                    Thread.sleep(500);
+                    if (isOnVideoDetailPage()) {
+                        logger.info("已进入第一个人员作品详情页(坐标兜底)");
+                        return true;
+                    }
+                }
+                logger.warning("坐标兜底点击后未进入视频详情页");
+                return false;
+            }
             int width = driver.manage().window().getSize().width;
             int height = driver.manage().window().getSize().height;
             for (MobileElement element : elements) {
@@ -332,6 +412,16 @@ public class AccountInfoFetcherVoid {
                 return false;
             }
             logger.warning("未找到可见的人员作品卡片");
+            // 留存主页源码便于离线诊断（同 no_comment_entry 机制）
+            try {
+                String dir = DouyinPathUtils.resolve("videosDir");
+                String dump = driver.getPageSource();
+                java.nio.file.Files.write(java.nio.file.Paths.get(dir,
+                        "no_profile_cards_" + System.currentTimeMillis() + ".xml"),
+                        dump.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            } catch (Exception diagEx) {
+                logger.warning("留存主页诊断源码失败: " + diagEx.getMessage());
+            }
             return false;
         } catch (Exception e) {
             if (e instanceof InterruptedException) Thread.currentThread().interrupt();

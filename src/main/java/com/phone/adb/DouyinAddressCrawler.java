@@ -78,6 +78,16 @@ public class DouyinAddressCrawler {
     private boolean isDouyinHomeVisible() {
         try {
             if (!"com.ss.android.ugc.aweme".equals(driver.getCurrentPackage())) return false;
+            // 主页标志：搜索按钮（新版 desc 带后缀，模糊匹配）或底部"首页"tab；
+            // 同时必须无评论区残留（"评论 N"面板标题 / "最新/最热"排序弹窗 / "没有更多了"），
+            // 否则上一任务的评论弹层会污染本轮搜索。
+            boolean hasOverlay = !driver.findElementsByXPath(
+                    "//*[contains(@text,'没有更多了')]").isEmpty()
+                    || !driver.findElementsByXPath(
+                    "//*[@text='最新' and @text!='']/../..//*[@text='最热']").isEmpty()
+                    || !driver.findElementsByXPath(
+                    "//*[starts-with(@text,'评论 ') or starts-with(@content-desc,'评论 ') and not(contains(@content-desc,'按钮'))]").isEmpty();
+            if (hasOverlay) return false;
             return !driver.findElementsByXPath(
                     "//*[@package='com.ss.android.ugc.aweme' and contains(@content-desc,'搜索') and @clickable='true' and not(self::android.widget.EditText)]").isEmpty()
                     || !driver.findElementsByXPath(

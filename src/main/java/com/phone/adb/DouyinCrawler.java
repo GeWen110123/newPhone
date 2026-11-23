@@ -54,16 +54,44 @@ public class DouyinCrawler {
     public boolean startDouyin() {
         try {
             logger.info("启动抖音应用...");
+            // 任务间页面状态可能残留（评论区/排序弹窗叠加层），先检测是否在干净的主页；
+            // 不干净则 force-stop 冷启动，避免上一任务残留页面污染搜索流程
+            if (isDouyinHomeVisible()) {
+                logger.info("抖音已在干净主页，直接使用");
+                return true;
+            }
             Activity activity = new Activity("com.ss.android.ugc.aweme",
                     "com.ss.android.ugc.aweme.main.MainActivity");
             driver.startActivity(activity);
             Thread.sleep(5000);
+            if (!isDouyinHomeVisible()) {
+                logger.warning("页面仍有残留，执行冷启动复位");
+                driver.terminateApp("com.ss.android.ugc.aweme");
+                Thread.sleep(2000);
+                driver.startActivity(activity);
+                Thread.sleep(8000);
+            }
 
             boolean success = "com.ss.android.ugc.aweme".equals(driver.getCurrentPackage());
             logger.info(success ? "抖音启动成功" : "抖音启动失败");
             return success;
         } catch (Exception e) {
             logger.severe("启动抖音失败: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** 抖音主页且无评论区残留：底部"首页"tab 可见，且不存在"评论 N"面板标题或"最新/最热"排序弹窗。 */
+    private boolean isDouyinHomeVisible() {
+        try {
+            if (!"com.ss.android.ugc.aweme".equals(driver.getCurrentPackage())) return false;
+            String src = driver.getPageSource();
+            boolean hasHomeTab = src.contains("首页");
+            boolean hasOverlay = src.contains("最新") && src.contains("最热")
+                    || src.contains("没有更多了")
+                    || java.util.regex.Pattern.compile("评论\\s*\\d+").matcher(src).find();
+            return hasHomeTab && !hasOverlay;
+        } catch (Exception e) {
             return false;
         }
     }
@@ -229,13 +257,27 @@ public class DouyinCrawler {
             String page = driver.getPageSource();
             if (!page.contains("抖音号") || !page.contains("作品")) {
                 logger.warning("候选卡片未进入可验证主页，停止匹配: " + accountName);
+                saveSearchDiag(accountName, page);
                 return false;
             }
             driver.navigate().back();
             sleep(1000);
         }
         logger.warning("搜索结果未识别到目标抖音号: " + accountName);
+        saveSearchDiag(accountName, driver.getPageSource());
         return false;
+    }
+
+    /** 搜索结果页识别失败时留存源码，便于离线诊断新版 UI 结构（同 no_comment_entry 机制）。 */
+    private void saveSearchDiag(String accountName, String page) {
+        try {
+            String dir = DouyinPathUtils.resolve("videosDir");
+            java.nio.file.Path diag = java.nio.file.Paths.get(dir, "no_search_user_"
+                    + accountName.replaceAll("[^a-zA-Z0-9_-]", "_") + "_" + System.currentTimeMillis() + ".xml");
+            java.nio.file.Files.writeString(diag, page == null ? "" : page);
+            logger.warning("搜索结果页源码已留存: " + diag);
+        } catch (Exception ignore) {
+        }
     }
 
     static final String SEARCH_RESULT_AVATARS = "//*[@content-desc='关注按钮']/../*[not(@content-desc='关注按钮')][1]";
