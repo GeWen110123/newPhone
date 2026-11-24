@@ -257,10 +257,11 @@ public class ScheduledTask {
         getDouyinidToComment();
     }
 
-    // 30分钟执行一次
-    @Scheduled(cron = "0 */30 * * * ?")
+    // 每分钟执行一次：把采集到的原始评论快照转存进 comment 表（前端评论页数据源）。
+    // 该任务只做数据库内转存，与设备无关，因此不能因单设备调度模式(schedulerDeviceId)而跳过，
+    // 否则设备模式下评论永远停留在 address_video.content / video.content 里，页面看不到。
+    @Scheduled(cron = "0 */1 * * * ?")
     public void getJson() throws JsonProcessingException {
-        if (StringUtils.isNotBlank(schedulerDeviceId)) return;
         getJsonToMysql();
     }
 
