@@ -109,8 +109,17 @@ public class DouyinCrawler {
         if (!inputSearchText(accountName)) return false;
         AnrGuard.recover(driver);
         if (!clickSearchSubmit()) return false;
-        if (!selectUserTab()) return false;
+        // 新版/720x1600：数字ID精确搜索会直接跳到用户主页、部分入口没有"用户"分类Tab，
+        // 因此 Tab 未命中不再直接判失败：先校验当前页是否已是目标主页，再退回点击首个用户结果。
+        boolean userTabClicked = selectUserTab();
         AnrGuard.recover(driver);
+        if (!userTabClicked) {
+            logger.info("未找到用户分类Tab，先校验当前页是否已直达主页");
+            if (verifyProfilePage()) {
+                logger.info("当前页已是目标主页（搜索直达），跳过用户Tab");
+                return true;
+            }
+        }
         if (!clickFirstUser(accountName)) return false;
         return verifyProfilePage();
     }
@@ -210,6 +219,8 @@ public class DouyinCrawler {
         } catch (Exception e) {
 
         }
+        // 720x1600：搜索结果页加载重，ANR 弹窗可能在此刻出现并吃掉全部节点，先恢复再查找
+        AnrGuard.recover(driver);
         String[] tabXpaths = {
                 "//*[@text='用户' or @content-desc='用户']",
                 "//*[contains(@resource-id, 'tab_user')]",
@@ -218,6 +229,15 @@ public class DouyinCrawler {
             if (clickIfExists(xp)) {
                 sleep(2000);
                 return true;
+            }
+        }
+        // 一次未命中：可能 ANR 弹窗刚弹出，恢复后重试一轮再判失败
+        if (AnrGuard.recover(driver)) {
+            for (String xp : tabXpaths) {
+                if (clickIfExists(xp)) {
+                    sleep(2000);
+                    return true;
+                }
             }
         }
         logger.warning("用户分类Tab未找到");
@@ -245,16 +265,41 @@ public class DouyinCrawler {
             sleep(500);
         }
         for (int index = 0; index < 5; index++) {
+            // ANR 弹窗会吃掉搜索结果节点，逐轮恢复
+            AnrGuard.recover(driver);
             List<MobileElement> avatars = driver.findElements(By.xpath(SEARCH_RESULT_AVATARS));
             if (index >= avatars.size()) break;
             org.openqa.selenium.Rectangle bounds = avatars.get(index).getRect();
             if (!isSearchAvatar(bounds, screenWidth, screenHeight)) continue;
             clickByCoordinates(bounds.getX() + bounds.getWidth() / 2, bounds.getY() + bounds.getHeight() / 2);
-            for (int wait = 0; wait < 6; wait++) {
+            for (int wait = 0; wait < 16; wait++) {
                 sleep(500);
                 if (profileHasExpectedId(driver.getPageSource(), accountName)) return true;
+                // 720x1600 软渲染慢：骨架页（粉丝已出、作品区未渲染）时轻滑一次触发懒加载
+                if (wait == 8) {
+                    try {
+                        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+                        Sequence swipe = new Sequence(finger, 1);
+                        swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), screenWidth / 2, (int) (screenHeight * 0.75)));
+                        swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+                        swipe.addAction(finger.createPointerMove(Duration.ofMillis(300), PointerInput.Origin.viewport(), screenWidth / 2, (int) (screenHeight * 0.58)));
+                        swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+                        driver.perform(Arrays.asList(swipe));
+                    } catch (Exception ignored) {
+                    }
+                }
             }
             String page = driver.getPageSource();
+            // 半加载骨架页（粉丝/获赞已出但没有作品区和抖音号）再宽限一轮，避免误判
+            if (page.contains("粉丝") && !page.contains("作品")) {
+                logger.info("候选主页骨架页加载中，追加等待一轮: " + accountName);
+                for (int extra = 0; extra < 10; extra++) {
+                    sleep(1000);
+                    page = driver.getPageSource();
+                    if (profileHasExpectedId(page, accountName)) return true;
+                    if (page.contains("作品")) break;
+                }
+            }
             if (!page.contains("抖音号") || !page.contains("作品")) {
                 logger.warning("候选卡片未进入可验证主页，停止匹配: " + accountName);
                 saveSearchDiag(accountName, page);
@@ -290,8 +335,13 @@ public class DouyinCrawler {
     }
 
     static boolean profileHasExpectedId(String source, String accountName) {
-        return source != null && source.contains("粉丝") && source.contains("作品")
-                && matchesSearchAccount(source, accountName);
+        if (source == null) return false;
+        if (!source.contains("粉丝") || !source.contains("作品")) return false;
+        if (matchesSearchAccount(source, accountName)) return true;
+        // 纯数字 UID（如 1871138163）：抖音主页不展示"抖音号：xxx"文本，搜索 UID 时
+        // 首个用户卡片即目标；主页骨架成立（粉丝+作品+封面层 qbb）且页面无抖音号时接受。
+        boolean numericId = accountName != null && accountName.matches("\\d{6,}");
+        return numericId && !source.contains("抖音号") && source.contains("qbb");
     }
 
     static boolean matchesSearchAccount(String label, String accountName) {
@@ -301,9 +351,33 @@ public class DouyinCrawler {
     }
 
     private boolean verifyProfilePage() {
-        for (int attempt = 0; attempt < 4; attempt++) {
+        for (int attempt = 0; attempt < 6; attempt++) {
+            AnrGuard.recover(driver);
             String source = driver.getPageSource();
             if (source.contains("抖音号") && source.contains("粉丝") && source.contains("作品")) return true;
+            // 纯数字 UID 主页无"抖音号"文本：作品网格封面层 qbb 是主页独有强特征，
+            // 与粉丝/作品标签同时成立即判定已进入主页（搜索页不含 qbb）。
+            if (source.contains("粉丝") && source.contains("作品") && source.contains("qbb")) {
+                logger.info("主页验证通过（无抖音号文本，按作品网格骨架判定）");
+                return true;
+            }
+            // 720x1600 软渲染较慢：主页骨架已出（粉丝/获赞）但作品区/抖音号未渲染时，
+            // 轻微上滑一次触发懒加载，继续等待，避免半加载页误判失败。
+            if (attempt == 2 && source.contains("粉丝") && !source.contains("作品")) {
+                try {
+                    int w = driver.manage().window().getSize().width;
+                    int h = driver.manage().window().getSize().height;
+                    PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+                    Sequence swipe = new Sequence(finger, 1);
+                    swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), w / 2, (int) (h * 0.75)));
+                    swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+                    swipe.addAction(finger.createPointerMove(Duration.ofMillis(300), PointerInput.Origin.viewport(), w / 2, (int) (h * 0.58)));
+                    swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+                    driver.perform(Arrays.asList(swipe));
+                    logger.info("主页骨架已渲染但作品区缺失，轻滑触发懒加载");
+                } catch (Exception ignored) {
+                }
+            }
             sleep(1000);
         }
         logger.warning("未能验证进入主页");

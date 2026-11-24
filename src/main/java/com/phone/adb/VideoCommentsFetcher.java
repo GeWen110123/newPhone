@@ -47,6 +47,46 @@ public class VideoCommentsFetcher {
         return !driver.findElements(By.xpath(COMMENT_PANEL)).isEmpty() || !commentRows().isEmpty();
     }
 
+    /**
+     * 若当前已回到视频详情页（评论入口按钮可见），直接重新点开评论面板。
+     * 720x1600 下评论者资料页可能多跳一层，back 一次回到的是详情页而非面板。
+     */
+    private boolean reopenCommentPanel() {
+        try {
+            String[] commentsBtnXpaths = {
+                    "//*[starts-with(@content-desc,'评论') and not(contains(@content-desc,'放大'))]",
+                    "//*[@resource-id='com.ss.android.ugc.aweme:id/d+_']",
+                    "//*[contains(@resource-id,'comment') and @clickable='true']"};
+            for (String xpath : commentsBtnXpaths) {
+                List<MobileElement> btns = driver.findElements(By.xpath(xpath));
+                if (!btns.isEmpty()) {
+                    btns.get(0).click();
+                    Thread.sleep(2000);
+                    if (onCommentPanel()) {
+                        System.out.println("已重新打开评论区面板（多跳返回恢复）");
+                        return true;
+                    }
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception ignore) {
+        }
+        return false;
+    }
+
+    /** 留存页面源码便于离线诊断（统一前缀 + 时间戳）。 */
+    private void saveCommentDiag(String prefix, String tag) {
+        try {
+            String src = driver.getPageSource();
+            java.nio.file.Path diag = java.nio.file.Paths.get(DouyinPathUtils.resolve("videosDir"),
+                    prefix + "_" + tag.replaceAll("[^a-zA-Z0-9_-]", "_") + "_" + System.currentTimeMillis() + ".xml");
+            java.nio.file.Files.writeString(diag, src == null ? "" : src);
+            System.err.println("页面诊断源码已留存: " + diag);
+        } catch (Exception ignore) {
+        }
+    }
+
     private void ensureActive() throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) throw new InterruptedException("采集已取消");
     }
@@ -125,12 +165,17 @@ public class VideoCommentsFetcher {
                     try { Thread.sleep(retry == 0 ? 1200 : 2000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
                     if (onCommentPanel()) {
                         restored = true;
+                    } else if (reopenCommentPanel()) {
+                        // ✅ 720x1600 多跳资料页场景：back 已回到视频详情页（评论面板被关闭），
+                        //    此时继续 back 会退出视频，应直接重新点评论入口打开面板。
+                        restored = true;
                     } else {
                         // 仍停在作者主页或资料子页，再返回一层
                         driver.navigate().back();
                     }
                 }
                 if (!restored && !onCommentPanel()) {
+                    saveCommentDiag("no_comment_restore", vUid);
                     throw new IllegalStateException("未能恢复评论区，停止本轮避免误采");
                 }
             }
@@ -220,6 +265,20 @@ public class VideoCommentsFetcher {
             for (int attempt = 0; attempt < 4 && !opened; attempt++) {
                 AnrGuard.recover(driver);
                 if (attempt > 0) {
+                    // 720x1600：录屏结束视频播完会自动跳进"合集页"（收藏合集/更新至第X集），
+                    // 该页没有评论入口，点页面"返回"按钮回到视频详情页再找。
+                    boolean onCollectionPage = !driver.findElements(By.xpath(
+                            "//*[contains(@text,'收藏合集') or contains(@text,'更新至第')]")).isEmpty();
+                    if (onCollectionPage) {
+                        System.out.println("检测到合集页（录屏后自动跳转），返回视频详情页再找评论入口");
+                        List<MobileElement> backBtns = driver.findElements(By.xpath("//*[@content-desc='返回']"));
+                        if (!backBtns.isEmpty()) {
+                            backBtns.get(0).click();
+                        } else {
+                            driver.navigate().back();
+                        }
+                        Thread.sleep(2000);
+                    }
                     // 作者主页特征：同时存在"抖音号：xxx"和"粉丝/获赞"；在此页面点击只会进作品，先返回上一页
                     boolean hasDouyinId = !driver.findElements(By.xpath(
                             "//*[contains(@text,'抖音号：') or contains(@text,'抖音号:')]")).isEmpty();

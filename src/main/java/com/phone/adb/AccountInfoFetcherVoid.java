@@ -246,6 +246,9 @@ public class AccountInfoFetcherVoid {
                 "//*[contains(@resource-id,'nickname') and string-length(@text)>0]",
                 // 作者名文本没暴露时，点击可点击头像也能进入主页。
                 "//*[@resource-id='com.ss.android.ugc.aweme:id/user_avatar' and @clickable='true']",
+                // 720x1600 新版详情页：头像以 content-desc='用户头像' 暴露（与搜索页一致）
+                "//*[@content-desc='用户头像' and @clickable='true']",
+                "//*[@content-desc='用户头像']",
                 "//*[contains(@content-desc,'@') and @clickable='true']"
         };
 
@@ -276,8 +279,43 @@ public class AccountInfoFetcherVoid {
             }
         }
 
+        // 720x1600 新版详情页：作者名/头像由 canvas 绘制，XML 无节点（诊断确认无 @xxx/user_avatar），
+        // 按详情页左上角作者头像坐标兜底点击，并用主页骨架校验是否真的进入。
+        try {
+            int sw = driver.manage().window().getSize().width;
+            int sh = driver.manage().window().getSize().height;
+            int avatarX = (int) (sw * 0.07);
+            int avatarY = (int) (sh * 0.045);
+            logger.info("作者节点未暴露，坐标兜底点击详情页左上角头像 (" + avatarX + "," + avatarY + ")");
+            tapCenterByCoordinate(avatarX, avatarY);
+            Thread.sleep(2500);
+            if (waitUntilProfilePage()) {
+                logger.info("坐标兜底进入作者主页成功");
+                return true;
+            }
+        } catch (Exception ignored) {
+        }
         logger.warning("enterAuthorProfile failed: 未找到作者名称/头像定位节点");
+        saveProfileDiag("no_author_entry");
         return false;
+    }
+
+    /**
+     * 关键定位失败时留存页面源码，便于离线分析 720x1600 新版布局（前缀区分失败点）。
+     */
+    private void saveProfileDiag(String prefix) {
+        try {
+            String dir = DouyinPathUtils.resolve("videosDir");
+            String dump = driver.getPageSource();
+            java.nio.file.Path diag = java.nio.file.Paths.get(dir,
+                    prefix + "_" + System.currentTimeMillis() + ".xml");
+            byte[] bytes = dump == null ? new byte[0]
+                    : dump.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            java.nio.file.Files.write(diag, bytes);
+            logger.warning("页面诊断源码已留存: " + diag);
+        } catch (Exception diagEx) {
+            logger.warning("留存诊断源码失败: " + diagEx.getMessage());
+        }
     }
 
     private boolean waitUntilProfilePage() {
@@ -319,6 +357,30 @@ public class AccountInfoFetcherVoid {
                 .perform();
     }
     static final String PROFILE_VIDEO_CARDS = "//*[@resource-id='com.ss.android.ugc.aweme:id/qbt']/parent::*[@resource-id='com.ss.android.ugc.aweme:id/container']";
+    // 720x1600 新版主页：作品封面用 qbb(View, clickable=true) + cover(ImageView) 两层，无 qbt 节点。
+    static final String PROFILE_COVER_LAYERS = "//*[@resource-id='com.ss.android.ugc.aweme:id/qbb' and @clickable='true']";
+
+    /**
+     * 720x1600 主页上滑一次：信息区（简介/橱窗/群聊）更高会把作品网格压到屏幕底部，
+     * 上滑后网格完整入屏，便于元素定位与坐标点击。
+     */
+    private void swipeProfileUp() {
+        try {
+            int w = driver.manage().window().getSize().width;
+            int h = driver.manage().window().getSize().height;
+            PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            Sequence swipe = new Sequence(finger, 1);
+            swipe.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), w / 2, (int) (h * 0.80)));
+            swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            swipe.addAction(finger.createPointerMove(Duration.ofMillis(400), PointerInput.Origin.viewport(), w / 2, (int) (h * 0.42)));
+            swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+            driver.perform(Arrays.asList(swipe));
+            logger.info("主页上滑，让作品网格完整入屏");
+            Thread.sleep(1500);
+        } catch (Exception e) {
+            logger.warning("主页上滑失败: " + e.getMessage());
+        }
+    }
 
     private boolean clickFirstVideo() {
         try {
@@ -328,6 +390,7 @@ public class AccountInfoFetcherVoid {
             for (int wait = 0; wait < 10; wait++) {
                 elements = findAll(PROFILE_VIDEO_CARDS);
                 if (elements.isEmpty()) elements = findAll("//*[@resource-id='com.ss.android.ugc.aweme:id/container' and @clickable='true']");
+                if (elements.isEmpty()) elements = findAll(PROFILE_COVER_LAYERS);
                 if (!elements.isEmpty()) break;
                 if (wait >= 2 && !sortPopupHandled) {
                     // 新版主页会自动弹出"最新/最热"作品排序模态弹窗：占据窗口焦点后
@@ -372,22 +435,57 @@ public class AccountInfoFetcherVoid {
                 }
                 Thread.sleep(1200);
             }
-            // 兜底：若弹窗/窗口焦点导致卡片始终不可见，按主页作品网格固定坐标点击第一格
+            // 兜底：若弹窗/窗口焦点导致卡片始终不可见，按 720x1600 新布局处理。
+            // 1600 主页信息区（简介/橱窗/群聊）更高，作品网格被压到屏幕底部只露 85px，
+            // 直接点坐标会落空：先上滑让网格完整入屏，再重查封面点击层，最后才走坐标候选。
+            if (elements.isEmpty()) {
+                swipeProfileUp();
+                elements = findAll(PROFILE_COVER_LAYERS);
+                if (elements.isEmpty()) {
+                    elements = findAll("//*[@resource-id='com.ss.android.ugc.aweme:id/container' and @clickable='true']");
+                }
+                if (!elements.isEmpty()) {
+                    logger.info("上滑后重新命中作品卡片 " + elements.size() + " 个");
+                }
+            }
             if (elements.isEmpty()) {
                 int width2 = driver.manage().window().getSize().width;
                 int height2 = driver.manage().window().getSize().height;
-                logger.info("作品卡片仍不可见，使用固定坐标点击作品区第一格 ("
-                        + (int) (width2 * 0.25) + "," + (int) (height2 * 0.62) + ")");
-                tapCenterByCoordinate((int) (width2 * 0.25), (int) (height2 * 0.62));
-                for (int attempt = 0; attempt < 8; attempt++) {
-                    ensureCrawlActive();
-                    Thread.sleep(500);
-                    if (isOnVideoDetailPage()) {
-                        logger.info("已进入第一个人员作品详情页(坐标兜底)");
-                        return true;
+                int gridX = (int) (width2 * 0.25);
+                java.util.List<Integer> candidateYs = new java.util.ArrayList<>();
+                try {
+                    List<MobileElement> workTabs = driver.findElementsByXPath(
+                            "//*[@package='com.ss.android.ugc.aweme' and @text='作品']");
+                    if (!workTabs.isEmpty()) {
+                        int tabBottom = workTabs.get(0).getRect().getY() + workTabs.get(0).getRect().getHeight();
+                        int cardH = (int) (width2 * 0.62);       // 两列网格，卡高约 0.62×格宽
+                        candidateYs.add(tabBottom + cardH / 2);
+                        logger.info("按\"作品\"Tab位置推算作品网格第一格 y=" + candidateYs.get(0));
+                    }
+                } catch (Exception ignored) {
+                }
+                candidateYs.add((int) (height2 * 0.45));
+                candidateYs.add((int) (height2 * 0.52));
+                candidateYs.add((int) (height2 * 0.60));
+                // 不同用户主页信息区高度差异大（无橱窗的用户作品网格可在 0.68h~0.75h）
+                candidateYs.add((int) (height2 * 0.68));
+                candidateYs.add((int) (height2 * 0.74));
+                for (Integer y : candidateYs) {
+                    if (y < (int) (height2 * 0.25) || y > (int) (height2 * 0.95)) continue;
+                    logger.info("作品卡片仍不可见，尝试点击作品网格坐标 (" + gridX + "," + y + ")");
+                    tapCenterByCoordinate(gridX, y);
+                    for (int attempt = 0; attempt < 8; attempt++) {
+                        ensureCrawlActive();
+                        Thread.sleep(500);
+                        if (isOnVideoDetailPage()) {
+                            logger.info("已进入第一个人员作品详情页(坐标兜底)"
+                                    + " (" + gridX + "," + y + ")");
+                            return true;
+                        }
                     }
                 }
                 logger.warning("坐标兜底点击后未进入视频详情页");
+                saveProfileDiag("no_video_grid");
                 return false;
             }
             int width = driver.manage().window().getSize().width;
@@ -396,8 +494,9 @@ public class AccountInfoFetcherVoid {
                 if (!element.isDisplayed()) continue;
                 Rectangle box = element.getRect();
                 // Exclude full-screen overlays and header/avatar containers sharing the same ID.
+                // 高度下限放宽到 3%（1600 下作品网格常被底部截断，qbb 层仅可见 85px）。
                 if (box.getWidth() < width * 0.15 || box.getWidth() > width * 0.65
-                        || box.getHeight() < height * 0.08 || box.getY() < height * 0.2
+                        || box.getHeight() < height * 0.03 || box.getY() < height * 0.2
                         || box.getY() >= height) continue;
                 tapCenter(element);
                 for (int attempt = 0; attempt < 8; attempt++) {
@@ -915,9 +1014,12 @@ public class AccountInfoFetcherVoid {
             Integer readable = parseDurationFromXml(visible);
             if (readable != null) return readable;
             adbTap(deviceId, 540, 1200);
+            // 720x1600：旧代码 swipe 的 y=2088 超出屏幕（按 1280 时代标定），改为按高度比例落点
+            int screenH = driver.manage().window().getSize().height;
+            String swipeY = String.valueOf((int) (screenH * 0.72));
             // Only this worker calls the driver. A timed-out helper thread must not keep using it.
             swipe = AndroidCollector.current().adb("-s", deviceId, "shell", "input", "swipe",
-                    "300", "2088", "900", "2088", "3000")
+                    "300", swipeY, "900", swipeY, "3000")
                     .redirectOutput(ProcessBuilder.Redirect.DISCARD)
                     .redirectError(ProcessBuilder.Redirect.DISCARD).start();
             for (int attempt = 0; attempt < 3; attempt++) {
@@ -1090,6 +1192,9 @@ public class AccountInfoFetcherVoid {
     public static final String[] WORKS_COUNT_XPATHS = {
             "//*[contains(@text, '作品')]",
             "//*[contains(@content-desc, '作品')]",
+            // 720x1600 主页：作品Tab 容器内 "作品"文本 与 数量（如 1251）为兄弟节点，
+            // 数量在 FrameLayout 子级 TextView，label 自身 parse 不出数字时用它兜底。
+            "//*[@text='作品' or @content-desc='作品']/parent::*/android.widget.FrameLayout//android.widget.TextView",
             "//*[contains(@text, '作品') and not(contains(@resource-id, 'tab'))]/preceding-sibling::android.widget.TextView[1]",
             "//*[contains(@text, '作品') and not(contains(@resource-id, 'tab'))]/following-sibling::android.widget.TextView[1]",
             "//*[contains(@resource-id, 'works') and not(contains(@resource-id, 'tab'))]",
